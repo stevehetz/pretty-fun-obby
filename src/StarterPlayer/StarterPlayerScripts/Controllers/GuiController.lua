@@ -96,9 +96,11 @@ end
 function Shared.ToggleGui(gui: ScreenGui, isActive: boolean)
 	Shared.ToggleBlurEffect(isActive)
 	if gui.Enabled then
-		gui.Enabled = false
+		Local.AnimateFrame(gui.Frame, false)
 		return
 	end
+
+	Local.AnimateFrame(gui.Frame, true)
 
 	gui.Enabled = true
 	Local.HideGui(gui)
@@ -116,6 +118,30 @@ function Local.HideGui(gui: ScreenGui)
 			screenGui.Enabled = false
 		end
 	end
+end
+
+function Local.AnimateFrame(frame: Frame, isOpening: boolean)
+	local uiScale = Instance.new("UIScale", frame)
+	uiScale.Scale = if isOpening then 0.02 else 1
+
+	local tweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut)
+	local tweenGoal = {}
+	tweenGoal.Scale = if isOpening then 1 else 0.02
+
+	print("here?")
+
+	local tween = TweenService:Create(uiScale, tweenInfo, tweenGoal)
+	tween:Play()
+
+	tween.Completed:Connect(function()
+		uiScale:Destroy()
+		if not isOpening then
+			local gui = frame:FindFirstAncestorOfClass("ScreenGui")
+			if gui then
+				gui.Enabled = false
+			end
+		end
+	end)
 end
 
 return Shared
