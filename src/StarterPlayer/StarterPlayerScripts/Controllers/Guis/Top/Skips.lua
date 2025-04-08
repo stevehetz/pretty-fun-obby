@@ -27,16 +27,7 @@ function Shared.OnStart()
 
 	-- Local.UpdateUseButton()
 
-	OpenButton.MouseButton1Click:Connect(function()
-		print("OpenButton.MouseButton1Click")
-		Gui.Enabled = not Gui.Enabled
-		GuiController.ToggleBlurEffect(Gui.Enabled)
-	end)
-
-	ExitButton.MouseButton1Click:Connect(function()
-		Gui.Enabled = false
-		GuiController.ToggleBlurEffect(Gui.Enabled)
-	end)
+	GuiController.SetupGui(Gui, OpenButton)
 
 	UseButton.MouseButton1Click:Connect(function()
 		Remotes.Skip:FireServer()

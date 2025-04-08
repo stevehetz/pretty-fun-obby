@@ -9,7 +9,6 @@ local Gui = GuiController.Guis.Setting
 local Frame = Gui.Frame
 local Container = Frame.Container
 local OpenButton = GuiController.Guis.Right.Frame.Settings
-local ExitButton = Frame.Exit
 
 local ON_COLOR = Color3.fromRGB(61, 219, 67)
 local OFF_COLOR = Color3.fromRGB(232, 70, 70)
@@ -18,16 +17,9 @@ local Local = {}
 local Shared = {}
 
 function Shared.OnStart()
-	Local.GenerateSettings()
+	GuiController.SetupGui(Gui, OpenButton)
 
-	OpenButton.MouseButton1Click:Connect(function()
-		Gui.Enabled = not Gui.Enabled
-		GuiController.ToggleBlurEffect(Gui.Enabled)
-	end)
-	ExitButton.MouseButton1Click:Connect(function()
-		Gui.Enabled = false
-		GuiController.ToggleBlurEffect(false)
-	end)
+	Local.GenerateSettings()
 
 	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
 		if action.type == "UpdateSetting" then

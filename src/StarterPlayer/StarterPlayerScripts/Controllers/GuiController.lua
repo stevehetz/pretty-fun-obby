@@ -13,11 +13,9 @@ local BlurEffect = Instance.new("BlurEffect", Lighting)
 BlurEffect.Size = 0
 
 local ALWAYS_ENABLED_GUIS = {
-	Top = true,
-	Left = true,
-	Right = true,
-	Setting = true,
-	Skips = true,
+	"Top",
+	"Left",
+	"Right",
 }
 
 local Local = {}
@@ -75,6 +73,49 @@ function Shared.ToggleBlurEffect(isGuiActive: boolean)
 
 	local tween = TweenService:Create(BlurEffect, tweenInfo, tweenGoal)
 	tween:Play()
+end
+
+function Shared.SetupGui(gui: ScreenGui, openButton: TextButton?, exitButton: TextButton?)
+	exitButton = exitButton or gui:FindFirstChild("Exit", true)
+
+	if openButton then
+		openButton.MouseButton1Click:Connect(function()
+			Shared.ToggleGui(gui, true)
+		end)
+	else
+		print("No open button found for " .. gui.Name)
+	end
+
+	if exitButton then
+		exitButton.MouseButton1Click:Connect(function()
+			Shared.ToggleGui(gui, false)
+		end)
+	end
+end
+
+function Shared.ToggleGui(gui: ScreenGui, isActive: boolean)
+	Shared.ToggleBlurEffect(isActive)
+	if gui.Enabled then
+		gui.Enabled = false
+		return
+	end
+
+	gui.Enabled = true
+	Local.HideGui(gui)
+end
+
+function Local.HideGui(gui: ScreenGui)
+	for _, screenGui in PlayerGui:GetChildren() do
+		local isSameGui = screenGui == gui
+		local isAlwaysEnabled = table.find(ALWAYS_ENABLED_GUIS, screenGui.Name)
+		if isSameGui or isAlwaysEnabled then
+			continue
+		end
+
+		if screenGui:IsA("ScreenGui") then
+			screenGui.Enabled = false
+		end
+	end
 end
 
 return Shared
