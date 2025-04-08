@@ -13,7 +13,6 @@ local canjump = false
 -- Dynamically create a new Animation instance using the asset id
 local jumpanimation = Instance.new("Animation")
 jumpanimation.AnimationId = jumpAnimationAssetId
-print(jumpanimation)
 
 local jumptrack = Animator:LoadAnimation(jumpanimation)
 
