@@ -16,17 +16,19 @@ function Shared.ToggleSetting(player: Player, setting: SettingsConfig.Setting)
 	if doesSettingExist == nil then
 		return
 	end
-	
+
 	local state = PlayerDataService.GetState(player)
-	if not state then return end
-	
+	if not state then
+		return
+	end
+
 	local currentValue = state.settings[setting]
 	local action: PlayerDataService.UpdateStateAction = {
 		type = "UpdateSetting",
 		setting = setting,
-		value = not currentValue
+		value = not currentValue,
 	}
-	
+
 	PlayerDataService.UpdateState(player, action)
 end
 
