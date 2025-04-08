@@ -11,7 +11,6 @@ local Local = {}
 local Shared = {}
 
 function Shared.OnStart()
-	print("RespawnService OnStart")
 	PlayerDataService.ProfileLoaded.Event:Connect(Shared.RespawnPlayer)
 	Remotes.Respawn.OnServerEvent:Connect(function(player: Player, isDeath: boolean)
 		if isDeath then
@@ -40,7 +39,6 @@ function Shared.RespawnPlayer(player: Player)
 	player:RequestStreamAroundAsync(spawnLocation.Position)
 
 	local character = player.Character
-	print("server - teleport player")
 	local primaryPart = character.PrimaryPart
 	if character and primaryPart then
 		local distanceBetween = (primaryPart.Position - spawnLocation.Position).Magnitude
