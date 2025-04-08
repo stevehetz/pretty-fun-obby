@@ -1,0 +1,80 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local Lighting = game:GetService("Lighting")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Player = Players.LocalPlayer
+local PlayerGui = Player.PlayerGui
+
+local SettingsConfig = require(ReplicatedStorage.Configs.Settings)
+local StateController = require(script.Parent.StateController)
+
+local BlurEffect = Instance.new("BlurEffect", Lighting)
+BlurEffect.Size = 0
+
+local ALWAYS_ENABLED_GUIS = {
+	Top = true,
+	Left = true,
+	Right = true,
+	Setting = true,
+	Skips = true,
+}
+
+local Local = {}
+local Shared = {}
+
+Shared.Guis = {
+	Top = PlayerGui:WaitForChild("Top"),
+	Left = PlayerGui:WaitForChild("Left"),
+	Right = PlayerGui:WaitForChild("Right"),
+	Setting = PlayerGui:WaitForChild("Settings"),
+	Skips = PlayerGui:WaitForChild("Skips"),
+}
+
+function Shared.OnStart()
+	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
+		if action.type == "UpdateSetting" and action.setting == "Menu Blur" then
+			Shared.ToggleBlurEffect(action.value)
+		end
+	end)
+end
+
+function Shared.HandleProgressBar(progressBar: CanvasGroup, progressAmount: number, progressText: string?)
+	local progressFrame: Frame = progressBar:FindFirstChild("Progress") or progressBar:FindFirstChildOfClass("Frame")
+	if progressFrame and progressFrame:IsA("Frame") then
+		local percent = math.clamp(progressAmount, 0, 1)
+		local newSize = UDim2.fromScale(percent, 1)
+
+		local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut)
+		local tweenGoal = {}
+		tweenGoal.Size = newSize
+
+		local tween = TweenService:Create(progressFrame, tweenInfo, tweenGoal)
+		tween:Play()
+	end
+
+	local textLabel = progressBar:FindFirstChild("Amount" or progressBar:FindFirstChildOfClass("TextLabel"))
+	if progressText and textLabel and textLabel:IsA("TextLabel") then
+		textLabel.Text = progressText
+	end
+end
+
+-- this is the most confusing way to do this omg
+--- isGuiActive takes on multiple meanings depending where it comes from
+function Shared.ToggleBlurEffect(isGuiActive: boolean)
+	local isSettingEnabled = SettingsConfig.GetSettingValue(StateController.GetState(), "Menu Blur")
+	if isGuiActive and not isSettingEnabled then
+		return
+	end
+
+	local targetSize = if isGuiActive then 14 else 0
+
+	local tweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut)
+	local tweenGoal = {}
+	tweenGoal.Size = targetSize
+
+	local tween = TweenService:Create(BlurEffect, tweenInfo, tweenGoal)
+	tween:Play()
+end
+
+return Shared
