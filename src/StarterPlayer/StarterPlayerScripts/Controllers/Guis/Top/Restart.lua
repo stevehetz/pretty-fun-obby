@@ -9,7 +9,7 @@ local Shared = {}
 
 function Shared.OnStart()
 	RestartButton.MouseButton1Click:Connect(function()
-		Remotes.PlayerData.Respawn:FireServer()
+		Remotes.PlayerData.Restart:FireServer()
 	end)
 end
 
