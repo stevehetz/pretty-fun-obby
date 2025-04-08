@@ -128,8 +128,6 @@ function Local.AnimateFrame(frame: Frame, isOpening: boolean)
 	local tweenGoal = {}
 	tweenGoal.Scale = if isOpening then 1 else 0.02
 
-	print("here?")
-
 	local tween = TweenService:Create(uiScale, tweenInfo, tweenGoal)
 	tween:Play()
 
