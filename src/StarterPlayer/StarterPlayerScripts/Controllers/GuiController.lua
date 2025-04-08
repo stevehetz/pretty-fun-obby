@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
 
 local Player = Players.LocalPlayer
 local PlayerGui = Player.PlayerGui
@@ -110,7 +111,8 @@ function Local.HideGui(gui: ScreenGui)
 	for _, screenGui in PlayerGui:GetChildren() do
 		local isSameGui = screenGui == gui
 		local isAlwaysEnabled = table.find(ALWAYS_ENABLED_GUIS, screenGui.Name)
-		if isSameGui or isAlwaysEnabled then
+		local isOurGui = Local.IsOurGui(screenGui)
+		if isSameGui or isAlwaysEnabled or not isOurGui then
 			continue
 		end
 
@@ -140,6 +142,10 @@ function Local.AnimateFrame(frame: Frame, isOpening: boolean)
 			end
 		end
 	end)
+end
+
+function Local.IsOurGui(gui: ScreenGui)
+	return gui:IsDescendantOf(StarterGui)
 end
 
 return Shared

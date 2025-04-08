@@ -8,7 +8,7 @@ type PartEffect = "Kill" | "Death" | "Damage"
 local PART_EFFECTS = {
 	"Kill",
 	"Death",
-	"Damage"
+	"Damage",
 }
 
 local PlayerCooldown = {}
@@ -22,14 +22,18 @@ end
 
 function Shared.UseEffect(player: Player, effect: PartEffect, part: BasePart)
 	local character = player.Character
-	if not character then return end
-	
+	if not character then
+		return
+	end
+
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
-	if not humanoid then return end
-	
+	if not humanoid then
+		return
+	end
+
 	local isKillEffect = effect == "Kill" or effect == "Death"
 	local isDamageEffect = effect == "Damage"
-	
+
 	if isKillEffect then
 		player:LoadCharacter()
 	elseif isDamageEffect then
@@ -40,7 +44,7 @@ end
 
 function Local.GetEffect(part: BasePart): PartEffect?
 	local effect: PartEffect
-	
+
 	local isDamageEffect = part:GetAttribute("Damage")
 	local effectFromName = table.find(PART_EFFECTS, part.Name)
 	if isDamageEffect then
@@ -48,7 +52,7 @@ function Local.GetEffect(part: BasePart): PartEffect?
 	elseif effectFromName then
 		effect = PART_EFFECTS[effectFromName]
 	end
-	
+
 	return effect
 end
 
@@ -56,23 +60,31 @@ function Local.SetupParts()
 	local descendants = Workspace:GetDescendants()
 	for _, descendant: BasePart in descendants do
 		local isPart = descendant:IsA("BasePart")
-		if  not isPart then continue end
-		
+		if not isPart then
+			continue
+		end
+
 		local effect = Local.GetEffect(descendant)
-		if not effect then continue end
-		
+		if not effect then
+			continue
+		end
+
 		descendant.Touched:Connect(function(otherPart: BasePart)
 			local player = Players:GetPlayerFromCharacter(otherPart.Parent)
-			if not player then return end
-			
+			if not player then
+				return
+			end
+
 			local isOnCooldown = PlayerCooldown[player]
-			if isOnCooldown then return end
-			
+			if isOnCooldown then
+				return
+			end
+
 			PlayerCooldown[player] = true
-			task.delay(0.5, function() 
+			task.delay(0.5, function()
 				PlayerCooldown[player] = nil
 			end)
-			
+
 			Shared.UseEffect(player, effect, descendant)
 		end)
 	end
