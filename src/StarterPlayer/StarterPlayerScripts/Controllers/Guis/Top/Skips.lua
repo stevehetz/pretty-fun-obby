@@ -18,20 +18,20 @@ local Local = {}
 local Shared = {}
 
 function Shared.OnStart()
-	-- OpenButton.MouseButton1Click:Connect(function()
-	-- 	Remotes.Skip:FireServer()
-	-- end)
+	OpenButton.MouseButton1Click:Connect(function()
+		Remotes.Skip:FireServer()
+	end)
 
 	-- local hasSkips = StateController.GetState().skips.amount > 0
 	-- OpenButton.Notification.Visible = hasSkips
 
 	-- Local.UpdateUseButton()
 
-	GuiController.SetupGui(Gui, OpenButton)
+	-- GuiController.SetupGui(Gui, OpenButton)
 
-	UseButton.MouseButton1Click:Connect(function()
-		Remotes.Skip:FireServer()
-	end)
+	-- UseButton.MouseButton1Click:Connect(function()
+	-- 	Remotes.Skip:FireServer()
+	-- end)
 
 	-- Gui:GetPropertyChangedSignal("Enabled"):Connect(function()
 	-- 	if Gui.Enabled then

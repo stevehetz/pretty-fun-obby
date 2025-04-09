@@ -35,7 +35,13 @@ function Shared.UseEffect(player: Player, effect: PartEffect, part: BasePart)
 	local isDamageEffect = effect == "Damage"
 
 	if isKillEffect then
-		player:LoadCharacter()
+		local character = player.Character
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		if not humanoid then
+			return
+		end
+
+		humanoid:TakeDamage(humanoid.MaxHealth)
 	elseif isDamageEffect then
 		local damage = part:GetAttribute("Damage") or 25
 		humanoid.Health -= damage
