@@ -5,10 +5,10 @@ local collection_service = game:GetService("CollectionService")
 local GUI_service = game:GetService("GuiService")
 local workspace_service = game:GetService("Workspace")
 
-local scale_component_to_base_resolution: {[UIScale]: Vector2} = {}
+local scale_component_to_base_resolution: { [UIScale]: Vector2 } = {}
 -- Required property `AbsoluteContentSize` is not in `UILayout` superclass.
 type scrolling_frame_layout_component = UIGridStyleLayout | UIListLayout
-local layout_component_to_rescaling_connection: {[scrolling_frame_layout_component]: RBXScriptConnection?} = {}
+local layout_component_to_rescaling_connection: { [scrolling_frame_layout_component]: RBXScriptConnection? } = {}
 
 local camera = workspace_service:FindFirstChild("Camera")
 local actual_viewport_size: Vector2? = nil
@@ -17,7 +17,8 @@ local has_initialized = false
 
 local function rescale(scale_component: UIScale, base_resolution: Vector2)
 	assert(actual_viewport_size ~= nil)
-	scale_component.Scale = 1 / math.max(base_resolution.X / actual_viewport_size.X, base_resolution.Y / actual_viewport_size.Y)
+	scale_component.Scale = 1
+		/ math.max(base_resolution.X / actual_viewport_size.X, base_resolution.Y / actual_viewport_size.Y)
 end
 
 local function rescale_all()
@@ -45,14 +46,14 @@ local function register_scrolling_frame_layout_component(layout_component: scrol
 	assert(scrolling_frame ~= nil)
 	assert(scrolling_frame:IsA("ScrollingFrame"))
 	-- https://devforum.roblox.com/t/automaticcanvassize-working-with-uilistlayout-and-uiscale-causes-wrong-automatic-size/1334861.
-	layout_component_to_rescaling_connection[layout_component] = layout_component:GetPropertyChangedSignal(
-		"AbsoluteContentSize"
-	):Connect(function()
-		scrolling_frame.CanvasSize = UDim2.fromOffset(
-			layout_component.AbsoluteContentSize.X / scale_component.Scale,
-			layout_component.AbsoluteContentSize.Y / scale_component.Scale
-		)
-	end)
+	layout_component_to_rescaling_connection[layout_component] = layout_component
+		:GetPropertyChangedSignal("AbsoluteContentSize")
+		:Connect(function()
+			scrolling_frame.CanvasSize = UDim2.fromOffset(
+				layout_component.AbsoluteContentSize.X / scale_component.Scale,
+				layout_component.AbsoluteContentSize.Y / scale_component.Scale
+			)
+		end)
 	scrolling_frame.CanvasSize = UDim2.fromOffset(
 		layout_component.AbsoluteContentSize.X / scale_component.Scale,
 		layout_component.AbsoluteContentSize.Y / scale_component.Scale

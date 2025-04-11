@@ -19,7 +19,7 @@ function Shared.OnStart()
 	Local.UpdateProgress()
 	
 	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
-		if action.type == "UpdateStage" or action.type == "RestartGame" then
+		if action.type == "UpdateStage" then
 			Local.UpdateProgress()
 		end
 	end)

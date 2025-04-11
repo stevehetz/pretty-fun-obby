@@ -32,14 +32,6 @@ function Shared.OnStart()
 			Remotes.SetData:FireClient(player, data)
 		end
 	end)
-	Remotes.Restart.OnServerEvent:Connect(function(player: Player)
-		print("restart called")
-		local action: UpdateStateAction = {
-			type = "RestartGame",
-			value = true
-		}
-		Shared.UpdateState(player, action)
-	end)
 	Players.PlayerAdded:Connect(Local.CreateProfile)
 	Players.PlayerRemoving:Connect(Local.RemoveProfiile)
 	
@@ -61,11 +53,10 @@ function Shared.UpdateState(player: Player, action: UpdateState.UpdateStateActio
 	local profile = Profiles[player]
 	if not profile then return end
 	
-	if action.type == "RestartGame" then
-		player.leaderstats.Stage.Value = 1
-		player.leaderstats.Deaths.Value = 0
-	elseif action.type == "UpdateStage" then
+	if action.type == "UpdateStage" then
 		player.leaderstats.Stage.Value += action.amount
+	elseif action.type == "Rebirth" then
+		player.leaderstats.Rebirths.Value += action.amount or 1
 	elseif action.type == "UpdateDeaths" then
 		player.leaderstats.Deaths.Value += action.amount
 	end
@@ -90,6 +81,10 @@ function Local.CreateLeaderstats(player: Player)
 	stage.Name = "Stage"
 	stage.Value = state.stage
 	
+	local rebirths = Instance.new("NumberValue", leaderstats)
+	rebirths.Name = "Rebirths"
+	rebirths.Value = state.rebirths
+
 	local death = Instance.new("NumberValue", leaderstats)
 	death.Name = "Deaths"
 	death.Value = state.deaths

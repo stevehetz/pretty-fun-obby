@@ -13,7 +13,7 @@ local Shared = {}
 function Shared.OnStart()
 	Local.SetRespawnLocation()
 	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
-		if action.type == "UpdateStage" or action.type == "RestartGame" then
+		if action.type == "UpdateStage" then
 			Local.SetRespawnLocation()
 		elseif action.type == "UseSkip" then
 			Shared.RespawnPlayer(Player.Character, false)
@@ -31,20 +31,16 @@ function Shared.OnStart()
 end
 
 function Local.SetRespawnLocation()
-	local totalStages = StagesConfig.GetTotalStages()
 	local currentStage = StateController.GetState().stage
-	if totalStages == currentStage then
-		Remotes.PlayerData.Restart:FireServer()
-	else
-		local spawnLocation = StagesConfig.GetSpawnlocation(currentStage)
-		Player.RespawnLocation = spawnLocation
-		if currentStage == 1 then
-			local character = Player.Character or Player.CharacterAdded:Wait()
-			if character then
-				Shared.RespawnPlayer(character, false)
-			end
+	local spawnLocation = StagesConfig.GetSpawnlocation(currentStage)
+	Player.RespawnLocation = spawnLocation
+	if currentStage == 1 then
+		local character = Player.Character or Player.CharacterAdded:Wait()
+		if character then
+			Shared.RespawnPlayer(character, false)
 		end
 	end
+
 end
 
 function Shared.RespawnPlayer(character: Model, isDeath: boolean)

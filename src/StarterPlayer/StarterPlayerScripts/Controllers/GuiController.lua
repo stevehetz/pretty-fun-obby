@@ -28,6 +28,7 @@ Shared.Guis = {
 	Right = PlayerGui:WaitForChild("Right"),
 	Setting = PlayerGui:WaitForChild("Settings"),
 	Skips = PlayerGui:WaitForChild("Skips"),
+	Rebirth = PlayerGui:WaitForChild("Rebirth")
 }
 
 function Shared.OnStart()

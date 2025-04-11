@@ -3,6 +3,7 @@ local SettingsConfig = require(script.Parent.Configs.Settings)
 export type PlayerData = {
 	stage: number,
 	deaths: number,
+	rebirths: number,
 	settings: { [SettingsConfig.Setting]: boolean },
 	skips: {
 		amount: number,
@@ -18,6 +19,7 @@ end
 local DEFAULT_PLAYER_DATA: PlayerData = {
 	stage = 1,
 	deaths = 0,
+	rebirths = 0,
 	settings = SettingsData,
 	skips = {
 		amount = 0,
