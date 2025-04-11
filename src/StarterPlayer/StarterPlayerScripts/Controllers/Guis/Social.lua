@@ -1,10 +1,11 @@
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SocialService = game:GetService("SocialService")
-local Workspace = game:GetService("Workspace")
 
 local Player = Players.LocalPlayer
 
 local GuiController = require(script.Parent.Parent.GuiController)
+local SoundsConfig = require(ReplicatedStorage.Configs.Sounds)
 
 local Gui = GuiController.Guis.Right
 local Button = Gui.Frame.Social
@@ -24,6 +25,12 @@ function Shared.OnStart()
 		local success, error = pcall(function()
 			return SocialService:PromptGameInvite(Player, InviteOptions)
 		end)
+
+		if success then
+			SoundsConfig.PlaySound("Confirm")
+		else
+			SoundsConfig.PlaySound("Error")
+		end
 	end)
 end
 

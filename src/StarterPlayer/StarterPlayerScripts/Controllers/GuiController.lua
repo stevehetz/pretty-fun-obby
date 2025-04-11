@@ -8,6 +8,7 @@ local Player = Players.LocalPlayer
 local PlayerGui = Player.PlayerGui
 
 local SettingsConfig = require(ReplicatedStorage.Configs.Settings)
+local SoundsConfig = require(ReplicatedStorage.Configs.Sounds)
 local StateController = require(script.Parent.StateController)
 
 local BlurEffect = Instance.new("BlurEffect", Lighting)
@@ -82,6 +83,7 @@ function Shared.SetupGui(gui: ScreenGui, openButton: TextButton?, exitButton: Te
 
 	if openButton then
 		openButton.MouseButton1Click:Connect(function()
+			SoundsConfig.PlaySound("Menu-Click")
 			Shared.ToggleGui(gui, true)
 		end)
 	else
@@ -90,6 +92,7 @@ function Shared.SetupGui(gui: ScreenGui, openButton: TextButton?, exitButton: Te
 
 	if exitButton then
 		exitButton.MouseButton1Click:Connect(function()
+			SoundsConfig.PlaySound("Menu-Click")
 			Shared.ToggleGui(gui, false)
 		end)
 	end

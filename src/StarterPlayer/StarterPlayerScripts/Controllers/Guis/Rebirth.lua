@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local StagesConfig = require(ReplicatedStorage.Configs.Stages)
+local SoundsConfig = require(ReplicatedStorage.Configs.Sounds)
 local GuiController = require(script.Parent.Parent.GuiController)
 local StateController = require(script.Parent.Parent.StateController)
 local Remotes = ReplicatedStorage.Remotes
@@ -19,8 +20,8 @@ function Shared.OnStart()
 	Local.UpdateProgress()
 	
 	UseButton.MouseButton1Click:Connect(function()
-		Local.Rebirth()
 		GuiController.ToggleGui(Gui, false)
+		Local.Rebirth()
 	end)
 
 	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction, newState: StateController.PlayerData)
@@ -29,11 +30,13 @@ function Shared.OnStart()
 		if isStage or isRebirth then
 			Local.UpdateProgress()
 		end
+
 		
 		if isStage then
 			local newStage = newState.stage
 			local canRebirth = newStage >= StagesConfig.GetTotalStages()
 			if canRebirth then
+				print("Toggling rebirth from update state")
 				GuiController.ToggleGui(Gui)
 			end
 		end
@@ -56,6 +59,9 @@ function Local.Rebirth()
 	local canRebirth = true
 	if canRebirth then
 		Remotes.Rebirth:FireServer()
+		SoundsConfig.PlaySound("Rebirth")
+	else
+		SoundsConfig.PlaySound("Error")
 	end
 end
 

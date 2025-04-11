@@ -10,9 +10,7 @@ end
 
 function Shared.GetSpawnlocation(stage: number)
 	local stageFolder: Folder = Workspace.Stages[stage]
-	print("stageFolder ", stageFolder)
 	local spawnLocation = stageFolder:FindFirstChildOfClass("SpawnLocation")
-	print("spawnLocation ", spawnLocation)
 	if not spawnLocation then
 		spawnLocation = stageFolder:WaitForChild("SpawnLocation")
 	end

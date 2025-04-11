@@ -4,6 +4,7 @@ local GuiController = require(script.Parent.Parent.GuiController)
 local SettingsController = require(script.Parent.Parent.SettingsController)
 local StateController = require(script.Parent.Parent.StateController)
 local SettingsConfig = require(ReplicatedStorage.Configs.Settings)
+local SoundsConfig = require(ReplicatedStorage.Configs.Sounds)
 
 local Gui = GuiController.Guis.Setting
 local Frame = Gui.Frame
@@ -38,6 +39,11 @@ function Local.ToggleSetting(setting: SettingsConfig.Setting)
 
 	local isEnabled = SettingsConfig.GetSettingValue(StateController.GetState(), setting)
 	frame.Toggle.BackgroundColor3 = if isEnabled then ON_COLOR else OFF_COLOR
+	
+	if Gui.Enabled then
+		local sound = if isEnabled then "Confirm" else "Error"
+		SoundsConfig.PlaySound(sound)
+	end
 end
 
 function Local.GenerateSettings()

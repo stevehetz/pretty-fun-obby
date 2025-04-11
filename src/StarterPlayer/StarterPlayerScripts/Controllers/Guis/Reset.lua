@@ -1,8 +1,10 @@
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 
 local Player = Players.LocalPlayer
 
+local SoundsConfig = require(ReplicatedStorage.Configs.Sounds)
 local GuiController = require(script.Parent.Parent.GuiController)
 local RespawnController = require(script.Parent.Parent.RespawnController)
 
@@ -44,6 +46,7 @@ function Local.Reset()
 	local character = Player.Character
 	if character then
 		RespawnController.RespawnPlayer(character, true)
+		SoundsConfig.PlaySound("Error")
 	end
 end
 

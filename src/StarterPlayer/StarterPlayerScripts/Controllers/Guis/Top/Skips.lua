@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local SoundsConfig = require(ReplicatedStorage.Configs.Sounds)
 local GuiController = require(script.Parent.Parent.Parent.GuiController)
 local StateController = require(script.Parent.Parent.Parent.StateController)
 local Remotes = ReplicatedStorage.Remotes

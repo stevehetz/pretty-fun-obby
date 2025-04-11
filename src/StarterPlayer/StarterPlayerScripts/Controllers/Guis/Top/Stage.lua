@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Player = Players.LocalPlayer
 
+local SoundsConfig = require(ReplicatedStorage.Configs.Sounds)
 local GuiController = require(script.Parent.Parent.Parent.GuiController)
 local StateController = require(script.Parent.Parent.Parent.StateController)
 local StagesConfig = require(ReplicatedStorage.Configs.Stages)
@@ -18,9 +19,16 @@ local Shared = {}
 function Shared.OnStart()
 	Local.UpdateProgress()
 	
-	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
+	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction, state: StateController.PlayerData)
 		if action.type == "UpdateStage" then
 			Local.UpdateProgress()
+
+			local hasStageIncreasaed = action.amount > 0
+			if hasStageIncreasaed then
+				local currentStage = state.stage
+				local spawnLocation = StagesConfig.GetSpawnlocation(currentStage)
+				SoundsConfig.PlaySound("Checkpoint", spawnLocation)
+			end
 		end
 	end)
 end

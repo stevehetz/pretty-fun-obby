@@ -57,7 +57,6 @@ function Shared.RespawnPlayer(character: Model, isDeath: boolean)
 			continue
 		end
 
-		print("client - teleport player")
 		character:PivotTo(respsawnLocation.CFrame + Vector3.new(0, 3, 0))
 
 		local distanceBetween = (primarypart.Position - respsawnLocation.Position).Magnitude
