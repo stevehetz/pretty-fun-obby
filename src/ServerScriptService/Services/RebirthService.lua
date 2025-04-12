@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local PlayerDataService = require(script.Parent.PlayerDataService)
 local RespawnService = require(script.Parent.RespawnService)
+local BadgesConfig = require(ReplicatedStorage.Configs.Badges)
 local StagesConfig = require(ReplicatedStorage.Configs.Stages)
 local Remotes = ReplicatedStorage.Remotes
 
@@ -37,6 +38,7 @@ function Shared.Rebirth(player: Player)
 	PlayerDataService.UpdateState(player, rebirthAction)
 	PlayerDataService.UpdateState(player, stageAction)
 	RespawnService.RespawnPlayer(player)
+	BadgesConfig.RewardBadge(player, "Rebirth")
 end
 
 return Shared

@@ -1,14 +1,20 @@
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Workspace = game:GetService("Workspace")
 
 local PlayerDataService = require(ServerScriptService.Services.PlayerDataService)
+local BadgesConfig = require(ReplicatedStorage.Configs.Badges)
 
 local Local = {}
 local Shared = {}
 
 function Shared.OnStart()
 	Local.SetupSpawnLocations()
+
+	Players.PlayerAdded:Connect(function(player: Player)
+		BadgesConfig.RewardBadge(player, "Pretty Fun Obby")
+	end)
 end
 
 function Local.SetupSpawnLocations()
@@ -33,6 +39,11 @@ function Shared.TouchCheckpoint(player: Player, checkpoint: SpawnLocation)
 	local newStage = tonumber(checkpoint.Parent.Name)
 	local playerStage = state.stage
 	local isNextStage = playerStage + 1 == newStage
+
+	local is10thStage = newStage % 10 == 0
+	if is10thStage then
+		BadgesConfig.RewardBadge(player, "Stage 10")
+	end
 
 	if not isNextStage then
 		return false
