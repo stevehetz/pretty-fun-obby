@@ -23,6 +23,10 @@ local ALWAYS_ENABLED_GUIS = {
 local Local = {}
 local Shared = {}
 
+Shared.BillboardGuis = {
+	StageArrow = PlayerGui:WaitForChild("StageArrow")
+}
+
 Shared.Guis = {
 	Top = PlayerGui:WaitForChild("Top"),
 	Left = PlayerGui:WaitForChild("Left"),

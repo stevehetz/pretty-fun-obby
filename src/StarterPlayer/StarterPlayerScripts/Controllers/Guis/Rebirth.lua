@@ -59,7 +59,7 @@ function Local.Rebirth()
 	local canRebirth = true
 	if canRebirth then
 		Remotes.Rebirth:FireServer()
-		SoundsConfig.PlaySound("Rebirth")
+		-- SoundsConfig.PlaySound("Rebirth")
 	else
 		SoundsConfig.PlaySound("Error")
 	end
