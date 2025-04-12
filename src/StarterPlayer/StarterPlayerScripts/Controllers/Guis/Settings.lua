@@ -9,7 +9,7 @@ local SoundsConfig = require(ReplicatedStorage.Configs.Sounds)
 local Gui = GuiController.Guis.Setting
 local Frame = Gui.Frame
 local Container = Frame.Container
-local OpenButton = GuiController.Guis.Right.Frame.Settings
+local OpenButton = GuiController.Guis.Top.Frame.Settings
 
 local ON_COLOR = Color3.fromRGB(61, 219, 67)
 local OFF_COLOR = Color3.fromRGB(232, 70, 70)

@@ -32,8 +32,6 @@ function Local.CreateBadges()
             info.Id = id
             table.insert(BadgeInfo, info)
         end
-
-        print(BadgeInfo)
     end
 end
 
@@ -60,8 +58,6 @@ function Shared.RewardBadge(player: Player, name: BadgeName)
     end)
 
     if not hasBadgeSuccess or hasBadge then return end
-
-    print("Awarding badge to player:", player.Name, "Badge ID:", id)
 
     pcall(function()
         return BadgeService:AwardBadge(player.UserId, id)

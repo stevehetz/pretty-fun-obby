@@ -7,7 +7,7 @@ local Player = Players.LocalPlayer
 local GuiController = require(script.Parent.Parent.GuiController)
 local SoundsConfig = require(ReplicatedStorage.Configs.Sounds)
 
-local Gui = GuiController.Guis.Right
+local Gui = GuiController.Guis.Left
 local Button = Gui.Frame.Social
 
 local InviteOptions = Instance.new("ExperienceInviteOptions")

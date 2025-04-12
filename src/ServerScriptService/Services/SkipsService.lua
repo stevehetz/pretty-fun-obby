@@ -33,8 +33,10 @@ function Local.SkipLoop()
 						continue
 					end
 
+					local isVip = state.vip
 					local action: PlayerDataService.UpdateStateAction = {
 						type = "EarnSkip",
+						amount = isVip and 2 or 1,
 					}
 					PlayerDataService.UpdateState(player, action)
 				end

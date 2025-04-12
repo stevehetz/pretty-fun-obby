@@ -9,6 +9,7 @@ export type PlayerData = {
 		amount: number,
 		next: number,
 	},
+	vip: boolean
 }
 
 local SettingsData = {}
@@ -25,6 +26,7 @@ local DEFAULT_PLAYER_DATA: PlayerData = {
 		amount = 0,
 		next = 0,
 	},
+	vip = false
 }
 
 local Shared = {}

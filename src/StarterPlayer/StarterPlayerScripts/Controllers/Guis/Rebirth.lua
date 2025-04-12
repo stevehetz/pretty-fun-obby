@@ -10,7 +10,7 @@ local Gui = GuiController.Guis.Rebirth
 local Frame = Gui.Frame
 local ProgressBar = Frame.ProgressBar
 local UseButton = Frame.Use
-local OpenButton = GuiController.Guis.Right.Frame.Rebirth
+local OpenButton = GuiController.Guis.Top.Frame.Rebirth
 
 local Local = {}
 local Shared = {}
@@ -36,7 +36,6 @@ function Shared.OnStart()
 			local newStage = newState.stage
 			local canRebirth = newStage >= StagesConfig.GetTotalStages()
 			if canRebirth then
-				print("Toggling rebirth from update state")
 				GuiController.ToggleGui(Gui)
 			end
 		end

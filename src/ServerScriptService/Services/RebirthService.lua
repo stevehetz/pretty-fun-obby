@@ -26,8 +26,10 @@ function Shared.Rebirth(player: Player)
 	-- 	return
 	-- end
 
+	local isVip = state.vip
 	local rebirthAction: PlayerDataService.UpdateStateAction = {
 		type = "Rebirth",
+		amount = if isVip then 2 else 1
 	}
 
 	local stageAction: PlayerDataService.UpdateStateAction = {

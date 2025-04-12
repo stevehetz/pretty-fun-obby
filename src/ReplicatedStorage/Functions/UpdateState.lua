@@ -23,6 +23,9 @@ export type UpdateStateAction = {
 } | {
 	type: "Rebirth",
 	amount: number?
+} | {
+	type: "UpdateVip",
+	value: boolean,
 }
 
 return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
@@ -41,5 +44,7 @@ return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
 		playerData.skips.next = os.time() + SKIPS_COOLDOWN_SECONDS
 	elseif action.type == "UseSkip" then
 		playerData.skips.amount -= 1
+	elseif action.type == "UpdateVip" then
+		playerData.vip = action.value
 	end
 end

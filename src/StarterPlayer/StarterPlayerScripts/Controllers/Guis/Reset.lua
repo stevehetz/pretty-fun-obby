@@ -8,7 +8,7 @@ local SoundsConfig = require(ReplicatedStorage.Configs.Sounds)
 local GuiController = require(script.Parent.Parent.GuiController)
 local RespawnController = require(script.Parent.Parent.RespawnController)
 
-local Gui = GuiController.Guis.Right
+local Gui = GuiController.Guis.Top
 local Button = Gui.Frame.Reset
 
 local BUTTON_TEXT = "Reset (REPLACE)"

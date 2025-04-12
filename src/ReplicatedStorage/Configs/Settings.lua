@@ -5,7 +5,6 @@ type SettingsConfig = {
 }
 
 local Config: SettingsConfig = {
-	["Easy Mode"] = false,
 	["Music"] = true,
 	["Sound Effects"] = true,
 	["Menu Blur"] = true
