@@ -1,4 +1,5 @@
 local SettingsConfig = require(script.Parent.Configs.Settings)
+local StoreConfig = require(script.Parent.Configs.Store)
 
 export type PlayerData = {
 	stage: number,
@@ -9,12 +10,20 @@ export type PlayerData = {
 		amount: number,
 		next: number,
 	},
-	vip: boolean
+	vip: boolean,
+	gamepasses: {
+		[string]: boolean
+	}
 }
 
 local SettingsData = {}
 for setting, value in SettingsConfig.Config do
 	SettingsData[setting] = value
+end
+
+local GamepassesData = {}
+for _, gamepassInfo in StoreConfig.Store.Gamepasses do
+	GamepassesData[tostring(gamepassInfo.Id)] = false
 end
 
 local DEFAULT_PLAYER_DATA: PlayerData = {
@@ -26,7 +35,8 @@ local DEFAULT_PLAYER_DATA: PlayerData = {
 		amount = 0,
 		next = 0,
 	},
-	vip = false
+	vip = false,
+	gamepasses = GamepassesData
 }
 
 local Shared = {}

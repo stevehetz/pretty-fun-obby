@@ -19,9 +19,13 @@ function Shared.OnStart()
 
 	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
 		local isSubscription = action.type == "UpdateVip"
+		local isGamepass = action.type == "UpdateGamepass"
 		if isSubscription then
 			Local.UpdateButton(StoreConfig.Store.Subscriptions[1].Id, action.value)
+		elseif isGamepass then
+			Local.UpdateButton(action.gamepassId, action.value)
 		end
+
 	end)
 end
 
@@ -31,7 +35,6 @@ function Local.GenerateStore()
 	 end
 
 	 for _, info in StoreConfig.Store.Subscriptions do
-		print(info)
 		Local.SetupButton(info, false)
 	 end
 end
@@ -46,19 +49,17 @@ end
 
 function Local.SetupButton(info: StoreConfig.StoreItemInfo, isGamepass: boolean?)
 	local button: TextButton = Frame:FindFirstChild(info.Name:gsub(" ", ""))
-	print(button)
 	if not button then return end
 
-	local isOwned = if isGamepass then true else StateController.GetState().vip -- Todo
+	local state = StateController.GetState()
+	local isOwned = if isGamepass then StoreConfig.DoesPlayerOwnGamepass(state, info.Id) else state.vip
 
 	button.Name = info.Id
 	button.Icon.Image = info.Image
 	button.MouseButton1Click:Connect(function()
-		print("Clicked")
 		if isGamepass and not isOwned then
-			-- Todo
+			MarketPlaceService:PromptGamePassPurchase(Player, info.Id)
 		elseif not isGamepass and not isOwned then
-			print("Clicked Subscription")
 			MarketPlaceService:PromptSubscriptionPurchase(Player, info.Id)
 		end
 	end)

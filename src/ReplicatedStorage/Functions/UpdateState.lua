@@ -26,6 +26,10 @@ export type UpdateStateAction = {
 } | {
 	type: "UpdateVip",
 	value: boolean,
+} | {
+	type: "UpdateGamepass",
+	value: boolean,
+	gamepassId: string
 }
 
 return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
@@ -46,5 +50,7 @@ return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
 		playerData.skips.amount -= 1
 	elseif action.type == "UpdateVip" then
 		playerData.vip = action.value
+	elseif action.type == "UpdateGamepass" then
+		playerData.gamepasses[tostring(action.gamepassId)] = action.value
 	end
 end
