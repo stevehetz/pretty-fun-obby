@@ -6,6 +6,8 @@ local Workspace = game:GetService("Workspace")
 local PlayerDataService = require(ServerScriptService.Services.PlayerDataService)
 local BadgesConfig = require(ReplicatedStorage.Configs.Badges)
 
+local checkpointDebounce = {}
+
 local Local = {}
 local Shared = {}
 
@@ -31,33 +33,54 @@ function Local.SetupSpawnLocations()
 end
 
 function Shared.TouchCheckpoint(player: Player, checkpoint: SpawnLocation)
-	local state = PlayerDataService.GetState(player)
-	if not state then
-		return false
-	end
+    local state = PlayerDataService.GetState(player)
+    if not state then
+        return false
+    end
 
-	local newStage = tonumber(checkpoint.Parent.Name)
-	local playerStage = state.stage
-	local isNextStage = playerStage + 1 == newStage
+    -- Keep the debounce as it's working
+    -- local debounceKey = player.UserId .. "_" .. tostring(checkpoint:GetFullName())
+    -- if checkpointDebounce[debounceKey] then
+    --     return false
+    -- end
 
-	local is10thStage = newStage % 10 == 0
-	if is10thStage then
-		BadgesConfig.RewardBadge(player, "Stage 10")
-	end
+    -- Set debounce immediately
+    -- checkpointDebounce[debounceKey] = true
 
-	if not isNextStage then
-		return false
-	end
+    -- Process checkpoint logic
+    local newStage = tonumber(checkpoint.Parent.Name)
+    local playerStage = state.stage
+    local isNextStage = playerStage + 1 == newStage
+    
+    if not isNextStage then
+        -- checkpointDebounce[debounceKey] = nil
+        return false
+    end
 
-	local action: PlayerDataService.UpdateStateAction = {
-		type = "UpdateStage",
-		amount = 1,
-	}
+    -- Update stage first before badge reward to prevent any race conditions
+    local action: PlayerDataService.UpdateStateAction = {
+        type = "UpdateStage",
+        amount = 1,
+    }
+    PlayerDataService.UpdateState(player, action)
 
-	PlayerDataService.UpdateState(player, action)
+    -- Set respawn location
+    player.RespawnLocation = checkpoint
+    
+    -- Award badge after all other operations are complete
+    local is10thStage = newStage % 10 == 0
+    if is10thStage then
+        task.spawn(function() -- Run in a separate thread to prevent any blocking
+            BadgesConfig.RewardBadge(player, "Stage 10")
+        end)
+    end
 
-	player.RespawnLocation = checkpoint
-	return true
+    -- Maintain a longer debounce for extra safety
+    -- task.delay(2, function()
+    --     checkpointDebounce[debounceKey] = nil
+    -- end)
+    
+    return true
 end
 
 return Shared

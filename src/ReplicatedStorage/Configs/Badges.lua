@@ -8,9 +8,10 @@ type BadgeInfo = {
     IsEnabled: boolean,
 }
 
-export type BadgeName = "Stage 10" | "Supporter" | "Rebirth"
+export type BadgeName = "Stage 5" | "Stage 10" | "Supporter" | "Rebirth"
 
 local BADGE_IDS = {
+    432992884028233, -- Stage 5
     3296342849110739, -- Stage 10
     3173699013596688, -- Supporter
     4170857839321681, -- Rebirth
@@ -60,7 +61,7 @@ function Shared.RewardBadge(player: Player, name: BadgeName)
     if not hasBadgeSuccess or hasBadge then return end
 
     pcall(function()
-        return BadgeService:AwardBadge(player.UserId, id)
+        BadgeService:AwardBadge(player.UserId, id)
     end)
 end
 
