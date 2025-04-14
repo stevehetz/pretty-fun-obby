@@ -22,14 +22,14 @@ export type UpdateStateAction = {
 	type: "UseSkip",
 } | {
 	type: "Rebirth",
-	amount: number?
+	amount: number?,
 } | {
 	type: "UpdateVip",
 	value: boolean,
 } | {
 	type: "UpdateGamepass",
 	value: boolean,
-	gamepassId: string
+	gamepassId: string,
 }
 
 return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
@@ -43,9 +43,10 @@ return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
 		playerData.settings[action.setting] = action.value
 	elseif action.type == "EarnSkip" then
 		action.amount = action.amount or 1
+		if playerData.skips.amount < 0 then
+			playerData.skips.amount = 0
+		end
 		playerData.skips.amount += action.amount
-		local SKIPS_COOLDOWN_SECONDS = 120
-		playerData.skips.next = os.time() + SKIPS_COOLDOWN_SECONDS
 	elseif action.type == "UseSkip" then
 		playerData.skips.amount -= 1
 	elseif action.type == "UpdateVip" then

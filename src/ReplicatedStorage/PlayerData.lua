@@ -8,12 +8,11 @@ export type PlayerData = {
 	settings: { [SettingsConfig.Setting]: boolean },
 	skips: {
 		amount: number,
-		next: number,
 	},
 	vip: boolean,
 	gamepasses: {
-		[string]: boolean
-	}
+		[string]: boolean,
+	},
 }
 
 local SettingsData = {}
@@ -33,10 +32,9 @@ local DEFAULT_PLAYER_DATA: PlayerData = {
 	settings = SettingsData,
 	skips = {
 		amount = 0,
-		next = 0,
 	},
 	vip = false,
-	gamepasses = GamepassesData
+	gamepasses = GamepassesData,
 }
 
 local Shared = {}

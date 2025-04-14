@@ -24,7 +24,7 @@ local Local = {}
 local Shared = {}
 
 Shared.BillboardGuis = {
-	StageArrow = PlayerGui:WaitForChild("StageArrow")
+	StageArrow = PlayerGui:WaitForChild("StageArrow"),
 }
 
 Shared.Guis = {
@@ -33,7 +33,7 @@ Shared.Guis = {
 	Right = PlayerGui:WaitForChild("Right"),
 	Setting = PlayerGui:WaitForChild("Settings"),
 	Skips = PlayerGui:WaitForChild("Skips"),
-	Rebirth = PlayerGui:WaitForChild("Rebirth")
+	Rebirth = PlayerGui:WaitForChild("Rebirth"),
 }
 
 function Shared.OnStart()
@@ -120,6 +120,7 @@ function Local.HideGui(gui: ScreenGui)
 		local isSameGui = screenGui == gui
 		local isAlwaysEnabled = table.find(ALWAYS_ENABLED_GUIS, screenGui.Name)
 		local isOurGui = Local.IsOurGui(screenGui)
+		-- print(screenGui.Name, isSameGui, isAlwaysEnabled, isOurGui)
 		if isSameGui or isAlwaysEnabled or not isOurGui then
 			continue
 		end
@@ -153,7 +154,13 @@ function Local.AnimateFrame(frame: Frame, isOpening: boolean)
 end
 
 function Local.IsOurGui(gui: ScreenGui)
-	return gui:IsDescendantOf(StarterGui)
+	-- Check if this gui exists in our Shared.Guis table
+	for _, knownGui in Shared.Guis do
+		if gui == knownGui then
+			return true
+		end
+	end
+	return false
 end
 
 return Shared

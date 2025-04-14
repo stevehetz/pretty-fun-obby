@@ -12,38 +12,7 @@ local Local = {}
 local Shared = {}
 
 function Shared.OnStart()
-	Local.SkipLoop()
 	Remotes.Skip.OnServerEvent:Connect(Local.SkipStage)
-end
-
-function Local.SkipLoop()
-	task.spawn(function()
-		while true do
-			pcall(function()
-				for _, player in Players:GetPlayers() do
-					local state = PlayerDataService.GetState(player)
-					if not state then
-						continue
-					end
-
-					local nextStipTime = state.skips.next
-					local currentTime = os.time()
-					local isBeforeNextSkip = nextStipTime > currentTime
-					if isBeforeNextSkip then
-						continue
-					end
-
-					local isVip = state.vip
-					local action: PlayerDataService.UpdateStateAction = {
-						type = "EarnSkip",
-						amount = isVip and 2 or 1,
-					}
-					PlayerDataService.UpdateState(player, action)
-				end
-			end)
-			task.wait(1)
-		end
-	end)
 end
 
 function Local.SkipStage(player: Player)
@@ -52,10 +21,10 @@ function Local.SkipStage(player: Player)
 		return
 	end
 
-	-- local hasSkips = state.skips.amount > 0
-	-- if not hasSkips then
-	-- 	return
-	-- end
+	local hasSkips = state.skips.amount > 0
+	if not hasSkips then
+		return
+	end
 
 	local currentStage = state.stage
 	local maxStage = StagesConfig.GetTotalStages()
