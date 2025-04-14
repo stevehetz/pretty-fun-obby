@@ -18,7 +18,9 @@ end)
 
 function Shared.GiveTool(player: Player, tool: StoreConfig.GamepassName)
 	local state = PlayerDataService.GetState(player)
-	if not state then return end
+	if not state then
+		return
+	end
 
 	local ownsTool = StoreConfig.DoesPlayerOwnGamepass(state, tool)
 	if not ownsTool then
@@ -26,7 +28,9 @@ function Shared.GiveTool(player: Player, tool: StoreConfig.GamepassName)
 	end
 
 	local backpack = player.Backpack or player:WaitForChild("Backpack")
-	if not backpack then return end
+	if not backpack then
+		return
+	end
 
 	local clone = ReplicatedStorage.Tools[tool]:Clone()
 	clone.Parent = backpack
