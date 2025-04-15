@@ -25,15 +25,23 @@ function Shared.OnStart()
 end
 
 function Shared.RestartPlayer(player: Player)
+	print("Restarting player")
 	local playerState = PlayerDataService.GetState(player)
 	if not playerState then
 		return
 	end
-	local action: PlayerDataService.UpdateStateAction = {
-		type = "UpdateStage",
-		amount = -playerState.stage,
-	}
-	PlayerDataService.UpdateState(player, action)
+
+	print(playerState)
+	local stage = playerState.stage
+
+	if stage > 0 then
+		local action: PlayerDataService.UpdateStateAction = {
+			type = "UpdateStage",
+			amount = -stage,
+		}
+		PlayerDataService.UpdateState(player, action)
+	end
+
 	Shared.RespawnPlayer(player)
 end
 

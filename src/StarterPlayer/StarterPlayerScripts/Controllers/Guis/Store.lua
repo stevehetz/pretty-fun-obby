@@ -21,22 +21,21 @@ function Shared.OnStart()
 		local isSubscription = action.type == "UpdateVip"
 		local isGamepass = action.type == "UpdateGamepass"
 		if isSubscription then
-			Local.UpdateButton(StoreConfig.Store.Subscriptions[1].Id, action.value)
+			-- Local.UpdateButton(StoreConfig.Store.Subscriptions[1].Id, action.value)
 		elseif isGamepass then
 			Local.UpdateButton(action.gamepassId, action.value)
 		end
-
 	end)
 end
 
 function Local.GenerateStore()
-	 for _, info in StoreConfig.Store.Gamepasses do
+	for _, info in StoreConfig.Store.Gamepasses do
 		Local.SetupButton(info, true)
-	 end
+	end
 
-	 for _, info in StoreConfig.Store.Subscriptions do
-		Local.SetupButton(info, false)
-	 end
+	for _, info in StoreConfig.Store.Subscriptions do
+		-- Local.SetupButton(info, false)
+	end
 end
 
 function Local.UpdateButton(id: string, isPurchased: boolean)
@@ -49,7 +48,9 @@ end
 
 function Local.SetupButton(info: StoreConfig.StoreItemInfo, isGamepass: boolean?)
 	local button: TextButton = Frame:FindFirstChild(info.Name:gsub(" ", ""))
-	if not button then return end
+	if not button then
+		return
+	end
 
 	local state = StateController.GetState()
 	local isOwned = if isGamepass then StoreConfig.DoesPlayerOwnGamepass(state, info.Id) else state.vip

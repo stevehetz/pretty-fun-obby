@@ -12,6 +12,7 @@ export type PlayerData = {
 	gamepasses: {
 		[string]: boolean,
 	},
+	finishes: number,
 }
 
 local SettingsData = {}
@@ -33,6 +34,7 @@ local DEFAULT_PLAYER_DATA: PlayerData = {
 	},
 	vip = false,
 	gamepasses = GamepassesData,
+	finishes = 0,
 }
 
 local Shared = {}

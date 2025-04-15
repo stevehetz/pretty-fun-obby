@@ -1,7 +1,7 @@
 local MarketPlaceService = game:GetService("MarketplaceService")
 local RunService = game:GetService("RunService")
 
-export type GamepassName = "Gravity Coil" | "Speed Coil"
+export type GamepassName = "Gravity Coil" | "Speed Coil" | "Double Jump"
 
 export type StoreItemInfo = {
 	Id: number | string, -- EXP-337322008051974488
@@ -17,10 +17,13 @@ local Shared = {}
 Shared.Store = {
 	Gamepasses = {
 		{
-			Id = 1157798560,
+			Id = 1157798560, -- Gravity Coil
 		},
 		{
-			Id = 1157906298,
+			Id = 1157906298, -- Speed Coil
+		},
+		{
+			Id = 1160545563, -- Double Jump
 		},
 	},
 

@@ -60,6 +60,10 @@ function Shared.UpdateState(player: Player, action: UpdateState.UpdateStateActio
 		player.leaderstats.Stage.Value += action.amount
 	end
 
+	if action.type == "UpdateFinishes" then
+		player.leaderstats.Finishes.Value += action.amount
+	end
+
 	UpdateState(profile.Data, action)
 	Remotes.UpdateData:FireClient(player, action)
 end
@@ -77,9 +81,9 @@ function Local.CreateLeaderstats(player: Player)
 	stage.Name = "Stage"
 	stage.Value = state.stage
 
-	-- local death = Instance.new("NumberValue", leaderstats)
-	-- death.Name = "Deaths"
-	-- death.Value = state.deaths
+	local finishes = Instance.new("NumberValue", leaderstats)
+	finishes.Name = "Finishes"
+	finishes.Value = state.finishes
 end
 
 function Local.CreateProfile(player: Player)

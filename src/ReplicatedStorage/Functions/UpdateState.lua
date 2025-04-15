@@ -27,6 +27,9 @@ export type UpdateStateAction = {
 	type: "UpdateGamepass",
 	value: boolean,
 	gamepassId: string,
+} | {
+	type: "UpdateFinishes",
+	amount: number,
 }
 
 return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
@@ -48,5 +51,9 @@ return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
 		playerData.vip = action.value
 	elseif action.type == "UpdateGamepass" then
 		playerData.gamepasses[tostring(action.gamepassId)] = action.value
+	elseif action.type == "UpdateFinishes" then
+		playerData.finishes += action.amount
+	else
+		error("Invalid action type: " .. tostring(action.type))
 	end
 end

@@ -38,6 +38,13 @@ function Local.SetupPortal()
 					if not isLastStage then
 						return false
 					end
+
+					local action = {
+						type = "UpdateFinishes",
+						amount = 1,
+					}
+					PlayerDataService.UpdateState(player, action)
+
 					RebirthService.Rebirth(player)
 				end
 			end)
