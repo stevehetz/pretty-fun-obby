@@ -21,9 +21,6 @@ export type UpdateStateAction = {
 } | {
 	type: "UseSkip",
 } | {
-	type: "Rebirth",
-	amount: number?,
-} | {
 	type: "UpdateVip",
 	value: boolean,
 } | {
@@ -37,8 +34,6 @@ return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
 		playerData.stage += action.amount
 	elseif action.type == "UpdateDeaths" then
 		playerData.deaths += action.amount
-	elseif action.type == "Rebirth" then
-		playerData.rebirths += action.amount or 1
 	elseif action.type == "UpdateSetting" then
 		playerData.settings[action.setting] = action.value
 	elseif action.type == "EarnSkip" then

@@ -11,7 +11,7 @@ local Local = {}
 local Shared = {}
 
 function Shared.OnStart()
-	PlayerDataService.ProfileLoaded.Event:Connect(Shared.RespawnPlayer)
+	PlayerDataService.ProfileLoaded.Event:Connect(Shared.RestartPlayer)
 	Remotes.Respawn.OnServerEvent:Connect(function(player: Player, isDeath: boolean)
 		if isDeath then
 			local action: PlayerDataService.UpdateStateAction = {
@@ -22,6 +22,19 @@ function Shared.OnStart()
 		end
 		Shared.RespawnPlayer()
 	end)
+end
+
+function Shared.RestartPlayer(player: Player)
+	local playerState = PlayerDataService.GetState(player)
+	if not playerState then
+		return
+	end
+	local action: PlayerDataService.UpdateStateAction = {
+		type = "UpdateStage",
+		amount = -playerState.stage,
+	}
+	PlayerDataService.UpdateState(player, action)
+	Shared.RespawnPlayer(player)
 end
 
 function Shared.RespawnPlayer(player: Player)

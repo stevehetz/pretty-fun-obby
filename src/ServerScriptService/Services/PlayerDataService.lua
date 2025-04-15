@@ -33,8 +33,8 @@ function Shared.OnStart()
 		end
 	end)
 	Players.PlayerAdded:Connect(Local.CreateProfile)
-	Players.PlayerRemoving:Connect(Local.RemoveProfiile)
-	
+	Players.PlayerRemoving:Connect(Local.RemoveProfile)
+
 	for _, player in Players:GetPlayers() do
 		Local.CreateProfile(player)
 	end
@@ -43,27 +43,23 @@ end
 function Shared.GetState(player: Player)
 	local profile = Profiles[player]
 	if profile then
+		-- profile.Data.skips.amount = 200
 		return profile.Data
 	end
-	
+
 	return nil
 end
 
 function Shared.UpdateState(player: Player, action: UpdateState.UpdateStateAction)
 	local profile = Profiles[player]
-	if not profile then return end
-	
+	if not profile then
+		return
+	end
+
 	if action.type == "UpdateStage" then
 		player.leaderstats.Stage.Value += action.amount
-	elseif action.type == "Rebirth" then
-		player.leaderstats.Rebirths.Value += action.amount or 1
-	elseif action.type == "UpdateDeaths" then
-		player.leaderstats.Deaths.Value += action.amount
 	end
-	
-	
-	
-	
+
 	UpdateState(profile.Data, action)
 	Remotes.UpdateData:FireClient(player, action)
 end
@@ -73,49 +69,45 @@ function Local.CreateLeaderstats(player: Player)
 	if not state then
 		return
 	end
-	
+
 	local leaderstats = Instance.new("Folder", player)
 	leaderstats.Name = "leaderstats"
-	
+
 	local stage = Instance.new("NumberValue", leaderstats)
 	stage.Name = "Stage"
 	stage.Value = state.stage
-	
-	local rebirths = Instance.new("NumberValue", leaderstats)
-	rebirths.Name = "Rebirths"
-	rebirths.Value = state.rebirths
 
-	local death = Instance.new("NumberValue", leaderstats)
-	death.Name = "Deaths"
-	death.Value = state.deaths
+	-- local death = Instance.new("NumberValue", leaderstats)
+	-- death.Name = "Deaths"
+	-- death.Value = state.deaths
 end
 
 function Local.CreateProfile(player: Player)
 	local userId = player.UserId
 	local profileKey = `{userId}_Data`
 	local profile = ProfileStore:LoadProfileAsync(profileKey)
-	
+
 	if not profile then
 		player:Kick("Unable to load your player data.")
 		return
 	end
-	
+
 	profile:ListenToRelease(function()
 		Profiles[player] = nil
 		player:Kick()
 	end)
-	
+
 	profile:AddUserId(userId)
 	profile:Reconcile()
-	
+
 	Profiles[player] = profile
 	Local.CreateLeaderstats(player)
 	Shared.ProfileLoaded:Fire(player)
-	
+
 	Remotes.SetData:FireClient(player, profile.Data)
 end
 
-function Local.RemoveProfiile(player: Player)
+function Local.RemoveProfile(player: Player)
 	local profile = Profiles[player]
 	if profile then
 		profile:Release()

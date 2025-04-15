@@ -3,7 +3,7 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local StateController = require(script.Parent.StateController)
-local GuiController = require(script.Parent.GuiController)	
+local GuiController = require(script.Parent.GuiController)
 local StagesConfig = require(ReplicatedStorage.Configs.Stages)
 
 local Gui = GuiController.BillboardGuis.StageArrow
@@ -14,12 +14,14 @@ local Shared = {}
 Local.ActiveGui = nil
 
 function Shared.OnStart()
-	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction, state: StateController.PlayerData)
-		if action.type == "UpdateStage" then
-			Local.DisplayArrow()
-			Local.HighlightPart(state.stage)
+	StateController.UpdateState.Event:Connect(
+		function(action: StateController.UpdateStateAction, state: StateController.PlayerData)
+			if action.type == "UpdateStage" then
+				Local.DisplayArrow()
+				Local.HighlightPart(state.stage)
+			end
 		end
-	end)
+	)
 
 	Local.DisplayArrow()
 end
@@ -45,6 +47,10 @@ end
 
 function Local.DisplayArrow()
 	local nextStage = StateController.GetState().stage + 1
+
+	if nextStage > StagesConfig.GetTotalStages() then
+		return
+	end
 
 	local spawnLocation = StagesConfig.GetSpawnlocation(nextStage)
 	if not spawnLocation then

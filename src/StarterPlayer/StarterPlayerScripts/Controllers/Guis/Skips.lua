@@ -3,8 +3,8 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local StoreConfig = require(ReplicatedStorage.Configs.Store)
-local GuiController = require(script.Parent.Parent.Parent.GuiController)
-local StateController = require(script.Parent.Parent.Parent.StateController)
+local GuiController = require(script.Parent.Parent.GuiController)
+local StateController = require(script.Parent.Parent.StateController)
 local Remotes = ReplicatedStorage.Remotes
 
 local Gui = GuiController.Guis.Skips

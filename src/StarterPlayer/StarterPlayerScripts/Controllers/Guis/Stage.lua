@@ -4,8 +4,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Player = Players.LocalPlayer
 
 local SoundsConfig = require(ReplicatedStorage.Configs.Sounds)
-local GuiController = require(script.Parent.Parent.Parent.GuiController)
-local StateController = require(script.Parent.Parent.Parent.StateController)
+local GuiController = require(script.Parent.Parent.GuiController)
+local StateController = require(script.Parent.Parent.StateController)
 local StagesConfig = require(ReplicatedStorage.Configs.Stages)
 
 local Gui = GuiController.Guis.Top
@@ -18,30 +18,31 @@ local Shared = {}
 
 function Shared.OnStart()
 	Local.UpdateProgress()
-	
-	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction, state: StateController.PlayerData)
-		if action.type == "UpdateStage" then
-			Local.UpdateProgress()
 
-			local hasStageIncreasaed = action.amount > 0
-			if hasStageIncreasaed then
-				local currentStage = state.stage
-				local spawnLocation = StagesConfig.GetSpawnlocation(currentStage)
-				SoundsConfig.PlaySound("Checkpoint", spawnLocation)
+	StateController.UpdateState.Event:Connect(
+		function(action: StateController.UpdateStateAction, state: StateController.PlayerData)
+			if action.type == "UpdateStage" then
+				Local.UpdateProgress()
+
+				local hasStageIncreasaed = action.amount > 0
+				if hasStageIncreasaed then
+					local currentStage = state.stage
+					local spawnLocation = StagesConfig.GetSpawnlocation(currentStage)
+					SoundsConfig.PlaySound("Checkpoint", spawnLocation)
+				end
 			end
 		end
-	end)
+	)
 end
 
 function Local.UpdateProgress()
 	local currentStage = StateController.GetState().stage
 	local totalStages = StagesConfig.GetTotalStages()
 	local progressPercent = currentStage / totalStages
-	
+
 	local progressText = STAGE_TEXT:gsub("AMOUNT", currentStage)
 	progressText = progressText:gsub("PERCENT", math.floor(progressPercent * 100))
 	GuiController.HandleProgressBar(ProgressBar, progressPercent, progressText)
 end
-
 
 return Shared

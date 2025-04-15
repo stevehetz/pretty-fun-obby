@@ -1,9 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local PlayerDataService = require(script.Parent.PlayerDataService)
 local RespawnService = require(script.Parent.RespawnService)
-local BadgesConfig = require(ReplicatedStorage.Configs.Badges)
-local StagesConfig = require(ReplicatedStorage.Configs.Stages)
 local Remotes = ReplicatedStorage.Remotes
 
 local Local = {}
@@ -14,33 +11,7 @@ function Shared.OnStart()
 end
 
 function Shared.Rebirth(player: Player)
-	local state = PlayerDataService.GetState(player)
-	if not state then
-		return
-	end
-
-	local currentStage = state.stage
-	local maxStage = StagesConfig.GetTotalStages()
-	-- local isAtMaxStage = currentStage >= maxStage
-	-- if not isAtMaxStage then
-	-- 	return
-	-- end
-
-	local isVip = state.vip
-	local rebirthAction: PlayerDataService.UpdateStateAction = {
-		type = "Rebirth",
-		amount = if isVip then 2 else 1
-	}
-
-	local stageAction: PlayerDataService.UpdateStateAction = {
-		type = "UpdateStage",
-		amount = -currentStage + 1
-	}
-
-	PlayerDataService.UpdateState(player, rebirthAction)
-	PlayerDataService.UpdateState(player, stageAction)
-	RespawnService.RespawnPlayer(player)
-	BadgesConfig.RewardBadge(player, "Rebirth")
+	RespawnService.RestartPlayer(player)
 end
 
 return Shared

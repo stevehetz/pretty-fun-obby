@@ -34,13 +34,12 @@ function Local.SetRespawnLocation()
 	local currentStage = StateController.GetState().stage
 	local spawnLocation = StagesConfig.GetSpawnlocation(currentStage)
 	Player.RespawnLocation = spawnLocation
-	if currentStage == 1 then
+	if currentStage == 0 then
 		local character = Player.Character or Player.CharacterAdded:Wait()
 		if character then
 			Shared.RespawnPlayer(character, false)
 		end
 	end
-
 end
 
 function Shared.RespawnPlayer(character: Model, isDeath: boolean)

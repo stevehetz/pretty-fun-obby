@@ -4,7 +4,6 @@ local StoreConfig = require(script.Parent.Configs.Store)
 export type PlayerData = {
 	stage: number,
 	deaths: number,
-	rebirths: number,
 	settings: { [SettingsConfig.Setting]: boolean },
 	skips: {
 		amount: number,
@@ -26,9 +25,8 @@ for _, gamepassInfo in StoreConfig.Store.Gamepasses do
 end
 
 local DEFAULT_PLAYER_DATA: PlayerData = {
-	stage = 1,
+	stage = 0,
 	deaths = 0,
-	rebirths = 0,
 	settings = SettingsData,
 	skips = {
 		amount = 0,

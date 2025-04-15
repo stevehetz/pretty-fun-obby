@@ -5,7 +5,7 @@ local Shared = {}
 
 function Shared.GetTotalStages()
 	local children = Workspace.Stages:GetChildren()
-	return #children -- returns count of children
+	return #children - 1 -- returns count of children
 end
 
 function Shared.GetSpawnlocation(stage: number)
