@@ -22,6 +22,8 @@ function Shared.PointCamera(character)
 
 	camera.CameraType = Enum.CameraType.Scriptable
 	camera.CFrame = newCameraCFrame
+
+	task.wait(0.1)
 	camera.CameraType = Enum.CameraType.Custom
 end
 

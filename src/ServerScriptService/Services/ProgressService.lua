@@ -70,12 +70,12 @@ function Shared.TouchCheckpoint(player: Player, checkpoint: SpawnLocation)
 	player.RespawnLocation = checkpoint
 
 	-- Award badge after all other operations are complete
-	local is10thStage = newStage % 10 == 0
-	if is10thStage then
-		task.spawn(function() -- Run in a separate thread to prevent any blocking
-			BadgesConfig.RewardBadge(player, "Stage 10")
-		end)
-	end
+	-- local is10thStage = newStage % 10 == 0
+	-- if is10thStage then
+	-- 	task.spawn(function() -- Run in a separate thread to prevent any blocking
+	-- 		BadgesConfig.RewardBadge(player, "Stage 10")
+	-- 	end)
+	-- end
 
 	-- Maintain a longer debounce for extra safety
 	-- task.delay(2, function()
