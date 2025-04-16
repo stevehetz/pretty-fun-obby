@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Player = Players.LocalPlayer
 
 local StateController = require(script.Parent.StateController)
+local CameraController = require(script.Parent.CameraController)
 local StagesConfig = require(ReplicatedStorage.Configs.Stages)
 local Remotes = ReplicatedStorage.Remotes
 
@@ -62,6 +63,8 @@ function Shared.RespawnPlayer(character: Model, isDeath: boolean)
 		if distanceBetween < 5 then
 			hasTeleported = true
 		end
+
+		CameraController.PointCamera(character)
 
 		task.wait(0.01)
 	end

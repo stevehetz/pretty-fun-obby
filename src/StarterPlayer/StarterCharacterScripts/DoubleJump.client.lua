@@ -113,10 +113,8 @@ function SetState()
 
 	-- Check if the gamepass exists by ID (1160545563 from Store.lua)
 	if state.gamepasses[tostring(doubleJumpGamePassId)] then
-		print("Double Jump gamepass found, enabling double jump")
 		hasDoubleJump = true
 	else
-		print("Double Jump gamepass not found, disabling double jump")
 		hasDoubleJump = false
 	end
 end

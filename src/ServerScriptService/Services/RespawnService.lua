@@ -1,13 +1,10 @@
-local Players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
-local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local PlayerDataService = require(ServerScriptService.Services.PlayerDataService)
 local StagesConfig = require(ReplicatedStorage.Configs.Stages)
 local Remotes = ReplicatedStorage.Remotes
 
-local Local = {}
 local Shared = {}
 
 function Shared.OnStart()
@@ -25,13 +22,11 @@ function Shared.OnStart()
 end
 
 function Shared.RestartPlayer(player: Player)
-	print("Restarting player")
 	local playerState = PlayerDataService.GetState(player)
 	if not playerState then
 		return
 	end
 
-	print(playerState)
 	local stage = playerState.stage
 
 	if stage > 0 then
@@ -41,6 +36,12 @@ function Shared.RestartPlayer(player: Player)
 		}
 		PlayerDataService.UpdateState(player, action)
 	end
+
+	-- local action: PlayerDataService.UpdateStateAction = {
+	-- 	type = "UpdateStage",
+	-- 	amount = 35,
+	-- }
+	-- PlayerDataService.UpdateState(player, action)
 
 	Shared.RespawnPlayer(player)
 end
