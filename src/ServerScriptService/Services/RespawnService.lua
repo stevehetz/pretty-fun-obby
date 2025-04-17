@@ -8,7 +8,7 @@ local Remotes = ReplicatedStorage.Remotes
 local Shared = {}
 
 function Shared.OnStart()
-	PlayerDataService.ProfileLoaded.Event:Connect(Shared.RestartPlayer)
+	PlayerDataService.ProfileLoaded.Event:Connect(Shared.RespawnPlayer)
 	Remotes.Respawn.OnServerEvent:Connect(function(player: Player, isDeath: boolean)
 		if isDeath then
 			local action: PlayerDataService.UpdateStateAction = {
