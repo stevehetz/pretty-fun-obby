@@ -15,10 +15,39 @@ local actual_viewport_size: Vector2? = nil
 
 local has_initialized = false
 
+-- Screen size thresholds and scaling parameters
+local SMALL_SCREEN_THRESHOLD = 900 -- Width or height below this is considered a small screen
+local MIN_SCALE_MULTIPLIER = 1.0 -- Minimum scaling multiplier (for large screens)
+local MAX_SCALE_MULTIPLIER = 1.75 -- Maximum scaling multiplier (for very small screens)
+
+-- Function to round to the nearest quarter (0.25) to reduce text blurriness
+local function roundToQuarter(num)
+	return math.floor(num * 4 + 0.5) / 4
+end
+
 local function rescale(scale_component: UIScale, base_resolution: Vector2)
 	assert(actual_viewport_size ~= nil)
-	scale_component.Scale = 1
+	local baseScale = 1
 		/ math.max(base_resolution.X / actual_viewport_size.X, base_resolution.Y / actual_viewport_size.Y)
+
+	-- Calculate additional scaling based on screen size
+	local smallestDimension = math.min(actual_viewport_size.X, actual_viewport_size.Y)
+	local scaleMultiplier = MIN_SCALE_MULTIPLIER
+
+	-- Apply discrete scaling steps as screen gets smaller
+	if smallestDimension < SMALL_SCREEN_THRESHOLD then
+		-- Calculate a scaling factor that increases as screen size decreases
+		local scaleFactor = (SMALL_SCREEN_THRESHOLD - smallestDimension) / SMALL_SCREEN_THRESHOLD
+
+		-- Calculate raw multiplier
+		local rawMultiplier = MIN_SCALE_MULTIPLIER + (MAX_SCALE_MULTIPLIER - MIN_SCALE_MULTIPLIER) * scaleFactor
+
+		-- Round to nearest quarter (0.25) to reduce blurriness
+		scaleMultiplier = roundToQuarter(rawMultiplier)
+	end
+
+	-- Round the final scale to reduce blurriness
+	scale_component.Scale = roundToQuarter(baseScale * scaleMultiplier)
 end
 
 local function rescale_all()
