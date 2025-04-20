@@ -13,7 +13,16 @@ export type PlayerData = {
 		[string]: boolean,
 	},
 	finishes: number,
+	teleporting: {
+		world: string,
+	},
+	currentWorld: string,
+	worldFinishes: {
+		[string]: number,
+	},
 }
+
+local Worlds = { "World1", "World2", "World3" }
 
 local SettingsData = {}
 for setting, value in SettingsConfig.Config do
@@ -23,6 +32,11 @@ end
 local GamepassesData = {}
 for _, gamepassInfo in StoreConfig.Store.Gamepasses do
 	GamepassesData[tostring(gamepassInfo.Id)] = false
+end
+
+local WorldFinishes = {}
+for _, world in ipairs(Worlds) do
+	WorldFinishes[world] = 0
 end
 
 local DEFAULT_PLAYER_DATA: PlayerData = {
@@ -35,6 +49,11 @@ local DEFAULT_PLAYER_DATA: PlayerData = {
 	vip = false,
 	gamepasses = GamepassesData,
 	finishes = 0,
+	teleporting = {
+		world = nil,
+	},
+	currentWorld = Worlds[1],
+	worldFinishes = WorldFinishes,
 }
 
 local Shared = {}

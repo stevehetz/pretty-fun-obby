@@ -2,79 +2,112 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Workspace = game:GetService("Workspace")
+local PlayerData = require(ReplicatedStorage.PlayerData)
 
+local WorldsConfig = require(ReplicatedStorage.Configs.Worlds)
 local TeleportService = game:GetService("TeleportService")
 local PlayerDataService = require(ServerScriptService.Services.PlayerDataService)
-local RebirthService = require(ServerScriptService.Services.RebirthService)
-local StagesConfig = require(ReplicatedStorage.Configs.Stages)
 local BadgesConfig = require(ReplicatedStorage.Configs.Badges)
-
-local checkpointDebounce = {}
-
-local PLACE_IDS = {
-	[1] = 139398903012255,
-	[2] = 71122824760185,
-}
 
 local Local = {}
 local Shared = {}
 
-function Shared.OnStart()
-	Local.SetupPortal()
+local playerDebounce = {}
 
-	-- Players.PlayerAdded:Connect(function(player: Player)
-	-- 	BadgesConfig.RewardBadge(player, "Pretty Fun Obby")
-	-- end)
+local disable = true
+
+function Shared.OnStart()
+	-- Add error handling for SetupPortal
+	local success, errorMsg = pcall(function()
+		Local.SetupPortal()
+	end)
+
+	if not success then
+		warn("WorldPortalService - Error in SetupPortal:", errorMsg)
+	end
 end
 
 function Local.SetupPortal()
+	-- Check if WorldPortals exists
+	if not Workspace:FindFirstChild("WorldPortals") then
+		warn("WorldPortalService - WorldPortals folder not found in Workspace")
+		return
+	end
+
 	for _, descendant in Workspace.WorldPortals:GetDescendants() do
 		if descendant.Name == "Inside" then
 			descendant.Touched:Connect(function(otherPart: BasePart)
+				if disable then
+					return
+				end
+
 				local player = Players:GetPlayerFromCharacter(otherPart.Parent)
 
-				if player then
-					-- the player must have completed all the stages
-					-- local state = PlayerDataService.GetState(player)
-					-- if not state then
-					-- 	return false
-					-- end
-					-- local playerStage = state.stage
-					-- local isLastStage = playerStage == StagesConfig.GetTotalStages()
-					-- if not isLastStage then
-					-- 	return false
-					-- end
+				if player and not playerDebounce[player.UserId] then
+					-- Set debounce for this player
+					playerDebounce[player.UserId] = true
 
-					-- local action = {
-					-- 	type = "UpdateFinishes",
-					-- 	amount = 1,
-					-- }
-					-- PlayerDataService.UpdateState(player, action)
-					-- local worldNumber = tonumber(descendant.Parent.Name)
-					-- if not worldNumber then
-					-- 	return
-					-- end
+					local worldName = descendant.Parent.Name
+					if not worldName then
+						playerDebounce[player.UserId] = nil -- Clear debounce if we exit early
+						return
+					end
 
-					-- local placeId = PLACE_IDS[worldNumber]
-					-- if not placeId then
-					-- 	return
-					-- end
+					local placeId = WorldsConfig.GetPlaceIdFromWorldName(worldName)
+					if not placeId then
+						playerDebounce[player.UserId] = nil -- Clear debounce if we exit early
+						return
+					end
 
-					-- local state = PlayerDataService.GetState(player)
-					-- if not state then
-					-- 	return
-					-- end
+					local state = PlayerDataService.GetState(player)
+					if not state then
+						playerDebounce[player.UserId] = nil -- Clear debounce if we exit early
+						return
+					end
 
-					-- local playerStage = state.stage
-					-- if playerStage > 0 then
-					-- 	local action = {
-					-- 		type = "UpdateStage",
-					-- 		amount = -playerStage,
-					-- 	}
-					-- 	PlayerDataService.UpdateState(player, action)
-					-- end
+					-- Freeze the player so they can't move
+					local character = player.Character
+					if character and character:FindFirstChild("Humanoid") then
+						local humanoid = character.Humanoid
+						-- Store original values to restore if teleport fails
+						playerDebounce[player.UserId] = {
+							active = true,
+							originalWalkSpeed = humanoid.WalkSpeed,
+							originalJumpHeight = humanoid.JumpHeight,
+						}
 
-					-- TeleportService:Teleport(placeId, player, { enteredWorld = worldNumber })
+						-- Freeze player movement
+						humanoid.WalkSpeed = 0
+						humanoid.JumpHeight = 0
+					end
+
+					local action = {
+						type = "UpdateTeleporting",
+						world = worldName,
+					}
+					PlayerDataService.UpdateState(player, action)
+
+					-- Attempt to teleport the player
+					TeleportService:Teleport(placeId, player, nil)
+
+					-- Reset the debounce after 3 seconds
+					-- This is needed in case teleport fails or player stays in range
+					task.delay(3, function()
+						if playerDebounce[player.UserId] then
+							local playerData = playerDebounce[player.UserId]
+							playerDebounce[player.UserId] = nil
+
+							-- If player is still in the game (teleport failed), unfreeze them
+							if player and player.Character and player.Character:FindFirstChild("Humanoid") then
+								local humanoid = player.Character.Humanoid
+								-- Reset to original values if teleport failed
+								if type(playerData) == "table" then
+									humanoid.WalkSpeed = playerData.originalWalkSpeed
+									humanoid.JumpHeight = playerData.originalJumpHeight or 7.2 -- Default from ToolsController
+								end
+							end
+						end
+					end)
 				end
 			end)
 		end

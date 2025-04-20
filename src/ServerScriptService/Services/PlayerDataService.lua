@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 
+local WorldsConfig = require(ReplicatedStorage.Configs.Worlds)
 local ProfileService = require(ServerScriptService.Libs.ProfileService)
 local DataTemplate = require(ReplicatedStorage.PlayerData)
 local UpdateState = require(ReplicatedStorage.Functions.UpdateState)
@@ -28,7 +29,9 @@ Shared.ProfileLoaded = Instance.new("BindableEvent")
 function Shared.OnStart()
 	Remotes.Start.OnServerEvent:Connect(function(player: Player)
 		local data = Shared.GetState(player)
+
 		if data then
+			Local.OnPlayerTeleport(player, data)
 			Remotes.SetData:FireClient(player, data)
 		end
 	end)
@@ -64,6 +67,11 @@ function Shared.UpdateState(player: Player, action: UpdateState.UpdateStateActio
 		player.leaderstats.Finishes.Value += action.amount
 	end
 
+	if action.type == "UpdateCurrentWorld" then
+		local displayName = WorldsConfig.GetDisplayNameFromWorldName(action.world)
+		player.leaderstats.CurrentWorld.Value = displayName or "World 1"
+	end
+
 	UpdateState(profile.Data, action)
 	Remotes.UpdateData:FireClient(player, action)
 end
@@ -84,6 +92,11 @@ function Local.CreateLeaderstats(player: Player)
 	local finishes = Instance.new("NumberValue", leaderstats)
 	finishes.Name = "Finishes"
 	finishes.Value = state.finishes
+
+	local currentWorld = Instance.new("StringValue", leaderstats)
+	currentWorld.Name = "CurrentWorld"
+	local displayName = WorldsConfig.GetDisplayNameFromWorldName(state.currentWorld)
+	currentWorld.Value = displayName or "World 1"
 end
 
 function Local.CreateProfile(player: Player)
@@ -108,6 +121,7 @@ function Local.CreateProfile(player: Player)
 	Local.CreateLeaderstats(player)
 	Shared.ProfileLoaded:Fire(player)
 
+	Local.OnPlayerTeleport(player, profile.Data)
 	Remotes.SetData:FireClient(player, profile.Data)
 end
 
@@ -115,6 +129,32 @@ function Local.RemoveProfile(player: Player)
 	local profile = Profiles[player]
 	if profile then
 		profile:Release()
+	end
+end
+
+function Local.OnPlayerTeleport(player: Player, state: DataTemplate.PlayerData)
+	print("OnPlayerTeleport: ", player.Name)
+	if state and state.teleporting.world then
+		print("Teleporting player: ", player.Name, " to world: ", state.teleporting.world)
+		local action = {
+			type = "UpdateCurrentWorld",
+			world = state.teleporting.world,
+		}
+		Shared.UpdateState(player, action)
+
+		local action = {
+			type = "UpdateTeleporting",
+			world = nil,
+		}
+		Shared.UpdateState(player, action)
+
+		if state.stage > 0 then
+			local action = {
+				type = "UpdateStage",
+				amount = -state.stage,
+			}
+			Shared.UpdateState(player, action)
+		end
 	end
 end
 

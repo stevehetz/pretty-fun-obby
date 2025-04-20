@@ -30,6 +30,16 @@ export type UpdateStateAction = {
 } | {
 	type: "UpdateFinishes",
 	amount: number,
+} | {
+	type: "UpdateWorldFinishes",
+	world: string,
+	amount: number,
+} | {
+	type: "UpdateTeleporting",
+	world: string,
+} | {
+	type: "UpdateCurrentWorld",
+	world: string,
 }
 
 return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
@@ -53,6 +63,16 @@ return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
 		playerData.gamepasses[tostring(action.gamepassId)] = action.value
 	elseif action.type == "UpdateFinishes" then
 		playerData.finishes += action.amount
+	elseif action.type == "UpdateWorldFinishes" then
+		if playerData.worldFinishes[action.world] == nil then
+			playerData.worldFinishes[action.world] = 0
+		end
+		playerData.worldFinishes[action.world] += action.amount
+	elseif action.type == "UpdateTeleporting" then
+		print("UpdateTeleporting", action.world)
+		playerData.teleporting.world = action.world
+	elseif action.type == "UpdateCurrentWorld" then
+		playerData.currentWorld = action.world
 	else
 		error("Invalid action type: " .. tostring(action.type))
 	end
