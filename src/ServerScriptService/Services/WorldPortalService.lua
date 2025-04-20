@@ -84,6 +84,7 @@ function Local.SetupPortal()
 					local action = {
 						type = "UpdateTeleporting",
 						world = worldName,
+						origin = "Portal",
 					}
 					PlayerDataService.UpdateState(player, action)
 

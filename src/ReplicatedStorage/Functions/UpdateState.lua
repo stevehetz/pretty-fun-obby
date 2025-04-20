@@ -37,6 +37,7 @@ export type UpdateStateAction = {
 } | {
 	type: "UpdateTeleporting",
 	world: string,
+	origin: "Portal" | "Join" | nil,
 } | {
 	type: "UpdateCurrentWorld",
 	world: string,
@@ -69,8 +70,8 @@ return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
 		end
 		playerData.worldFinishes[action.world] += action.amount
 	elseif action.type == "UpdateTeleporting" then
-		print("UpdateTeleporting", action.world)
 		playerData.teleporting.world = action.world
+		playerData.teleporting.origin = action.origin
 	elseif action.type == "UpdateCurrentWorld" then
 		playerData.currentWorld = action.world
 	else

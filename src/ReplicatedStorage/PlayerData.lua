@@ -51,6 +51,7 @@ local DEFAULT_PLAYER_DATA: PlayerData = {
 	finishes = 0,
 	teleporting = {
 		world = nil,
+		origin = nil,
 	},
 	currentWorld = Worlds[1],
 	worldFinishes = WorldFinishes,
