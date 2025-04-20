@@ -8,6 +8,7 @@ local WorldsConfig = require(ReplicatedStorage.Configs.Worlds)
 local ProfileService = require(ServerScriptService.Libs.ProfileService)
 local DataTemplate = require(ReplicatedStorage.PlayerData)
 local UpdateState = require(ReplicatedStorage.Functions.UpdateState)
+-- local WorldPortalService = require(ServerScriptService.Services.WorldPortalService)
 local Remotes = ReplicatedStorage.Remotes.PlayerData
 
 export type UpdateStateAction = UpdateState.UpdateStateAction
@@ -32,12 +33,21 @@ function Shared.OnStart()
 		local data = Shared.GetState(player)
 
 		if data then
-			Local.HandleWorldTeleport(player, data)
+			-- Local.HandleWorldTeleport(player, data)
 			Remotes.SetData:FireClient(player, data)
 		end
 	end)
+
 	Players.PlayerAdded:Connect(Local.CreateProfile)
+
 	Players.PlayerRemoving:Connect(Local.RemoveProfile)
+
+	-- WorldPortalService.HandleWorldTeleportComplete.Event:Connect(function(player: Player)
+	-- 	print("HandleWorldTeleportComplete: ", player.Name)
+	-- 	Local.CreateLeaderstats(player)
+	-- 	Shared.ProfileLoaded:Fire(player)
+	-- 	Remotes.SetData:FireClient(player)
+	-- end)
 
 	for _, player in Players:GetPlayers() do
 		Local.CreateProfile(player)
@@ -119,91 +129,21 @@ function Local.CreateProfile(player: Player)
 	profile:Reconcile()
 
 	Profiles[player] = profile
+	print("Profile loaded: ", player.Name, profile.Data)
+
 	Local.CreateLeaderstats(player)
 	Shared.ProfileLoaded:Fire(player)
+	Remotes.SetData:FireClient(player)
 
-	Local.HandleWorldTeleport(player, profile.Data)
-	Remotes.SetData:FireClient(player, profile.Data)
+	-- task.wait(1)
+
+	-- WorldPortalService.HandleWorldTeleport(player, profile.Data)
 end
 
 function Local.RemoveProfile(player: Player)
 	local profile = Profiles[player]
 	if profile then
 		profile:Release()
-	end
-end
-
-Local.HandleWorldTeleport = function(player: Player, state: DataTemplate.PlayerData)
-	print("HandleWorldTeleport: ", player.Name)
-	if not state then
-		return
-	end
-
-	-- Player is just joinging the game, restart them where the left off
-	if state.teleporting.world == nil then
-		print("Player is just joining the game")
-
-		local placeId = WorldsConfig.GetPlaceIdFromWorldName(state.currentWorld)
-		if not placeId then
-			warn("WorldPortalService - Unable to get placeId from world name")
-			return
-		end
-
-		local action = {
-			type = "UpdateTeleporting",
-			world = state.currentWorld,
-			origin = "Join",
-		}
-		Shared.UpdateState(player, action)
-
-		-- Attempt to teleport the player
-		TeleportService:Teleport(placeId, player, nil)
-
-		return
-	end
-
-	-- Player was teleported from joining the game
-	if state.teleporting.origin == "Join" then
-		print("Player was teleported from joining the game")
-		local action = {
-			type = "UpdateTeleporting",
-			world = nil,
-			origin = nil,
-		}
-		Shared.UpdateState(player, action)
-		return
-	end
-
-	-- Player was teleported from portal
-	if state.teleporting.origin then
-		Local.OnPlayerTeleportFromPortal(player, state)
-		return
-	end
-end
-
-function Local.OnPlayerTeleportFromPortal(player: Player, state: DataTemplate.PlayerData)
-	print("OnPlayerTeleport: ", player.Name)
-	if state and state.teleporting.world then
-		print("Teleporting player: ", player.Name, " to world: ", state.teleporting.world)
-		local action = {
-			type = "UpdateCurrentWorld",
-			world = state.teleporting.world,
-		}
-		Shared.UpdateState(player, action)
-
-		local action = {
-			type = "UpdateTeleporting",
-			world = nil,
-		}
-		Shared.UpdateState(player, action)
-
-		if state.stage > 0 then
-			local action = {
-				type = "UpdateStage",
-				amount = -state.stage,
-			}
-			Shared.UpdateState(player, action)
-		end
 	end
 end
 

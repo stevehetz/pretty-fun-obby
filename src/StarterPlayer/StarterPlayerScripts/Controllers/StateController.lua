@@ -19,6 +19,7 @@ function Shared.OnStart()
 	end)
 
 	Remotes.UpdateData.OnClientEvent:Connect(function(action: UpdateState.UpdateStateAction)
+		print("UpdateData: ", action.type)
 		if not State then
 			return
 		end

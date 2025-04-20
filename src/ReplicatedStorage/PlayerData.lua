@@ -14,7 +14,8 @@ export type PlayerData = {
 	},
 	finishes: number,
 	teleporting: {
-		world: string,
+		world: string?,
+		origin: string?,
 	},
 	currentWorld: string,
 	worldFinishes: {
