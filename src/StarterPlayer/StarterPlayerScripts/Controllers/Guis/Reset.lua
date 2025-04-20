@@ -18,28 +18,28 @@ local Shared = {}
 
 function Shared.OnStart()
 	Button.MouseButton1Click:Connect(Local.Reset)
-	UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEvent: boolean)
-		if gameProcessedEvent then
-			return
-		end
+	-- UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEvent: boolean)
+	-- 	if gameProcessedEvent then
+	-- 		return
+	-- 	end
 
-		local isResetButton = input.KeyCode == Enum.KeyCode.ButtonY or input.KeyCode == Enum.KeyCode.R
-		if isResetButton then
-			Local.Reset()
-		end
-	end)
+	-- 	local isResetButton = input.KeyCode == Enum.KeyCode.ButtonY or input.KeyCode == Enum.KeyCode.R
+	-- 	if isResetButton then
+	-- 		Local.Reset()
+	-- 	end
+	-- end)
 
-	UserInputService.LastInputTypeChanged:Connect(function(lastInputType: Enum.UserInputType)
-		local isMouseKeyboard = lastInputType == Enum.UserInputType.MouseButton1
-			or lastInputType == Enum.UserInputType.Keyboard
-		local isGamePad = lastInputType == Enum.UserInputType.Gamepad1
+	-- UserInputService.LastInputTypeChanged:Connect(function(lastInputType: Enum.UserInputType)
+	-- 	local isMouseKeyboard = lastInputType == Enum.UserInputType.MouseButton1
+	-- 		or lastInputType == Enum.UserInputType.Keyboard
+	-- 	local isGamePad = lastInputType == Enum.UserInputType.Gamepad1
 
-		if isMouseKeyboard then
-			Button.Title.Text = BUTTON_TEXT:gsub("REPLACE", "R")
-		elseif isGamePad then
-			Button.Title.Text = BUTTON_TEXT:gsub("REPLACE", "Y")
-		end
-	end)
+	-- 	if isMouseKeyboard then
+	-- 		Button.Title.Text = BUTTON_TEXT:gsub("REPLACE", "R")
+	-- 	elseif isGamePad then
+	-- 		Button.Title.Text = BUTTON_TEXT:gsub("REPLACE", "Y")
+	-- 	end
+	-- end)
 end
 
 function Local.Reset()
