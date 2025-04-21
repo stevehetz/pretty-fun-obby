@@ -1,23 +1,22 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ServerScriptService = game:GetService("ServerScriptService")
 local Workspace = game:GetService("Workspace")
-local PlayerData = require(ReplicatedStorage.PlayerData)
-
-local WorldsConfig = require(ReplicatedStorage.Configs.Worlds)
 local TeleportService = game:GetService("TeleportService")
-local UpdateState = require(ReplicatedStorage.Functions.UpdateState)
-local BadgesConfig = require(ReplicatedStorage.Configs.Badges)
+
 local PlayerData = require(ReplicatedStorage.PlayerData)
+local WorldsConfig = require(ReplicatedStorage.Configs.Worlds)
+local UpdateState = require(ReplicatedStorage.Functions.UpdateState)
+local StagesConfig = require(ReplicatedStorage.Configs.Stages)
 
 local Local = {}
 local Shared = {}
 
 local playerDebounce = {}
 
-local disable = false
+local disable = true
 
 Shared.HandleWorldTeleportComplete = Instance.new("BindableEvent")
+Shared.HandleRebirth = Instance.new("BindableEvent")
 
 -- Scenarios (the below function is called for all of these)
 -- 1. Player is just joining the game, they are on world 1, no need to teleport
@@ -136,7 +135,7 @@ function Local.SetLeaderboardWorld(player: Player, worldName: string)
 	end
 end
 
-function Shared.SetupPortal(state: PlayerData.PlayerData)
+function Shared.SetupPortals(state: PlayerData.PlayerData)
 	print("WorldPortalService - SetupPortal")
 	-- Check if WorldPortals exists
 	if not Workspace:FindFirstChild("WorldPortals") then
@@ -144,18 +143,30 @@ function Shared.SetupPortal(state: PlayerData.PlayerData)
 		return
 	end
 
-	for _, descendant in Workspace.WorldPortals:GetDescendants() do
+	-- End Portal at end of worlds
+	for _, descendant in Workspace.EndPortal:GetDescendants() do
 		if descendant.Name == "Inside" then
 			descendant.Touched:Connect(function(otherPart: BasePart)
+				local player = Players:GetPlayerFromCharacter(otherPart.Parent)
+
+				-- New, Enable when ready and disable PortalService file
 				if disable then
 					return
 				end
 
-				local player = Players:GetPlayerFromCharacter(otherPart.Parent)
-
 				if player and not playerDebounce[player.UserId] then
-					-- Set debounce for this player
-					playerDebounce[player.UserId] = true
+					local playerStage = state.stage
+					local isLastStage = playerStage == StagesConfig.GetTotalStages()
+					if not isLastStage then
+						print("WorldPortalService - Player is not on the last stage - don't teleport")
+						return false
+					end
+
+					local action = {
+						type = "UpdateFinishes",
+						amount = 1,
+					}
+					UpdateState(state, action)
 
 					local worldName = descendant.Parent.Name
 					if not worldName then
@@ -163,66 +174,97 @@ function Shared.SetupPortal(state: PlayerData.PlayerData)
 						return
 					end
 
-					local placeId = WorldsConfig.GetPlaceIdFromWorldName(worldName)
-					if not placeId then
-						playerDebounce[player.UserId] = nil -- Clear debounce if we exit early
-						return
-					end
-
-					-- Freeze the player so they can't move
-					local character = player.Character
-					if character and character:FindFirstChild("Humanoid") then
-						local humanoid = character.Humanoid
-						-- Store original values to restore if teleport fails
-						playerDebounce[player.UserId] = {
-							active = true,
-							originalWalkSpeed = humanoid.WalkSpeed,
-							originalJumpHeight = humanoid.JumpHeight,
-						}
-
-						-- Freeze player movement
-						humanoid.WalkSpeed = 0
-						humanoid.JumpHeight = 0
-					end
-
-					local action = {
-						type = "UpdateTeleporting",
-						world = worldName,
-						origin = "Portal",
-					}
-					print("WorldPortalService - UpdateTeleporting State")
-					print(state.currentWorld)
-					UpdateState(state, action)
-
-					task.wait(1) -- Wait for a moment before teleporting
-
-					task.spawn(function()
-						-- Attempt to teleport the player
-						TeleportService:Teleport(placeId, player, nil)
-					end)
-
-					-- Reset the debounce after 3 seconds
-					-- This is needed in case teleport fails or player stays in range
-					task.delay(3, function()
-						if playerDebounce[player.UserId] then
-							local playerData = playerDebounce[player.UserId]
-							playerDebounce[player.UserId] = nil
-
-							-- If player is still in the game (teleport failed), unfreeze them
-							if player and player.Character and player.Character:FindFirstChild("Humanoid") then
-								local humanoid = player.Character.Humanoid
-								-- Reset to original values if teleport failed
-								if type(playerData) == "table" then
-									humanoid.WalkSpeed = playerData.originalWalkSpeed
-									humanoid.JumpHeight = playerData.originalJumpHeight or 7.2 -- Default from ToolsController
-								end
-							end
-						end
-					end)
+					Local.OnPortalTouched(player, state, worldName)
 				end
 			end)
 		end
 	end
+
+	-- World Portals at beginning of worlds
+	for _, descendant in Workspace.WorldPortals:GetDescendants() do
+		if descendant.Name == "Inside" then
+			descendant.Touched:Connect(function(otherPart: BasePart)
+				-- New, enable when ready
+				if disable then
+					return
+				end
+
+				local player = Players:GetPlayerFromCharacter(otherPart.Parent)
+
+				if player and not playerDebounce[player.UserId] then
+					local worldName = descendant.Parent.Name
+					if not worldName then
+						playerDebounce[player.UserId] = nil -- Clear debounce if we exit early
+						return
+					end
+
+					Local.OnPortalTouched(player, state, worldName)
+				end
+			end)
+		end
+	end
+end
+
+function Local.OnPortalTouched(player: Player, state: PlayerData.PlayerData, worldName: string)
+	-- Set debounce for this player
+	playerDebounce[player.UserId] = true
+
+	local placeId = WorldsConfig.GetPlaceIdFromWorldName(worldName)
+	if not placeId then
+		playerDebounce[player.UserId] = nil -- Clear debounce if we exit early
+		return
+	end
+
+	-- Freeze the player so they can't move
+	local character = player.Character
+	if character and character:FindFirstChild("Humanoid") then
+		local humanoid = character.Humanoid
+		-- Store original values to restore if teleport fails
+		playerDebounce[player.UserId] = {
+			active = true,
+			originalWalkSpeed = humanoid.WalkSpeed,
+			originalJumpHeight = humanoid.JumpHeight,
+		}
+
+		-- Freeze player movement
+		humanoid.WalkSpeed = 0
+		humanoid.JumpHeight = 0
+	end
+
+	local action = {
+		type = "UpdateTeleporting",
+		world = worldName,
+		origin = "Portal",
+	}
+	print("WorldPortalService - UpdateTeleporting State")
+	print(state.currentWorld)
+	UpdateState(state, action)
+
+	task.wait(1) -- Wait for a moment before teleporting
+
+	task.spawn(function()
+		-- Attempt to teleport the player
+		TeleportService:Teleport(placeId, player, nil)
+	end)
+
+	-- Reset the debounce after 3 seconds
+	-- This is needed in case teleport fails or player stays in range
+	task.delay(3, function()
+		if playerDebounce[player.UserId] then
+			local playerData = playerDebounce[player.UserId]
+			playerDebounce[player.UserId] = nil
+
+			-- If player is still in the game (teleport failed), unfreeze them
+			if player and player.Character and player.Character:FindFirstChild("Humanoid") then
+				local humanoid = player.Character.Humanoid
+				-- Reset to original values if teleport failed
+				if type(playerData) == "table" then
+					humanoid.WalkSpeed = playerData.originalWalkSpeed
+					humanoid.JumpHeight = playerData.originalJumpHeight or 7.2 -- Default from ToolsController
+				end
+			end
+		end
+	end)
 end
 
 return Shared

@@ -141,26 +141,43 @@ function Local.CreateProfile(player: Player)
 
 	Local.CreateLeaderstats(player)
 
-	-- Old
-	-- print("PlayerDataService - CreateProfile - ProfileLoaded:Fire")
-	-- Shared.ProfileLoaded:Fire(player)
-	-- print("PlayerDataService - CreateProfile - Remotes.SetData:FireClient")
-	-- Remotes.SetData:FireClient(player, profile.Data)
+	if RunService:IsStudio() then
+		print("PlayerDataService - In Roblox Studio, do not setup WorldPortalService")
+
+		print("PlayerDataService - CreateProfile - ProfileLoaded:Fire")
+		Shared.ProfileLoaded:Fire(player)
+		print("PlayerDataService - CreateProfile - Remotes.SetData:FireClient")
+		Remotes.SetData:FireClient(player, profile.Data)
+	end
 
 	-- New
-	WorldPortalService.HandleWorldTeleportComplete.Event:Connect(function()
-		print("PlayerDataService - HandleWorldTeleportComplete:Connect")
 
-		print("PlayerDataService - ProfileLoaded:Fire")
+	-- Run this if not in roblox studio
+	if not RunService:IsStudio() then
+		print("PlayerDataService - In Roblox Studio, do not setup WorldPortalService")
+
+		-- Old
+		print("PlayerDataService - CreateProfile - ProfileLoaded:Fire")
 		Shared.ProfileLoaded:Fire(player)
-
-		print("PlayerDataService - Remotes.SetData:FireClient")
+		print("PlayerDataService - CreateProfile - Remotes.SetData:FireClient")
 		Remotes.SetData:FireClient(player, profile.Data)
 
-		WorldPortalService.SetupPortal(profile.Data)
-	end)
+		-- New
+		-- print("PlayerDataService - In Roblox Client, setup WorldPortalService")
+		-- WorldPortalService.HandleWorldTeleportComplete.Event:Connect(function()
+		-- 	print("PlayerDataService - HandleWorldTeleportComplete:Connect")
 
-	WorldPortalService.HandleWorldTeleport(player, profile.Data)
+		-- 	print("PlayerDataService - ProfileLoaded:Fire")
+		-- 	Shared.ProfileLoaded:Fire(player)
+
+		-- 	print("PlayerDataService - Remotes.SetData:FireClient")
+		-- 	Remotes.SetData:FireClient(player, profile.Data)
+
+		-- 	WorldPortalService.SetupPortals(profile.Data)
+		-- end)
+
+		-- WorldPortalService.HandleWorldTeleport(player, profile.Data)
+	end
 end
 
 function Local.RemoveProfile(player: Player)

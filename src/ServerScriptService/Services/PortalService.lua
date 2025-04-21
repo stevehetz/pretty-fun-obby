@@ -14,6 +14,7 @@ local Local = {}
 local Shared = {}
 
 function Shared.OnStart()
+	-- Old, Disable once handling teleports in world portal service
 	Local.SetupPortal()
 
 	-- Players.PlayerAdded:Connect(function(player: Player)
@@ -22,7 +23,7 @@ function Shared.OnStart()
 end
 
 function Local.SetupPortal()
-	for _, descendant in Workspace.Portal:GetDescendants() do
+	for _, descendant in Workspace.EndPortal:GetDescendants() do
 		if descendant.Name == "Inside" then
 			descendant.Touched:Connect(function(otherPart: BasePart)
 				local player = Players:GetPlayerFromCharacter(otherPart.Parent)
