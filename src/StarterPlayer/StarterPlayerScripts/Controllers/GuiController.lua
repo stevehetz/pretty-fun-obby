@@ -38,6 +38,7 @@ Shared.Guis = {
 
 function Shared.OnStart()
 	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
+		print("GuiController - StateController.UpdateState.Event")
 		if action.type == "UpdateSetting" and action.setting == "Menu Blur" then
 			Shared.ToggleBlurEffect(action.value)
 		end

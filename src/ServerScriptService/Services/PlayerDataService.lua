@@ -6,6 +6,7 @@ local TeleportService = game:GetService("TeleportService")
 
 local WorldsConfig = require(ReplicatedStorage.Configs.Worlds)
 local ProfileService = require(ServerScriptService.Libs.ProfileService)
+local WorldPortalService = require(ServerScriptService.Services.WorldPortalService)
 local DataTemplate = require(ReplicatedStorage.PlayerData)
 local UpdateState = require(ReplicatedStorage.Functions.UpdateState)
 local Remotes = ReplicatedStorage.Remotes.PlayerData
@@ -29,17 +30,33 @@ Shared.ProfileLoaded = Instance.new("BindableEvent")
 
 function Shared.OnStart()
 	Remotes.Start.OnServerEvent:Connect(function(player: Player)
+		print("PlayerDataService - Remotes.Start:OnServerEvent")
 		local data = Shared.GetState(player)
 
+		-- When running in studio - data is there, but CreateProfile() has already sent it
+		-- When running in client - data is nil so never fires, but CreateProfile() sends it anyway
 		if data then
-			Local.HandleWorldTeleport(player, data)
+			-- print("PlayerDataService - Remotes.Start - HandleWorldTeleport")
+			-- Local.HandleWorldTeleport(player, data)
+
+			-- When this fires, nothing happens because the controller only handles it once
+			-- And it's already being fired int he create profile which happens first
+			-- Not sure why it's here, I guess just incase the data wasn't ready first time
+			print("PlayerDataService - Remotes.SetData:FireClient")
 			Remotes.SetData:FireClient(player, data)
 		end
 	end)
-	Players.PlayerAdded:Connect(Local.CreateProfile)
+
+	-- This is used when I run the game in roblox client
+	Players.PlayerAdded:Connect(function(player: Player)
+		print("PlayerDataService - PlayerAdded:Connect")
+		Local.CreateProfile(player)
+	end)
 	Players.PlayerRemoving:Connect(Local.RemoveProfile)
 
+	-- This is used when I run the game in roblox studio
 	for _, player in Players:GetPlayers() do
+		print("PlayerDataService - Players:GetPlayers")
 		Local.CreateProfile(player)
 	end
 end
@@ -74,6 +91,7 @@ function Shared.UpdateState(player: Player, action: UpdateState.UpdateStateActio
 	end
 
 	UpdateState(profile.Data, action)
+	print("PlayerDataService - UpdateData - FireClient")
 	Remotes.UpdateData:FireClient(player, action)
 end
 
@@ -101,6 +119,7 @@ function Local.CreateLeaderstats(player: Player)
 end
 
 function Local.CreateProfile(player: Player)
+	print("PlayerDataService - CreateProfile")
 	local userId = player.UserId
 	local profileKey = `{userId}_Data`
 	local profile = ProfileStore:LoadProfileAsync(profileKey)
@@ -119,91 +138,35 @@ function Local.CreateProfile(player: Player)
 	profile:Reconcile()
 
 	Profiles[player] = profile
-	Local.CreateLeaderstats(player)
-	Shared.ProfileLoaded:Fire(player)
 
-	Local.HandleWorldTeleport(player, profile.Data)
-	Remotes.SetData:FireClient(player, profile.Data)
+	Local.CreateLeaderstats(player)
+
+	-- Old
+	-- print("PlayerDataService - CreateProfile - ProfileLoaded:Fire")
+	-- Shared.ProfileLoaded:Fire(player)
+	-- print("PlayerDataService - CreateProfile - Remotes.SetData:FireClient")
+	-- Remotes.SetData:FireClient(player, profile.Data)
+
+	-- New
+	WorldPortalService.HandleWorldTeleportComplete.Event:Connect(function()
+		print("PlayerDataService - HandleWorldTeleportComplete:Connect")
+
+		print("PlayerDataService - ProfileLoaded:Fire")
+		Shared.ProfileLoaded:Fire(player)
+
+		print("PlayerDataService - Remotes.SetData:FireClient")
+		Remotes.SetData:FireClient(player, profile.Data)
+
+		WorldPortalService.SetupPortal(profile.Data)
+	end)
+
+	WorldPortalService.HandleWorldTeleport(player, profile.Data)
 end
 
 function Local.RemoveProfile(player: Player)
 	local profile = Profiles[player]
 	if profile then
 		profile:Release()
-	end
-end
-
-Local.HandleWorldTeleport = function(player: Player, state: DataTemplate.PlayerData)
-	print("HandleWorldTeleport: ", player.Name)
-	if not state then
-		return
-	end
-
-	-- Player is just joinging the game, restart them where the left off
-	if state.teleporting.world == nil then
-		print("Player is just joining the game")
-
-		local placeId = WorldsConfig.GetPlaceIdFromWorldName(state.currentWorld)
-		if not placeId then
-			warn("WorldPortalService - Unable to get placeId from world name")
-			return
-		end
-
-		local action = {
-			type = "UpdateTeleporting",
-			world = state.currentWorld,
-			origin = "Join",
-		}
-		Shared.UpdateState(player, action)
-
-		-- Attempt to teleport the player
-		TeleportService:Teleport(placeId, player, nil)
-
-		return
-	end
-
-	-- Player was teleported from joining the game
-	if state.teleporting.origin == "Join" then
-		print("Player was teleported from joining the game")
-		local action = {
-			type = "UpdateTeleporting",
-			world = nil,
-			origin = nil,
-		}
-		Shared.UpdateState(player, action)
-		return
-	end
-
-	-- Player was teleported from portal
-	if state.teleporting.origin then
-		Local.OnPlayerTeleportFromPortal(player, state)
-		return
-	end
-end
-
-function Local.OnPlayerTeleportFromPortal(player: Player, state: DataTemplate.PlayerData)
-	print("OnPlayerTeleport: ", player.Name)
-	if state and state.teleporting.world then
-		print("Teleporting player: ", player.Name, " to world: ", state.teleporting.world)
-		local action = {
-			type = "UpdateCurrentWorld",
-			world = state.teleporting.world,
-		}
-		Shared.UpdateState(player, action)
-
-		local action = {
-			type = "UpdateTeleporting",
-			world = nil,
-		}
-		Shared.UpdateState(player, action)
-
-		if state.stage > 0 then
-			local action = {
-				type = "UpdateStage",
-				amount = -state.stage,
-			}
-			Shared.UpdateState(player, action)
-		end
 	end
 end
 
