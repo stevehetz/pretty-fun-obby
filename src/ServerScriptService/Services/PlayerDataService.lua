@@ -157,26 +157,26 @@ function Local.CreateProfile(player: Player)
 		-- print("PlayerDataService - In Roblox Studio, do not setup WorldPortalService")
 
 		-- Old
-		-- print("PlayerDataService - CreateProfile - ProfileLoaded:Fire")
-		Shared.ProfileLoaded:Fire(player)
-		-- print("PlayerDataService - CreateProfile - Remotes.SetData:FireClient")
-		Remotes.SetData:FireClient(player, profile.Data)
+		-- -- print("PlayerDataService - CreateProfile - ProfileLoaded:Fire")
+		-- Shared.ProfileLoaded:Fire(player)
+		-- -- print("PlayerDataService - CreateProfile - Remotes.SetData:FireClient")
+		-- Remotes.SetData:FireClient(player, profile.Data)
 
 		-- New
-		-- print("PlayerDataService - In Roblox Client, setup WorldPortalService")
-		-- WorldPortalService.HandleWorldTeleportComplete.Event:Connect(function()
-		-- 	print("PlayerDataService - HandleWorldTeleportComplete:Connect")
+		print("PlayerDataService - In Roblox Client, setup WorldPortalService")
+		WorldPortalService.HandleWorldTeleportComplete.Event:Connect(function()
+			-- print("PlayerDataService - HandleWorldTeleportComplete:Connect")
 
-		-- 	print("PlayerDataService - ProfileLoaded:Fire")
-		-- 	Shared.ProfileLoaded:Fire(player)
+			-- print("PlayerDataService - ProfileLoaded:Fire")
+			Shared.ProfileLoaded:Fire(player)
 
-		-- 	print("PlayerDataService - Remotes.SetData:FireClient")
-		-- 	Remotes.SetData:FireClient(player, profile.Data)
+			-- print("PlayerDataService - Remotes.SetData:FireClient")
+			Remotes.SetData:FireClient(player, profile.Data)
 
-		-- 	WorldPortalService.SetupPortals(profile.Data)
-		-- end)
+			WorldPortalService.SetupPortals(profile.Data)
+		end)
 
-		-- WorldPortalService.HandleWorldTeleport(player, profile.Data)
+		WorldPortalService.HandleWorldTeleport(player, profile.Data)
 	end
 end
 

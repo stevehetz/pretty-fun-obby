@@ -13,7 +13,8 @@ local Shared = {}
 
 local playerDebounce = {}
 
-local disable = true
+local disableEndPortal = true
+local disableWorldPortals = false
 
 Shared.HandleWorldTeleportComplete = Instance.new("BindableEvent")
 Shared.HandleRebirth = Instance.new("BindableEvent")
@@ -150,7 +151,7 @@ function Shared.SetupPortals(state: PlayerData.PlayerData)
 				local player = Players:GetPlayerFromCharacter(otherPart.Parent)
 
 				-- New, Enable when ready and disable PortalService file
-				if disable then
+				if disableEndPortal then
 					return
 				end
 
@@ -185,7 +186,7 @@ function Shared.SetupPortals(state: PlayerData.PlayerData)
 		if descendant.Name == "Inside" then
 			descendant.Touched:Connect(function(otherPart: BasePart)
 				-- New, enable when ready
-				if disable then
+				if disableWorldPortals then
 					return
 				end
 
