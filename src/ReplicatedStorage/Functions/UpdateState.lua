@@ -71,8 +71,6 @@ return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
 		playerData.worldFinishes[action.world] += action.amount
 	elseif action.type == "UpdateTeleporting" then
 		-- handle nil values with print
-		print("UpdateTeleporting - " .. tostring(action.origin))
-		print("UpdateTeleporting - " .. tostring(action.world))
 		playerData.teleporting.world = action.world
 		playerData.teleporting.origin = action.origin
 	elseif action.type == "UpdateCurrentWorld" then

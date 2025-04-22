@@ -30,7 +30,7 @@ Shared.ProfileLoaded = Instance.new("BindableEvent")
 
 function Shared.OnStart()
 	Remotes.Start.OnServerEvent:Connect(function(player: Player)
-		print("PlayerDataService - Remotes.Start:OnServerEvent")
+		-- print("PlayerDataService - Remotes.Start:OnServerEvent")
 		local data = Shared.GetState(player)
 
 		-- When running in studio - data is there, but CreateProfile() has already sent it
@@ -42,21 +42,21 @@ function Shared.OnStart()
 			-- When this fires, nothing happens because the controller only handles it once
 			-- And it's already being fired int he create profile which happens first
 			-- Not sure why it's here, I guess just incase the data wasn't ready first time
-			print("PlayerDataService - Remotes.SetData:FireClient")
+			-- print("PlayerDataService - Remotes.SetData:FireClient")
 			Remotes.SetData:FireClient(player, data)
 		end
 	end)
 
 	-- This is used when I run the game in roblox client
 	Players.PlayerAdded:Connect(function(player: Player)
-		print("PlayerDataService - PlayerAdded:Connect")
+		-- print("PlayerDataService - PlayerAdded:Connect")
 		Local.CreateProfile(player)
 	end)
 	Players.PlayerRemoving:Connect(Local.RemoveProfile)
 
 	-- This is used when I run the game in roblox studio
 	for _, player in Players:GetPlayers() do
-		print("PlayerDataService - Players:GetPlayers")
+		-- print("PlayerDataService - Players:GetPlayers")
 		Local.CreateProfile(player)
 	end
 end
@@ -91,7 +91,7 @@ function Shared.UpdateState(player: Player, action: UpdateState.UpdateStateActio
 	end
 
 	UpdateState(profile.Data, action)
-	print("PlayerDataService - UpdateData - FireClient")
+	-- print("PlayerDataService - UpdateData - FireClient")
 	Remotes.UpdateData:FireClient(player, action)
 end
 
@@ -119,7 +119,7 @@ function Local.CreateLeaderstats(player: Player)
 end
 
 function Local.CreateProfile(player: Player)
-	print("PlayerDataService - CreateProfile")
+	-- print("PlayerDataService - CreateProfile")
 	local userId = player.UserId
 	local profileKey = `{userId}_Data`
 	local profile = ProfileStore:LoadProfileAsync(profileKey)
@@ -142,11 +142,11 @@ function Local.CreateProfile(player: Player)
 	Local.CreateLeaderstats(player)
 
 	if RunService:IsStudio() then
-		print("PlayerDataService - In Roblox Studio, do not setup WorldPortalService")
+		-- print("PlayerDataService - In Roblox Studio, do not setup WorldPortalService")
 
-		print("PlayerDataService - CreateProfile - ProfileLoaded:Fire")
+		-- print("PlayerDataService - CreateProfile - ProfileLoaded:Fire")
 		Shared.ProfileLoaded:Fire(player)
-		print("PlayerDataService - CreateProfile - Remotes.SetData:FireClient")
+		-- print("PlayerDataService - CreateProfile - Remotes.SetData:FireClient")
 		Remotes.SetData:FireClient(player, profile.Data)
 	end
 
@@ -154,12 +154,12 @@ function Local.CreateProfile(player: Player)
 
 	-- Run this if not in roblox studio
 	if not RunService:IsStudio() then
-		print("PlayerDataService - In Roblox Studio, do not setup WorldPortalService")
+		-- print("PlayerDataService - In Roblox Studio, do not setup WorldPortalService")
 
 		-- Old
-		print("PlayerDataService - CreateProfile - ProfileLoaded:Fire")
+		-- print("PlayerDataService - CreateProfile - ProfileLoaded:Fire")
 		Shared.ProfileLoaded:Fire(player)
-		print("PlayerDataService - CreateProfile - Remotes.SetData:FireClient")
+		-- print("PlayerDataService - CreateProfile - Remotes.SetData:FireClient")
 		Remotes.SetData:FireClient(player, profile.Data)
 
 		-- New
