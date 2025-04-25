@@ -7,6 +7,7 @@ local Local = {}
 local Shared = {}
 
 PlayerDataService.ProfileLoaded.Event:Connect(function(player: Player)
+	print("ToolsService - PlayerDataService.ProfileLoaded.Event")
 	Shared.GiveTool(player, "Gravity Coil")
 	Shared.GiveTool(player, "Speed Coil")
 

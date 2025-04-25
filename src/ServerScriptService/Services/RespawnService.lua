@@ -9,7 +9,7 @@ local Shared = {}
 
 function Shared.OnStart()
 	PlayerDataService.ProfileLoaded.Event:Connect(function(player: Player)
-		-- print("RespawnService - PlayerDataService.ProfileLoaded.Event")
+		print("RespawnService - PlayerDataService.ProfileLoaded.Event")
 		Shared.RespawnPlayer(player)
 	end)
 	Remotes.Respawn.OnServerEvent:Connect(function(player: Player, isDeath: boolean)

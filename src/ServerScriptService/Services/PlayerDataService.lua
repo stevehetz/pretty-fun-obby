@@ -145,9 +145,12 @@ function Local.CreateProfile(player: Player)
 		-- print("PlayerDataService - In Roblox Studio, do not setup WorldPortalService")
 
 		-- print("PlayerDataService - CreateProfile - ProfileLoaded:Fire")
-		Shared.ProfileLoaded:Fire(player)
-		-- print("PlayerDataService - CreateProfile - Remotes.SetData:FireClient")
-		Remotes.SetData:FireClient(player, profile.Data)
+		task.delay(1, function()
+			-- print("PlayerDataService - ProfileLoaded:Fire")
+			Shared.ProfileLoaded:Fire(player)
+			-- print("PlayerDataService - CreateProfile - Remotes.SetData:FireClient")
+			Remotes.SetData:FireClient(player, profile.Data)
+		end)
 	end
 
 	-- New
