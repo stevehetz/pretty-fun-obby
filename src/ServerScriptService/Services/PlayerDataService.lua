@@ -4,6 +4,7 @@ local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 local TeleportService = game:GetService("TeleportService")
 
+local GlobalDataService = require(ServerScriptService.Services.GlobalDataService)
 local WorldsConfig = require(ReplicatedStorage.Configs.Worlds)
 local ProfileService = require(ServerScriptService.Libs.ProfileService)
 local WorldPortalService = require(ServerScriptService.Services.WorldPortalService)
@@ -25,6 +26,8 @@ local Profiles: { [Player]: ProfileService.Profile<DataTemplate.PlayerData> } = 
 
 local Local = {}
 local Shared = {}
+
+Local.TeleportComplete = false
 
 Shared.ProfileLoaded = Instance.new("BindableEvent")
 
@@ -146,10 +149,16 @@ function Local.CreateProfile(player: Player)
 
 		-- print("PlayerDataService - CreateProfile - ProfileLoaded:Fire")
 		task.delay(1, function()
+			GlobalDataService.RecordFinish(player, profile.Data.finishes)
 			-- print("PlayerDataService - ProfileLoaded:Fire")
 			Shared.ProfileLoaded:Fire(player)
 			-- print("PlayerDataService - CreateProfile - Remotes.SetData:FireClient")
 			Remotes.SetData:FireClient(player, profile.Data)
+		end)
+
+		task.delay(3, function()
+			local value = GlobalDataService.GetTopFinishers(player)
+			print("Top Finishers: ", value)
 		end)
 	end
 
@@ -166,8 +175,13 @@ function Local.CreateProfile(player: Player)
 		-- Remotes.SetData:FireClient(player, profile.Data)
 
 		-- New
-		print("PlayerDataService - In Roblox Client, setup WorldPortalService")
 		WorldPortalService.HandleWorldTeleportComplete.Event:Connect(function()
+			print("PlayerDataService - In Roblox Client, setup WorldPortalService")
+			if Local.TeleportComplete then
+				return
+			end
+			Local.TeleportComplete = true
+
 			-- print("PlayerDataService - HandleWorldTeleportComplete:Connect")
 
 			-- print("PlayerDataService - ProfileLoaded:Fire")

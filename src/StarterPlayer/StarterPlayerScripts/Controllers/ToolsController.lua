@@ -1,5 +1,7 @@
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StoreConfig = require(ReplicatedStorage.Configs.Store)
 
 local Player = Players.LocalPlayer
 
@@ -39,10 +41,12 @@ function Local.SetupCharacter(player: Player)
 	end
 
 	for _, tool in backpack:GetChildren() do
+		Local.ApplyIconToTool(tool)
 		Local.SetupCoil(tool)
 	end
 
 	backpack.ChildAdded:Connect(function(tool)
+		Local.ApplyIconToTool(tool)
 		Local.SetupCoil(tool)
 	end)
 end
@@ -68,6 +72,15 @@ function Local.CoilEffect(coil: Coil, didEquip: boolean)
 		Workspace.Gravity = if didEquip then COIL_EFFECTS.Gravity.Gravity else COIL_EFFECTS.Default.Gravity
 	else
 		humanoid.WalkSpeed = if didEquip then COIL_EFFECTS.Speed.WalkSpeed else COIL_EFFECTS.Default.WalkSpeed
+	end
+end
+
+function Local.ApplyIconToTool(tool)
+	-- look up the info by name or Id, whichever you prefer
+	local info = StoreConfig.GetStoreItemInfo(tool.Name)
+	if info and info.Image then
+		tool.TextureId = info.Image -- this is what the Backpack GUI uses
+		tool.ToolTip = info.Name -- optional: hover-text
 	end
 end
 
