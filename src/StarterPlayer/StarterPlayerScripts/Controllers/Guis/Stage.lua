@@ -11,7 +11,8 @@ local StagesConfig = require(ReplicatedStorage.Configs.Stages)
 local Gui = GuiController.Guis.Top
 local ProgressBar = Gui.Frame.Stage
 
-local STAGE_TEXT = "Stage AMOUNT (PERCENT%)"
+-- local STAGE_TEXT = "Stage AMOUNT (PERCENT%)"
+local STAGE_TEXT = "Stage  AMOUNT  of  TOTAL"
 
 local Local = {}
 local Shared = {}
@@ -41,7 +42,8 @@ function Local.UpdateProgress()
 	local progressPercent = currentStage / totalStages
 
 	local progressText = STAGE_TEXT:gsub("AMOUNT", currentStage)
-	progressText = progressText:gsub("PERCENT", math.floor(progressPercent * 100))
+	progressText = progressText:gsub("TOTAL", totalStages)
+	-- progressText = progressText:gsub("PERCENT", math.floor(progressPercent * 100))
 	GuiController.HandleProgressBar(ProgressBar, progressPercent, progressText)
 end
 
