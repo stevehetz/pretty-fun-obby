@@ -85,7 +85,9 @@ function Shared.UpdateState(player: Player, action: UpdateState.UpdateStateActio
 	end
 
 	if action.type == "UpdateFinishes" then
-		player.leaderstats.Finishes.Value += action.amount
+		local newTotalFinishes = profile.Data.finishes + action.amount
+		player.leaderstats.Finishes.Value = newTotalFinishes
+		GlobalDataService.RecordFinish(player, newTotalFinishes)
 	end
 
 	if action.type == "UpdateCurrentWorld" then
@@ -149,17 +151,19 @@ function Local.CreateProfile(player: Player)
 
 		-- print("PlayerDataService - CreateProfile - ProfileLoaded:Fire")
 		task.delay(1, function()
-			GlobalDataService.RecordFinish(player, profile.Data.finishes)
+			-- GlobalDataService.RecordFinish(player, profile.Data.finishes)
 			-- print("PlayerDataService - ProfileLoaded:Fire")
 			Shared.ProfileLoaded:Fire(player)
 			-- print("PlayerDataService - CreateProfile - Remotes.SetData:FireClient")
 			Remotes.SetData:FireClient(player, profile.Data)
+
+			WorldPortalService.SetupPortals(profile.Data)
 		end)
 
-		task.delay(3, function()
-			local value = GlobalDataService.GetTopFinishers(player)
-			print("Top Finishers: ", value)
-		end)
+		-- task.delay(3, function()
+		-- 	local value = GlobalDataService.GetTopFinishers(player)
+		-- 	print("Top Finishers: ", value)
+		-- end)
 	end
 
 	-- New
@@ -183,6 +187,7 @@ function Local.CreateProfile(player: Player)
 			Local.TeleportComplete = true
 
 			-- print("PlayerDataService - HandleWorldTeleportComplete:Connect")
+			-- GlobalDataService.RecordFinish(player, profile.Data.finishes)
 
 			-- print("PlayerDataService - ProfileLoaded:Fire")
 			Shared.ProfileLoaded:Fire(player)

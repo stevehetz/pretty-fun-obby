@@ -2,10 +2,16 @@ local DataStoreService = game:GetService("DataStoreService")
 local MemoryStoreService = game:GetService("MemoryStoreService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
-local GlobalFinishesStore = DataStoreService:GetOrderedDataStore("GlobalFinishers")
-local GlobalFinishesMemoryStore = MemoryStoreService:GetSortedMap("GlobalFinishers")
-local PlayerInfoMemoryStore = MemoryStoreService:GetHashMap("PlayerInfo")
+-- Create appropriate DataStore prefix based on environment
+local StorePrefix = RunService:IsStudio() and "Test_" or "Prod_"
+local GlobalFinishersKey = StorePrefix .. "GlobalFinishers"
+local PlayerInfoKey = StorePrefix .. "PlayerInfo"
+
+local GlobalFinishesStore = DataStoreService:GetOrderedDataStore(GlobalFinishersKey)
+local GlobalFinishesMemoryStore = MemoryStoreService:GetSortedMap(GlobalFinishersKey)
+local PlayerInfoMemoryStore = MemoryStoreService:GetHashMap(PlayerInfoKey)
 
 local GetTopFinishersRF = Instance.new("RemoteFunction")
 GetTopFinishersRF.Name = "GetTopFinishers"
@@ -91,7 +97,7 @@ function Shared.GetTopFinishers()
 	end
 
 	local out = {}
-	for i, entry in ipairs(list) do
+	for _, entry in ipairs(list) do
 		local uid = tonumber(entry.key)
 		local finishes = entry.value
 
@@ -99,12 +105,21 @@ function Shared.GetTopFinishers()
 		local playerInfo = Local.FetchAndCachePlayerInfo(uid)
 
 		table.insert(out, {
-			rank = i,
 			userId = uid,
 			username = playerInfo.username,
 			avatarUrl = playerInfo.avatarUrl,
 			finishes = finishes,
 		})
+	end
+
+	-- Ensure results are sorted by finishes in descending order
+	table.sort(out, function(a, b)
+		return a.finishes > b.finishes
+	end)
+
+	-- Assign ranks based on sorted order
+	for i, entry in ipairs(out) do
+		entry.rank = i
 	end
 
 	return out

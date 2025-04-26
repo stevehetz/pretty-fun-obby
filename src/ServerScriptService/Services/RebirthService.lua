@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local RespawnService = require(script.Parent.RespawnService)
+local PlayerDataService = require(script.Parent.PlayerDataService)
 local Remotes = ReplicatedStorage.Remotes
 
 local Local = {}
@@ -12,6 +13,13 @@ end
 
 function Shared.Rebirth(player: Player)
 	RespawnService.RestartPlayer(player)
+
+	-- For testing only
+	-- local action = {
+	-- 	type = "UpdateFinishes",
+	-- 	amount = 1,
+	-- }
+	-- PlayerDataService.UpdateState(player, action)
 end
 
 return Shared
