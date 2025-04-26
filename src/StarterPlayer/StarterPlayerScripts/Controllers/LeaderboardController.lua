@@ -2,18 +2,7 @@ local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local GetTopFinishersRF = ReplicatedStorage:WaitForChild("GetTopFinishers")
-local StagesFolder = Workspace:WaitForChild("Stages")
-local StageZero = StagesFolder:WaitForChild("0")
-local leaderboardModel = StageZero:WaitForChild("FinishesLeaderboard")
-local displayPart = leaderboardModel:WaitForChild("Display")
-local surfaceGui = displayPart:WaitForChild("SurfaceGui")
-local rowsFrame = surfaceGui:WaitForChild("Rows")
-local listLayout = rowsFrame:WaitForChild("UIListLayout")
-local rowTemplate = rowsFrame:WaitForChild("RowTemplate")
-
--- Adjust canvas size to be larger to accommodate all rows
-surfaceGui.CanvasSize = Vector2.new(500, 600) -- Increased height to 600
-surfaceGui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud -- Ensure consistent sizing
+local leaderboardsFolder = Workspace:WaitForChild("Leaderboards")
 
 local REFRESH_INTERVAL = 60 -- Refresh leaderboard every 60 seconds
 
@@ -21,40 +10,56 @@ local Local = {}
 local Shared = {}
 
 -- Store the current leaderboard data
-Shared.LeaderboardData = {}
+Shared.FinishesLeaderboardData = {}
 Shared.LastRefreshTime = 0
 
 Shared.OnStart = function()
 	-- Initial fetch
-	Shared.RefreshLeaderboard()
+	Shared.RefreshLeaderboards()
 
 	-- Set up periodic refresh
 	task.spawn(function()
 		while true do
 			task.wait(REFRESH_INTERVAL)
-			Shared.RefreshLeaderboard()
+			Shared.RefreshLeaderboards()
 		end
 	end)
 end
 
 -- Function to refresh leaderboard data
-function Shared.RefreshLeaderboard()
+function Shared.RefreshLeaderboards()
 	local success, data = pcall(function()
 		return GetTopFinishersRF:InvokeServer()
 	end)
 
 	if success and data then
-		Shared.LeaderboardData = data
 		Shared.LastRefreshTime = os.time()
-		Local.UpdateLeaderboardUI(data)
+		Shared.FinishesLeaderboardData = data
+		Local.UpdateAllFinshesLeaderboardUI(data)
 		return data
 	else
 		warn("Failed to refresh leaderboard data")
-		return Shared.LeaderboardData -- Return existing data on failure
+		return Shared.LeaderboardData
 	end
 end
 
-function Local.UpdateLeaderboardUI(data)
+function Local.UpdateAllFinshesLeaderboardUI(data)
+	-- Get All Descendents named FinishesLeaderboard
+	local finishesLeaderboards = leaderboardsFolder:GetDescendants()
+	for _, leaderboard in ipairs(finishesLeaderboards) do
+		if leaderboard:IsA("Model") and leaderboard.Name == "FinishesLeaderboard" then
+			-- Update the UI for each leaderboard
+			Local.UpdateFinishesLeaderboardUI(leaderboard, data)
+		end
+	end
+end
+
+function Local.UpdateFinishesLeaderboardUI(leaderboard, data)
+	local display = leaderboard:FindFirstChild("Display")
+	local surfaceGui = display:FindFirstChild("SurfaceGui")
+	local rowsFrame = surfaceGui:FindFirstChild("Rows")
+	local rowTemplate = rowsFrame:FindFirstChild("RowTemplate")
+
 	-- Clear existing rows
 	for _, child in ipairs(rowsFrame:GetChildren()) do
 		if child:IsA("Frame") and child.Name ~= "RowTemplate" and child.Name ~= "Header" then

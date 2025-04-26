@@ -59,8 +59,14 @@ Local.SetupPortal = function(player: Player, state: PlayerData.PlayerData)
 						return
 					end
 
+					local action = {
+						type = "UpdateFinishes",
+						amount = 1,
+					}
+
 					-- If in studio, do not teleport or freeze the player
 					if RunService:IsStudio() then
+						PlayerDataService.UpdateState(player, action)
 						task.delay(3, function()
 							if playerDebounce[player.UserId] then
 								playerDebounce[player.UserId] = nil
@@ -85,13 +91,7 @@ Local.SetupPortal = function(player: Player, state: PlayerData.PlayerData)
 						humanoid.JumpHeight = 0
 					end
 
-					local action = {
-						type = "UpdateFinishes",
-						amount = 1,
-					}
 					PlayerDataService.UpdateState(player, action)
-
-					print("EndPortalService - PlayerDataService.UpdateState")
 
 					WorldPortalService.TeleportPlayer(player, state, worldName, placeId)
 
