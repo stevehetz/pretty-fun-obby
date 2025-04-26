@@ -29,6 +29,7 @@ Shared.BillboardGuis = {
 
 Shared.Guis = {
 	Top = PlayerGui:WaitForChild("Top"),
+	TopTwo = PlayerGui:WaitForChild("TopTwo"),
 	Left = PlayerGui:WaitForChild("Left"),
 	Right = PlayerGui:WaitForChild("Right"),
 	Setting = PlayerGui:WaitForChild("Settings"),
