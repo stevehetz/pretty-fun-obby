@@ -75,7 +75,7 @@ function Shared.OnStart()
 			end
 
 			Shared.GameMode = "Timed"
-			-- SkipsGui.HideSkipButton()
+			SkipsGui.HideSkipButton()
 			Label.TextColor3 = originalColor
 			Label.TextSize = originalSize
 			Label.Visible = true
@@ -144,7 +144,7 @@ function Shared.OnStart()
 			finished = true
 			if Shared.GameMode == "Timed" then
 				-- add 7 minutes to the elapsed time for testing purposes
-				elapsedTime = elapsedTime + 420
+				-- elapsedTime = elapsedTime + 420
 				Remotes.TimedFinish:FireServer(elapsedTime)
 				SkipsGui.ShowSkipButton()
 				Label.TextColor3 = Color3.fromRGB(0, 255, 0)
