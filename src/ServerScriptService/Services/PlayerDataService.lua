@@ -4,6 +4,7 @@ local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 local TeleportService = game:GetService("TeleportService")
 
+local PlayerData = require(ReplicatedStorage.PlayerData)
 local GlobalDataService = require(ServerScriptService.Services.GlobalDataService)
 local WorldsConfig = require(ReplicatedStorage.Configs.Worlds)
 local ProfileService = require(ServerScriptService.Libs.ProfileService)
@@ -27,7 +28,7 @@ local Profiles: { [Player]: ProfileService.Profile<DataTemplate.PlayerData> } = 
 local Local = {}
 local Shared = {}
 
-Local.TeleportComplete = false
+Local.TeleportEventInitialized = false
 
 Shared.ProfileLoaded = Instance.new("BindableEvent")
 
@@ -50,6 +51,26 @@ function Shared.OnStart()
 		end
 	end)
 
+	-- if no roblox studio
+	if not RunService:IsStudio() then
+		WorldPortalService.HandleWorldTeleportComplete.Event:Connect(
+			function(player: Player, state: PlayerData.PlayerData)
+				print("PlayerDataService - HandleWorldTeleportComplete.Event:Connect")
+
+				-- print("PlayerDataService - HandleWorldTeleportComplete:Connect")
+				-- GlobalDataService.RecordFinish(player, profile.Data.finishes)
+
+				-- print("PlayerDataService - ProfileLoaded:Fire")
+				Shared.ProfileLoaded:Fire(player)
+
+				-- print("PlayerDataService - Remotes.SetData:FireClient")
+				Remotes.SetData:FireClient(player, state)
+
+				WorldPortalService.SetupPortals(state)
+			end
+		)
+	end
+
 	-- This is used when I run the game in roblox client
 	Players.PlayerAdded:Connect(function(player: Player)
 		-- print("PlayerDataService - PlayerAdded:Connect")
@@ -67,7 +88,7 @@ end
 function Shared.GetState(player: Player)
 	local profile = Profiles[player]
 	if profile then
-		-- profile.Data.skips.amount = 200
+		-- profile.Data.skips.amount = 2000
 		return profile.Data
 	end
 
@@ -179,24 +200,6 @@ function Local.CreateProfile(player: Player)
 		-- Remotes.SetData:FireClient(player, profile.Data)
 
 		-- New
-		WorldPortalService.HandleWorldTeleportComplete.Event:Connect(function()
-			print("PlayerDataService - In Roblox Client, setup WorldPortalService")
-			if Local.TeleportComplete then
-				return
-			end
-			Local.TeleportComplete = true
-
-			-- print("PlayerDataService - HandleWorldTeleportComplete:Connect")
-			-- GlobalDataService.RecordFinish(player, profile.Data.finishes)
-
-			-- print("PlayerDataService - ProfileLoaded:Fire")
-			Shared.ProfileLoaded:Fire(player)
-
-			-- print("PlayerDataService - Remotes.SetData:FireClient")
-			Remotes.SetData:FireClient(player, profile.Data)
-
-			WorldPortalService.SetupPortals(profile.Data)
-		end)
 
 		WorldPortalService.HandleWorldTeleport(player, profile.Data)
 	end

@@ -71,10 +71,15 @@ return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
 		playerData.worldFinishes[action.world] += action.amount
 	elseif action.type == "UpdateTeleporting" then
 		-- handle nil values with print
+		print("UpdateTeleporting - world: " .. tostring(action.world))
+		print("UpdateTeleporting - origin: " .. tostring(action.origin))
 		playerData.teleporting.world = action.world
 		playerData.teleporting.origin = action.origin
+		task.wait(2)
 	elseif action.type == "UpdateCurrentWorld" then
+		print("UpdateCurrentWorld - world: " .. tostring(action.world))
 		playerData.currentWorld = action.world
+		task.wait(2)
 	else
 		error("Invalid action type: " .. tostring(action.type))
 	end

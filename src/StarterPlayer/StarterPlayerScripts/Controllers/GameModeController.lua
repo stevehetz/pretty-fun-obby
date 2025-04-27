@@ -8,6 +8,8 @@ local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 
 local SkipsGui = require(script.Parent.Guis.Skips)
 local GuiController = require(script.Parent.GuiController)
+local StateController = require(script.Parent.StateController)
+local StagesConfig = require(ReplicatedStorage.Configs.Stages)
 
 local Label = GuiController.Guis.TopTwo.Frame.TimerLabel
 
@@ -23,6 +25,12 @@ local finished = false
 local timerRunning = false
 local startTime = 0
 local elapsedTime = 0
+local casualDoorDebounce = false
+local timedDoorDebounce = false
+local finishDoorDebounce = false
+local message = nil
+local originalColor = Label.TextColor3
+local originalSize = Label.TextSize
 
 local Local = {}
 local Shared = {}
@@ -30,21 +38,45 @@ local Shared = {}
 Shared.GameMode = "Casual"
 
 function Shared.OnStart()
+	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
+		-- Get Player State
+		if action.type == "UpdateStage" then
+			local playerState = StateController.GetState()
+			if playerState and playerState.stage == 0 then
+				Local.Reset()
+			end
+		end
+	end)
+
 	RunService.Heartbeat:Connect(function()
 		if timerRunning then
 			elapsedTime = tick() - startTime
-			Label.Text = Local.FormatTime(elapsedTime)
+			Label.Text = message or Local.FormatTime(elapsedTime)
 		end
 	end)
 
 	TimedDoorInside.Touched:Connect(function(hit)
-		if Shared.GameMode == "Timed" then
-			return
-		end
 		local char = hit.Parent
-		if char and char:FindFirstChild("Humanoid") and not timerRunning then
+		if char and char:FindFirstChild("Humanoid") and char == Player.Character and not timerRunning then
+			if timedDoorDebounce then
+				return
+			end
+			timedDoorDebounce = true
+			task.delay(2, function()
+				timedDoorDebounce = false
+			end)
+
+			local playerState = StateController.GetState()
+			if playerState and playerState.stage > 0 then
+				Local.Reset()
+				Remotes.Rebirth:FireServer()
+				return
+			end
+
 			Shared.GameMode = "Timed"
-			SkipsGui.HideSkipButton()
+			-- SkipsGui.HideSkipButton()
+			Label.TextColor3 = originalColor
+			Label.TextSize = originalSize
 			Label.Visible = true
 			timerRunning = true
 			startTime = tick()
@@ -53,15 +85,25 @@ function Shared.OnStart()
 	end)
 
 	CasualDoorInside.Touched:Connect(function(hit)
+		local char = hit.Parent
+		if not char or not char:FindFirstChild("Humanoid") or char ~= Player.Character then
+			return
+		end
+
+		if casualDoorDebounce then
+			return
+		end
+		casualDoorDebounce = true
+		task.delay(2, function()
+			casualDoorDebounce = false
+		end)
+
 		if Shared.GameMode == "Casual" then
 			return
 		end
-		local char = hit.Parent
-		if char and char:FindFirstChild("Humanoid") and timerRunning then
-			Shared.GameMode = "Casual"
-			SkipsGui.ShowSkipButton()
-			timerRunning = false
-			Label.Visible = false
+		if Shared.GameMode == "Timed" then
+			Local.Reset()
+			return
 		end
 	end)
 
@@ -69,8 +111,32 @@ function Shared.OnStart()
 		if Shared.GameMode == "Casual" or finished == true then
 			return
 		end
+
 		local char = hit.Parent
-		if char and char:FindFirstChild("Humanoid") and timerRunning then
+		if char and char:FindFirstChild("Humanoid") and char == Player.Character and timerRunning then
+			if finishDoorDebounce then
+				return
+			end
+			finishDoorDebounce = true
+			-- Reset debounce after 2 seconds
+			task.delay(2, function()
+				finishDoorDebounce = false
+			end)
+
+			local currentStage = StateController.GetState().stage
+
+			if currentStage < StagesConfig.GetTotalStages() then
+				message = "Must finish all stages!"
+				Label.TextColor3 = Color3.fromRGB(255, 0, 0)
+				Label.TextSize = 40
+
+				task.delay(4, function()
+					message = nil
+					Label.TextColor3 = originalColor
+					Label.TextSize = originalSize
+				end)
+				return
+			end
 			SkipsGui.ShowSkipButton()
 			finished = true
 			timerRunning = false
@@ -79,6 +145,18 @@ function Shared.OnStart()
 			Remotes.TimedFinish:FireServer(elapsedTime)
 		end
 	end)
+end
+
+Local.Reset = function()
+	print("GameModeController - Reset")
+	Shared.GameMode = "Casual"
+	finished = false
+	timerRunning = false
+	startTime = 0
+	elapsedTime = 0
+	finishDoorDebounce = false
+	message = nil
+	Label.Visible = false
 end
 
 function Local.FormatTime(t)

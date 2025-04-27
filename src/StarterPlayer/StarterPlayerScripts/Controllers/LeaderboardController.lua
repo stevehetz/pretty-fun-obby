@@ -76,10 +76,30 @@ function Local.UpdateAllFinshesLeaderboardUI(data)
 end
 
 function Local.UpdateFinishesLeaderboardUI(leaderboard, data)
-	local display = leaderboard:FindFirstChild("Display")
-	local surfaceGui = display:FindFirstChild("SurfaceGui")
-	local rowsFrame = surfaceGui:FindFirstChild("Rows")
-	local rowTemplate = rowsFrame:FindFirstChild("RowTemplate")
+	-- Use pcall with WaitForChild to handle cases where children might not exist
+	local success, result = pcall(function()
+		local display = leaderboard:WaitForChild("Display", 5)
+		local surfaceGui = display:WaitForChild("SurfaceGui", 5)
+		local rowsFrame = surfaceGui:WaitForChild("Rows", 5)
+		local rowTemplate = rowsFrame:WaitForChild("RowTemplate", 5)
+
+		return {
+			display = display,
+			surfaceGui = surfaceGui,
+			rowsFrame = rowsFrame,
+			rowTemplate = rowTemplate,
+		}
+	end)
+
+	if not success then
+		warn("Failed to update finishes leaderboard UI: " .. tostring(result))
+		return
+	end
+
+	local display = result.display
+	local surfaceGui = result.surfaceGui
+	local rowsFrame = result.rowsFrame
+	local rowTemplate = result.rowTemplate
 
 	-- Clear existing rows
 	for _, child in ipairs(rowsFrame:GetChildren()) do
@@ -151,25 +171,30 @@ function Local.UpdateAllTimesLeaderboardUI(data)
 end
 
 function Local.UpdateTimesLeaderboardUI(leaderboard, data)
-	local display = leaderboard:FindFirstChild("Display")
-	if not display then
+	-- Use pcall with WaitForChild to handle cases where children might not exist
+	local success, result = pcall(function()
+		local display = leaderboard:WaitForChild("Display", 5)
+		local surfaceGui = display:WaitForChild("SurfaceGui", 5)
+		local rowsFrame = surfaceGui:WaitForChild("Rows", 5)
+		local rowTemplate = rowsFrame:WaitForChild("RowTemplate", 5)
+
+		return {
+			display = display,
+			surfaceGui = surfaceGui,
+			rowsFrame = rowsFrame,
+			rowTemplate = rowTemplate,
+		}
+	end)
+
+	if not success then
+		warn("Failed to update times leaderboard UI: " .. tostring(result))
 		return
 	end
 
-	local surfaceGui = display:FindFirstChild("SurfaceGui")
-	if not surfaceGui then
-		return
-	end
-
-	local rowsFrame = surfaceGui:FindFirstChild("Rows")
-	if not rowsFrame then
-		return
-	end
-
-	local rowTemplate = rowsFrame:FindFirstChild("RowTemplate")
-	if not rowTemplate then
-		return
-	end
+	local display = result.display
+	local surfaceGui = result.surfaceGui
+	local rowsFrame = result.rowsFrame
+	local rowTemplate = result.rowTemplate
 
 	-- Clear existing rows
 	for _, child in ipairs(rowsFrame:GetChildren()) do

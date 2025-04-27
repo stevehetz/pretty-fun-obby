@@ -30,23 +30,30 @@ function Shared.HandleWorldTeleport(player: Player, state: PlayerData.PlayerData
 		return
 	end
 
+	print("WorldPortalService - Shared.HandleWorldTeleport")
+
 	-- The place ID of the world the player is currently in
 	local playersCurrentPlaceId = game.PlaceId
 
 	-- Where the teleport was initiated from
 	local teleportingOrigin = state.teleporting.origin
+	print("WorldPortalService - teleportingOrigin: ", teleportingOrigin)
 
 	-- Set when a teleport was initiated
 	local teleportingWorld = state.teleporting.world
+	print("WorldPortalService - teleportingWorld: ", teleportingWorld)
 
 	-- The last world the player's state was saved to
 	local currentWorldFromState = state.currentWorld
+	print("WorldPortalService - currentWorldFromState: ", currentWorldFromState)
 
 	-- The place ID from the world the player's state was saved to
 	local currentPlaceIdFromState = WorldsConfig.GetPlaceIdFromWorldName(currentWorldFromState)
 
 	-- Player is just joining the game, restart them where they left off
 	if teleportingWorld == nil then
+		print("WorldPortalService - Player is just joining the game")
+		task.wait(10)
 		-- Player is not in the correct world, teleport them
 		if playersCurrentPlaceId ~= currentPlaceIdFromState then
 			-- Player is not in the correct world, teleport them
@@ -65,6 +72,8 @@ function Shared.HandleWorldTeleport(player: Player, state: PlayerData.PlayerData
 	-- Player was teleported from the above routine
 	-- This is the player joining back in after being teleported
 	elseif teleportingOrigin == "Join" then
+		print("WorldPortalService - Player was teleported from the above routine")
+		task.wait(10)
 		-- Update leaderboard world
 		Local.SetLeaderboardWorld(player, teleportingWorld)
 
@@ -79,6 +88,8 @@ function Shared.HandleWorldTeleport(player: Player, state: PlayerData.PlayerData
 	-- This is the player joining back in after being teleported
 	-- This was initiated from the SetupPortal() below
 	elseif teleportingOrigin == "Portal" then
+		print("WorldPortalService - Player was teleported to a world from a portal")
+		task.wait(10)
 		-- Update current world
 		local updateCurrentWorldAction = {
 			type = "UpdateCurrentWorld",
@@ -93,6 +104,8 @@ function Shared.HandleWorldTeleport(player: Player, state: PlayerData.PlayerData
 			origin = nil,
 		}
 		UpdateState(state, updateTeleportingAction)
+
+		task.wait(3)
 
 		-- Update loaderboard world
 		Local.SetLeaderboardWorld(player, teleportingWorld)
@@ -120,9 +133,11 @@ function Shared.SetupPortals(state: PlayerData.PlayerData)
 	for _, descendant in Workspace.WorldPortals:GetDescendants() do
 		if descendant.Name == "Inside" then
 			descendant.Touched:Connect(function(otherPart: BasePart)
+				print("WorldPortalService - descendant.Touched:Connect")
 				local player = Players:GetPlayerFromCharacter(otherPart.Parent)
 
 				if player and not playerDebounce[player.UserId] then
+					print("WorldPortalService - player and not playerDebounce[player.UserId]")
 					local worldName = descendant.Parent.Name
 					if not worldName then
 						playerDebounce[player.UserId] = nil -- Clear debounce if we exit early
@@ -132,6 +147,7 @@ function Shared.SetupPortals(state: PlayerData.PlayerData)
 					-- Set debounce for this player
 					playerDebounce[player.UserId] = true
 
+					print("WorldPortalService - worldName: " .. worldName)
 					local placeId = WorldsConfig.GetPlaceIdFromWorldName(worldName)
 					if not placeId then
 						playerDebounce[player.UserId] = nil -- Clear debounce if we exit early
@@ -149,6 +165,7 @@ function Shared.SetupPortals(state: PlayerData.PlayerData)
 					end
 
 					-- Freeze the player so they can't move
+					print("WorldPortalService - Freezing player movement")
 					local character = player.Character
 					if character and character:FindFirstChild("Humanoid") then
 						local humanoid = character.Humanoid
@@ -164,6 +181,7 @@ function Shared.SetupPortals(state: PlayerData.PlayerData)
 						humanoid.JumpHeight = 0
 					end
 
+					print("WorldPortalService - Teleporting player")
 					Shared.TeleportPlayer(player, state, worldName, placeId)
 
 					-- Reset the debounce after 3 seconds
@@ -196,10 +214,11 @@ function Shared.TeleportPlayer(player: Player, state: PlayerData.PlayerData, wor
 		world = worldName,
 		origin = "Portal",
 	}
+	print("WorldPortalService - TeleportPlayer - action: ", action.type, action.world, action.origin)
 
 	UpdateState(state, action)
 
-	task.wait(1) -- Wait for a moment before teleporting
+	task.wait(10) -- Wait for a moment before teleporting
 
 	task.spawn(function()
 		-- Attempt to teleport the player
