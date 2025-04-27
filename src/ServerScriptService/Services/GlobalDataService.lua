@@ -14,10 +14,10 @@ local PlayerInfoKey = StorePrefix .. "PlayerInfo"
 
 local CurrentWorldName = WorldsConfig.GetCurrentWorldName()
 
-local GlobalFinishesStore = DataStoreService:GetOrderedDataStore(GlobalFinishersKey)
+local GlobalFinishesStore = DataStoreService:GetOrderedDataStore(GlobalFinishersKey .. "_" .. CurrentWorldName)
 local GlobalTimesStore = DataStoreService:GetOrderedDataStore(GlobalTimesKey .. "_" .. CurrentWorldName)
 
-local GlobalFinishesMemoryStore = MemoryStoreService:GetSortedMap(GlobalFinishersKey)
+local GlobalFinishesMemoryStore = MemoryStoreService:GetSortedMap(GlobalFinishersKey .. "_" .. CurrentWorldName)
 local GlobalTimesMemoryStore = MemoryStoreService:GetSortedMap(GlobalTimesKey .. "_" .. CurrentWorldName)
 local PlayerInfoMemoryStore = MemoryStoreService:GetHashMap(PlayerInfoKey)
 
@@ -169,12 +169,9 @@ function Shared.GetTopTimes()
 	local ok, list = pcall(function()
 		return GlobalTimesMemoryStore:GetRangeAsync(Enum.SortDirection.Ascending, 20)
 	end)
-	print("GetTopTimes: ", ok, list)
 	if not ok then
 		return {}
 	end
-
-	print("List: ", list)
 
 	local out = {}
 	for _, entry in ipairs(list) do
@@ -206,7 +203,7 @@ function Shared.GetTopTimes()
 	return out
 end
 
-function Shared.RecordFinish(player, totalFinishes)
+function Shared.RecordWorldFinish(player, totalFinishes)
 	local key = tostring(player.UserId)
 
 	-- 1) Fetch the top 21 entries from the persistent store
@@ -257,14 +254,12 @@ function Shared.RecordFinish(player, totalFinishes)
 	end
 end
 
-function Shared.RecordTime(player, time)
+function Shared.RecordTimeFinish(player, time)
 	local key = tostring(player.UserId)
 
 	-- Convert floating-point time to integer (milliseconds)
 	-- This prevents the "double is not allowed in data stores" error
 	local timeInteger = math.floor(time * 1000)
-
-	print("Time Integer: ", timeInteger)
 
 	-- 1) Fetch the top 21 entries from the persistent store
 	local ok, pages = pcall(function()
@@ -278,8 +273,6 @@ function Shared.RecordTime(player, time)
 	local entries = pages:GetCurrentPage()
 	local countEntries = #entries
 
-	print("Count Entries: ", countEntries)
-
 	-- Convert any existing entries from integer back to float for comparison
 	local cutoffValue = (countEntries < 20) and math.huge or (entries[20].value / 1000)
 
@@ -288,7 +281,6 @@ function Shared.RecordTime(player, time)
 		-- a) Write into the persistent OrderedDataStore (as integer)
 		local sOk, sErr = pcall(function()
 			GlobalTimesStore:SetAsync(key, timeInteger)
-			print("Set Async: ", key, timeInteger)
 		end)
 		if not sOk then
 			warn("Failed to set global time for", key, sErr)

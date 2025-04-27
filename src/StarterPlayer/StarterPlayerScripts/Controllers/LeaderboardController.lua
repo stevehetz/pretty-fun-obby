@@ -30,7 +30,6 @@ Shared.OnStart = function()
 	end)
 end
 
--- Function to refresh leaderboard data
 function Shared.RefreshFinishesLeaderboard()
 	local success, data = pcall(function()
 		return GetTopFinishersRF:InvokeServer()

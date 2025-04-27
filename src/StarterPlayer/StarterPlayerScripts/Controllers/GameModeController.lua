@@ -9,6 +9,7 @@ local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local SkipsGui = require(script.Parent.Guis.Skips)
 local GuiController = require(script.Parent.GuiController)
 local StateController = require(script.Parent.StateController)
+local LeaderboardController = require(script.Parent.LeaderboardController)
 local StagesConfig = require(ReplicatedStorage.Configs.Stages)
 
 local Label = GuiController.Guis.TopTwo.Frame.TimerLabel
@@ -74,7 +75,7 @@ function Shared.OnStart()
 			end
 
 			Shared.GameMode = "Timed"
-			SkipsGui.HideSkipButton()
+			-- SkipsGui.HideSkipButton()
 			Label.TextColor3 = originalColor
 			Label.TextSize = originalSize
 			Label.Visible = true
@@ -108,12 +109,11 @@ function Shared.OnStart()
 	end)
 
 	FinishDoorInside.Touched:Connect(function(hit)
-		if Shared.GameMode == "Casual" or finished == true then
-			return
-		end
-
 		local char = hit.Parent
-		if char and char:FindFirstChild("Humanoid") and char == Player.Character and timerRunning then
+		if char and char:FindFirstChild("Humanoid") and char == Player.Character then
+			if finished == true then
+				return
+			end
 			if finishDoorDebounce then
 				return
 			end
@@ -127,28 +127,43 @@ function Shared.OnStart()
 
 			if currentStage < StagesConfig.GetTotalStages() then
 				message = "Must finish all stages!"
+				Label.Visible = true
 				Label.TextColor3 = Color3.fromRGB(255, 0, 0)
 				Label.TextSize = 40
 
 				task.delay(4, function()
+					if Shared.GameMode == "Casual" then
+						Label.Visible = false
+					end
 					message = nil
 					Label.TextColor3 = originalColor
 					Label.TextSize = originalSize
 				end)
 				return
 			end
-			SkipsGui.ShowSkipButton()
 			finished = true
-			timerRunning = false
-			Label.TextColor3 = Color3.fromRGB(0, 255, 0)
-			Label.TextSize = 60
-			Remotes.TimedFinish:FireServer(elapsedTime)
+			if Shared.GameMode == "Timed" then
+				-- add 7 minutes to the elapsed time for testing purposes
+				elapsedTime = elapsedTime + 420
+				Remotes.TimedFinish:FireServer(elapsedTime)
+				SkipsGui.ShowSkipButton()
+				Label.TextColor3 = Color3.fromRGB(0, 255, 0)
+				Label.TextSize = 60
+				timerRunning = false
+			end
+			Remotes.WorldFinish:FireServer()
+			task.wait(2)
+			LeaderboardController.RefreshFinishesLeaderboard()
+			LeaderboardController.RefreshTimesLeaderboard()
 		end
 	end)
 end
 
 Local.Reset = function()
 	print("GameModeController - Reset")
+	Label.TextColor3 = originalColor
+	Label.TextSize = originalSize
+	SkipsGui.ShowSkipButton()
 	Shared.GameMode = "Casual"
 	finished = false
 	timerRunning = false

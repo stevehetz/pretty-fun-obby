@@ -36,22 +36,17 @@ function Shared.HandleWorldTeleport(player: Player, state: PlayerData.PlayerData
 		return PlayerDataService.GetState(player)
 	end
 
-	print("WorldPortalService - Shared.HandleWorldTeleport")
-
 	-- The place ID of the world the player is currently in
 	local playersCurrentPlaceId = game.PlaceId
 
 	-- Where the teleport was initiated from
 	local teleportingOrigin = state.teleporting.origin
-	print("WorldPortalService - teleportingOrigin: ", teleportingOrigin)
 
 	-- Set when a teleport was initiated
 	local teleportingWorld = state.teleporting.world
-	print("WorldPortalService - teleportingWorld: ", teleportingWorld)
 
 	-- The last world the player's state was saved to
 	local currentWorldFromState = state.currentWorld
-	print("WorldPortalService - currentWorldFromState: ", currentWorldFromState)
 
 	-- The place ID from the world the player's state was saved to
 	local currentPlaceIdFromState = WorldsConfig.GetPlaceIdFromWorldName(currentWorldFromState)
@@ -79,8 +74,6 @@ function Shared.HandleWorldTeleport(player: Player, state: PlayerData.PlayerData
 	-- This is the player joining back in after being teleported
 	elseif teleportingOrigin == "Join" then
 		print("WorldPortalService - Player was teleported from the above routine")
-		-- Update leaderboard world
-		Local.SetLeaderboardWorld(player, teleportingWorld)
 
 		local action = {
 			type = "UpdateTeleporting",
@@ -111,9 +104,6 @@ function Shared.HandleWorldTeleport(player: Player, state: PlayerData.PlayerData
 		}
 		PlayerDataService.UpdateState(player, updateTeleportingAction)
 
-		-- Update loaderboard world
-		Local.SetLeaderboardWorld(player, teleportingWorld)
-
 		-- Reset stage to 0
 		local currentStage = player.leaderstats.Stage.Value
 		if currentStage ~= 0 then
@@ -128,19 +118,11 @@ function Shared.HandleWorldTeleport(player: Player, state: PlayerData.PlayerData
 	Shared.HandleWorldTeleportComplete:Fire(player, state)
 end
 
-function Local.SetLeaderboardWorld(player: Player, worldName: string)
-	if player and player.leaderstats and player.leaderstats.CurrentWorld then
-		local displayName = WorldsConfig.GetDisplayNameFromWorldName(worldName)
-		player.leaderstats.CurrentWorld.Value = displayName or "World 1"
-	end
-end
-
 function Shared.SetupPortals()
 	-- World Portals at beginning of worlds
 	for _, descendant in Workspace.WorldPortals:GetDescendants() do
 		if descendant.Name == "Inside" then
 			descendant.Touched:Connect(function(otherPart: BasePart)
-				print("WorldPortalService - descendant.Touched:Connect")
 				local player = Players:GetPlayerFromCharacter(otherPart.Parent)
 
 				if player and not playerDebounce[player.UserId] then

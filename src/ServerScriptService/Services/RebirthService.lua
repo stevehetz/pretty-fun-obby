@@ -13,13 +13,6 @@ end
 
 function Shared.Rebirth(player: Player)
 	RespawnService.RestartPlayer(player)
-
-	-- For testing only
-	-- local action = {
-	-- 	type = "UpdateFinishes",
-	-- 	amount = 1,
-	-- }
-	-- PlayerDataService.UpdateState(player, action)
 end
 
 return Shared

@@ -114,56 +114,10 @@ Shared.UpdateState = function(player: Player, action: UpdateState.UpdateStateAct
 		player.leaderstats.Stage.Value = 0
 	end
 
-	if action.type == "UpdateFinishes" then
-		local newTotalFinishes = profile.Data.finishes + action.amount
-		player.leaderstats.Finishes.Value = newTotalFinishes
-		GlobalDataService.RecordFinish(player, newTotalFinishes)
-	end
-
-	if action.type == "UpdateCurrentWorld" then
-		local displayName = WorldsConfig.GetDisplayNameFromWorldName(action.world)
-		player.leaderstats.CurrentWorld.Value = displayName or "World 1"
-	end
-
 	UpdateState(profile.Data, action)
 
-	-- Create a clean copy of the action to send to the client
-	-- This prevents cyclic references
-	local clientAction = {
-		type = action.type,
-	}
-
-	-- Copy only the necessary fields based on action type
-	if action.type == "UpdateStage" then
-		clientAction.amount = action.amount
-	elseif action.type == "ResetStage" then
-		-- No additional fields needed
-	elseif action.type == "UpdateDeaths" then
-		clientAction.amount = action.amount
-	elseif action.type == "UpdateSetting" then
-		clientAction.setting = action.setting
-		clientAction.value = action.value
-	elseif action.type == "EarnSkip" then
-		clientAction.amount = action.amount
-	elseif action.type == "UpdateVip" then
-		clientAction.value = action.value
-	elseif action.type == "UpdateGamepass" then
-		clientAction.value = action.value
-		clientAction.gamepassId = action.gamepassId
-	elseif action.type == "UpdateFinishes" then
-		clientAction.amount = action.amount
-	elseif action.type == "UpdateWorldFinishes" then
-		clientAction.world = action.world
-		clientAction.amount = action.amount
-	elseif action.type == "UpdateTeleporting" then
-		clientAction.world = action.world
-		clientAction.origin = action.origin
-	elseif action.type == "UpdateCurrentWorld" then
-		clientAction.world = action.world
-	end
-
 	-- print("PlayerDataService - UpdateData - FireClient")
-	Remotes.UpdateData:FireClient(player, clientAction)
+	Remotes.UpdateData:FireClient(player, action)
 end
 
 function Local.CreateLeaderstats(player: Player)
@@ -178,15 +132,6 @@ function Local.CreateLeaderstats(player: Player)
 	local stage = Instance.new("NumberValue", leaderstats)
 	stage.Name = "Stage"
 	stage.Value = state.stage
-
-	local finishes = Instance.new("NumberValue", leaderstats)
-	finishes.Name = "Finishes"
-	finishes.Value = state.finishes
-
-	local currentWorld = Instance.new("StringValue", leaderstats)
-	currentWorld.Name = "CurrentWorld"
-	local displayName = WorldsConfig.GetDisplayNameFromWorldName(state.currentWorld)
-	currentWorld.Value = displayName or "World 1"
 end
 
 function Local.CreateProfile(player: Player)

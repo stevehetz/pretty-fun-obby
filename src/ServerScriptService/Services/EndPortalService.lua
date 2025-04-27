@@ -17,7 +17,7 @@ local playerDebounce = {}
 
 Shared.OnStart = function()
 	PlayerDataService.ProfileLoaded.Event:Connect(function(player: Player)
-		print("EndPortalService - PlayerDataService.ProfileLoaded.Event")
+		-- print("EndPortalService - PlayerDataService.ProfileLoaded.Event")
 		local playerState = PlayerDataService.GetState(player)
 		if not playerState then
 			return
@@ -30,11 +30,10 @@ Local.SetupPortal = function(player: Player, initialState: PlayerData.PlayerData
 	for _, descendant in Workspace.EndPortal:GetDescendants() do
 		if descendant.Name == "Inside" then
 			descendant.Touched:Connect(function(otherPart: BasePart)
-				print("EndPortalService - descendant.Touched:Connect")
 				local player = Players:GetPlayerFromCharacter(otherPart.Parent)
 
 				if player and not playerDebounce[player.UserId] then
-					print("EndPortalService - player and not playerDebounce[player.UserId]")
+					-- print("EndPortalService - player and not playerDebounce[player.UserId]")
 					-- Always get the latest state from PlayerDataService
 					local currentState = PlayerDataService.GetState(player)
 					if not currentState then
@@ -54,7 +53,7 @@ Local.SetupPortal = function(player: Player, initialState: PlayerData.PlayerData
 						return
 					end
 
-					print("EndPortalService - worldName: " .. worldName)
+					-- print("EndPortalService - worldName: " .. worldName)
 
 					-- Set debounce for this player
 					playerDebounce[player.UserId] = true
@@ -65,14 +64,8 @@ Local.SetupPortal = function(player: Player, initialState: PlayerData.PlayerData
 						return
 					end
 
-					local action = {
-						type = "UpdateFinishes",
-						amount = 1,
-					}
-
 					-- If in studio, do not teleport or freeze the player
 					if RunService:IsStudio() then
-						PlayerDataService.UpdateState(player, action)
 						task.delay(3, function()
 							if playerDebounce[player.UserId] then
 								playerDebounce[player.UserId] = nil
@@ -96,8 +89,6 @@ Local.SetupPortal = function(player: Player, initialState: PlayerData.PlayerData
 						humanoid.WalkSpeed = 0
 						humanoid.JumpHeight = 0
 					end
-
-					PlayerDataService.UpdateState(player, action)
 
 					WorldPortalService.TeleportPlayer(player, worldName, placeId)
 
