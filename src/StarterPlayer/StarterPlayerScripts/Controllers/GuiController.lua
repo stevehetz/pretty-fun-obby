@@ -16,6 +16,7 @@ BlurEffect.Size = 0
 
 local ALWAYS_ENABLED_GUIS = {
 	"Top",
+	"TopTwo",
 	"Left",
 	"Right",
 }

@@ -7,20 +7,29 @@ local RunService = game:GetService("RunService")
 -- Create appropriate DataStore prefix based on environment
 local StorePrefix = RunService:IsStudio() and "Test_" or "Prod_"
 local GlobalFinishersKey = StorePrefix .. "GlobalFinishers"
+local GlobalTimesKey = StorePrefix .. "GlobalTimes"
 local PlayerInfoKey = StorePrefix .. "PlayerInfo"
 
 local GlobalFinishesStore = DataStoreService:GetOrderedDataStore(GlobalFinishersKey)
+local GlobalTimesStore = DataStoreService:GetOrderedDataStore(GlobalTimesKey)
+
 local GlobalFinishesMemoryStore = MemoryStoreService:GetSortedMap(GlobalFinishersKey)
+local GlobalTimesMemoryStore = MemoryStoreService:GetSortedMap(GlobalTimesKey)
 local PlayerInfoMemoryStore = MemoryStoreService:GetHashMap(PlayerInfoKey)
 
 local GetTopFinishersRF = Instance.new("RemoteFunction")
 GetTopFinishersRF.Name = "GetTopFinishers"
 GetTopFinishersRF.Parent = ReplicatedStorage
 
+local GetTopTimesRF = Instance.new("RemoteFunction")
+GetTopTimesRF.Name = "GetTopTimes"
+GetTopTimesRF.Parent = ReplicatedStorage
+
 local Local = {}
 local Shared = {}
 
 Shared.OnStart = function()
+	-- Get top finishes from the persistent store and cache them in MemoryStore
 	task.spawn(function()
 		local success, pages = pcall(function()
 			return GlobalFinishesStore:GetSortedAsync(false, 20)
@@ -43,8 +52,35 @@ Shared.OnStart = function()
 		end
 	end)
 
+	-- Get top times from the persistent store and cache them in MemoryStore
+	task.spawn(function()
+		local success, pages = pcall(function()
+			return GlobalTimesStore:GetSortedAsync(false, 20)
+		end)
+
+		if success then
+			for _, entry in ipairs(pages:GetCurrentPage()) do
+				-- entry.key is userId string, entry.value is their time
+				GlobalTimesMemoryStore:UpdateAsync(entry.key, function()
+					return entry.value
+				end, 86400) -- Cache for 24 hours
+
+				-- Pre-cache player info for top players
+				task.spawn(function()
+					Local.FetchAndCachePlayerInfo(entry.key)
+				end)
+			end
+		else
+			warn("Leaderboard bootstrap failed: ", pages)
+		end
+	end)
+
 	GetTopFinishersRF.OnServerInvoke = function()
 		return Shared.GetTopFinishers()
+	end
+
+	GetTopTimesRF.OnServerInvoke = function()
+		return Shared.GetTopTimes()
 	end
 end
 
@@ -125,6 +161,47 @@ function Shared.GetTopFinishers()
 	return out
 end
 
+function Shared.GetTopTimes()
+	local ok, list = pcall(function()
+		return GlobalTimesMemoryStore:GetRangeAsync(Enum.SortDirection.Ascending, 20)
+	end)
+	print("GetTopTimes: ", ok, list)
+	if not ok then
+		return {}
+	end
+
+	print("List: ", list)
+
+	local out = {}
+	for _, entry in ipairs(list) do
+		local uid = tonumber(entry.key)
+		-- Convert stored integer time back to float (seconds)
+		local time = entry.value / 1000
+
+		-- Get player info (from cache if available)
+		local playerInfo = Local.FetchAndCachePlayerInfo(uid)
+
+		table.insert(out, {
+			userId = uid,
+			username = playerInfo.username,
+			avatarUrl = playerInfo.avatarUrl,
+			time = time,
+		})
+	end
+
+	-- Ensure results are sorted by time in ascending order
+	table.sort(out, function(a, b)
+		return a.time < b.time
+	end)
+
+	-- Assign ranks based on sorted order
+	for i, entry in ipairs(out) do
+		entry.rank = i
+	end
+
+	return out
+end
+
 function Shared.RecordFinish(player, totalFinishes)
 	local key = tostring(player.UserId)
 
@@ -167,6 +244,65 @@ function Shared.RecordFinish(player, totalFinishes)
 		end, 86400) -- Cache for 24 hours
 		if countEntries >= 20 and entries[21] then
 			GlobalFinishesMemoryStore:RemoveAsync(entries[21].key)
+		end
+
+		-- 5) Pre-cache this player's info since they're on the leaderboard now
+		task.spawn(function()
+			Local.FetchAndCachePlayerInfo(player.UserId)
+		end)
+	end
+end
+
+function Shared.RecordTime(player, time)
+	local key = tostring(player.UserId)
+
+	-- Convert floating-point time to integer (milliseconds)
+	-- This prevents the "double is not allowed in data stores" error
+	local timeInteger = math.floor(time * 1000)
+
+	print("Time Integer: ", timeInteger)
+
+	-- 1) Fetch the top 21 entries from the persistent store
+	local ok, pages = pcall(function()
+		return GlobalTimesStore:GetSortedAsync(false, 21)
+	end)
+	if not ok then
+		warn("Failed to fetch top entries for prune check:", pages)
+		return
+	end
+
+	local entries = pages:GetCurrentPage()
+	local countEntries = #entries
+
+	print("Count Entries: ", countEntries)
+
+	-- Convert any existing entries from integer back to float for comparison
+	local cutoffValue = (countEntries < 20) and math.huge or (entries[20].value / 1000)
+
+	-- 3) Only set/prune if this player's time beats the cutoff
+	if time < cutoffValue then
+		-- a) Write into the persistent OrderedDataStore (as integer)
+		local sOk, sErr = pcall(function()
+			GlobalTimesStore:SetAsync(key, timeInteger)
+			print("Set Async: ", key, timeInteger)
+		end)
+		if not sOk then
+			warn("Failed to set global time for", key, sErr)
+		end
+
+		-- b) Prune the 21st entry if it exists
+		if countEntries >= 20 and entries[21] then
+			pcall(function()
+				GlobalTimesStore:RemoveAsync(entries[21].key)
+			end)
+		end
+
+		-- 4) Mirror into MemoryStore cache (also as integer)
+		GlobalTimesMemoryStore:UpdateAsync(key, function()
+			return timeInteger
+		end, 86400) -- Cache for 24 hours
+		if countEntries >= 20 and entries[21] then
+			GlobalTimesMemoryStore:RemoveAsync(entries[21].key)
 		end
 
 		-- 5) Pre-cache this player's info since they're on the leaderboard now
