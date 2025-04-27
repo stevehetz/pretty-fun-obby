@@ -47,7 +47,10 @@ function Shared.OnStart()
 			-- And it's already being fired int he create profile which happens first
 			-- Not sure why it's here, I guess just incase the data wasn't ready first time
 			-- print("PlayerDataService - Remotes.SetData:FireClient")
-			Remotes.SetData:FireClient(player, data)
+
+			-- Create a deep copy of the data to avoid cyclic references
+			local clientData = table.clone(data)
+			Remotes.SetData:FireClient(player, clientData)
 		end
 	end)
 
@@ -64,9 +67,12 @@ function Shared.OnStart()
 				Shared.ProfileLoaded:Fire(player)
 
 				-- print("PlayerDataService - Remotes.SetData:FireClient")
-				Remotes.SetData:FireClient(player, state)
 
-				WorldPortalService.SetupPortals(state)
+				-- Create a deep copy of the state to avoid cyclic references
+				local clientState = table.clone(state)
+				Remotes.SetData:FireClient(player, clientState)
+
+				WorldPortalService.SetupPortals()
 			end
 		)
 	end
@@ -95,7 +101,8 @@ function Shared.GetState(player: Player)
 	return nil
 end
 
-function Shared.UpdateState(player: Player, action: UpdateState.UpdateStateAction)
+-- Export this function so WorldPortalService can call it
+Shared.UpdateState = function(player: Player, action: UpdateState.UpdateStateAction)
 	local profile = Profiles[player]
 	if not profile then
 		return
@@ -103,6 +110,8 @@ function Shared.UpdateState(player: Player, action: UpdateState.UpdateStateActio
 
 	if action.type == "UpdateStage" then
 		player.leaderstats.Stage.Value += action.amount
+	elseif action.type == "ResetStage" then
+		player.leaderstats.Stage.Value = 0
 	end
 
 	if action.type == "UpdateFinishes" then
@@ -117,8 +126,44 @@ function Shared.UpdateState(player: Player, action: UpdateState.UpdateStateActio
 	end
 
 	UpdateState(profile.Data, action)
+
+	-- Create a clean copy of the action to send to the client
+	-- This prevents cyclic references
+	local clientAction = {
+		type = action.type,
+	}
+
+	-- Copy only the necessary fields based on action type
+	if action.type == "UpdateStage" then
+		clientAction.amount = action.amount
+	elseif action.type == "ResetStage" then
+		-- No additional fields needed
+	elseif action.type == "UpdateDeaths" then
+		clientAction.amount = action.amount
+	elseif action.type == "UpdateSetting" then
+		clientAction.setting = action.setting
+		clientAction.value = action.value
+	elseif action.type == "EarnSkip" then
+		clientAction.amount = action.amount
+	elseif action.type == "UpdateVip" then
+		clientAction.value = action.value
+	elseif action.type == "UpdateGamepass" then
+		clientAction.value = action.value
+		clientAction.gamepassId = action.gamepassId
+	elseif action.type == "UpdateFinishes" then
+		clientAction.amount = action.amount
+	elseif action.type == "UpdateWorldFinishes" then
+		clientAction.world = action.world
+		clientAction.amount = action.amount
+	elseif action.type == "UpdateTeleporting" then
+		clientAction.world = action.world
+		clientAction.origin = action.origin
+	elseif action.type == "UpdateCurrentWorld" then
+		clientAction.world = action.world
+	end
+
 	-- print("PlayerDataService - UpdateData - FireClient")
-	Remotes.UpdateData:FireClient(player, action)
+	Remotes.UpdateData:FireClient(player, clientAction)
 end
 
 function Local.CreateLeaderstats(player: Player)
@@ -176,9 +221,12 @@ function Local.CreateProfile(player: Player)
 			-- print("PlayerDataService - ProfileLoaded:Fire")
 			Shared.ProfileLoaded:Fire(player)
 			-- print("PlayerDataService - CreateProfile - Remotes.SetData:FireClient")
-			Remotes.SetData:FireClient(player, profile.Data)
 
-			WorldPortalService.SetupPortals(profile.Data)
+			-- Create a deep copy of the data to avoid cyclic references
+			local clientData = table.clone(profile.Data)
+			Remotes.SetData:FireClient(player, clientData)
+
+			WorldPortalService.SetupPortals()
 		end)
 
 		-- task.delay(3, function()
@@ -201,6 +249,7 @@ function Local.CreateProfile(player: Player)
 
 		-- New
 
+		-- Pass the player and profile data to HandleWorldTeleport
 		WorldPortalService.HandleWorldTeleport(player, profile.Data)
 	end
 end

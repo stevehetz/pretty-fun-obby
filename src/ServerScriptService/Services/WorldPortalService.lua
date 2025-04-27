@@ -3,10 +3,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local TeleportService = game:GetService("TeleportService")
 local RunService = game:GetService("RunService")
+local ServerScriptService = game:GetService("ServerScriptService")
 
 local PlayerData = require(ReplicatedStorage.PlayerData)
 local WorldsConfig = require(ReplicatedStorage.Configs.Worlds)
-local UpdateState = require(ReplicatedStorage.Functions.UpdateState)
 
 local Local = {}
 local Shared = {}
@@ -28,6 +28,12 @@ Shared.HandleRebirth = Instance.new("BindableEvent")
 function Shared.HandleWorldTeleport(player: Player, state: PlayerData.PlayerData)
 	if not state then
 		return
+	end
+
+	-- Get the latest state from PlayerDataService when needed
+	local getLatestState = function()
+		local PlayerDataService = require(ServerScriptService.Services.PlayerDataService)
+		return PlayerDataService.GetState(player)
 	end
 
 	print("WorldPortalService - Shared.HandleWorldTeleport")
@@ -53,7 +59,6 @@ function Shared.HandleWorldTeleport(player: Player, state: PlayerData.PlayerData
 	-- Player is just joining the game, restart them where they left off
 	if teleportingWorld == nil then
 		print("WorldPortalService - Player is just joining the game")
-		task.wait(10)
 		-- Player is not in the correct world, teleport them
 		if playersCurrentPlaceId ~= currentPlaceIdFromState then
 			-- Player is not in the correct world, teleport them
@@ -62,7 +67,8 @@ function Shared.HandleWorldTeleport(player: Player, state: PlayerData.PlayerData
 				world = state.currentWorld,
 				origin = "Join",
 			}
-			UpdateState(state, action)
+			local PlayerDataService = require(ServerScriptService.Services.PlayerDataService)
+			PlayerDataService.UpdateState(player, action)
 
 			-- Attempt to teleport the player
 			TeleportService:Teleport(currentPlaceIdFromState, player, nil)
@@ -73,7 +79,6 @@ function Shared.HandleWorldTeleport(player: Player, state: PlayerData.PlayerData
 	-- This is the player joining back in after being teleported
 	elseif teleportingOrigin == "Join" then
 		print("WorldPortalService - Player was teleported from the above routine")
-		task.wait(10)
 		-- Update leaderboard world
 		Local.SetLeaderboardWorld(player, teleportingWorld)
 
@@ -82,20 +87,21 @@ function Shared.HandleWorldTeleport(player: Player, state: PlayerData.PlayerData
 			world = nil,
 			origin = nil,
 		}
-		UpdateState(state, action)
+		local PlayerDataService = require(ServerScriptService.Services.PlayerDataService)
+		PlayerDataService.UpdateState(player, action)
 
 	-- Player was teleported to a world from a portal
 	-- This is the player joining back in after being teleported
 	-- This was initiated from the SetupPortal() below
 	elseif teleportingOrigin == "Portal" then
 		print("WorldPortalService - Player was teleported to a world from a portal")
-		task.wait(10)
 		-- Update current world
 		local updateCurrentWorldAction = {
 			type = "UpdateCurrentWorld",
 			world = teleportingWorld,
 		}
-		UpdateState(state, updateCurrentWorldAction)
+		local PlayerDataService = require(ServerScriptService.Services.PlayerDataService)
+		PlayerDataService.UpdateState(player, updateCurrentWorldAction)
 
 		-- Clear teleporting state with proper parameters
 		local updateTeleportingAction = {
@@ -103,9 +109,7 @@ function Shared.HandleWorldTeleport(player: Player, state: PlayerData.PlayerData
 			world = nil,
 			origin = nil,
 		}
-		UpdateState(state, updateTeleportingAction)
-
-		task.wait(3)
+		PlayerDataService.UpdateState(player, updateTeleportingAction)
 
 		-- Update loaderboard world
 		Local.SetLeaderboardWorld(player, teleportingWorld)
@@ -113,8 +117,11 @@ function Shared.HandleWorldTeleport(player: Player, state: PlayerData.PlayerData
 		-- Reset stage to 0
 		local currentStage = player.leaderstats.Stage.Value
 		if currentStage ~= 0 then
-			player.leaderstats.Stage.Value = 0
-			state.stage = 0
+			-- Use the new ResetStage action type to reset the stage to 0
+			local PlayerDataService = require(ServerScriptService.Services.PlayerDataService)
+			PlayerDataService.UpdateState(player, {
+				type = "ResetStage",
+			})
 		end
 	end
 
@@ -128,7 +135,7 @@ function Local.SetLeaderboardWorld(player: Player, worldName: string)
 	end
 end
 
-function Shared.SetupPortals(state: PlayerData.PlayerData)
+function Shared.SetupPortals()
 	-- World Portals at beginning of worlds
 	for _, descendant in Workspace.WorldPortals:GetDescendants() do
 		if descendant.Name == "Inside" then
@@ -182,7 +189,7 @@ function Shared.SetupPortals(state: PlayerData.PlayerData)
 					end
 
 					print("WorldPortalService - Teleporting player")
-					Shared.TeleportPlayer(player, state, worldName, placeId)
+					Shared.TeleportPlayer(player, worldName, placeId)
 
 					-- Reset the debounce after 3 seconds
 					-- This is needed in case teleport fails or player stays in range
@@ -208,7 +215,7 @@ function Shared.SetupPortals(state: PlayerData.PlayerData)
 	end
 end
 
-function Shared.TeleportPlayer(player: Player, state: PlayerData.PlayerData, worldName: string, placeId: number)
+function Shared.TeleportPlayer(player: Player, worldName: string, placeId: number)
 	local action = {
 		type = "UpdateTeleporting",
 		world = worldName,
@@ -216,9 +223,9 @@ function Shared.TeleportPlayer(player: Player, state: PlayerData.PlayerData, wor
 	}
 	print("WorldPortalService - TeleportPlayer - action: ", action.type, action.world, action.origin)
 
-	UpdateState(state, action)
-
-	task.wait(10) -- Wait for a moment before teleporting
+	-- Use the UpdateState function from PlayerDataService to ensure the state is updated in the profile
+	local PlayerDataService = require(ServerScriptService.Services.PlayerDataService)
+	PlayerDataService.UpdateState(player, action)
 
 	task.spawn(function()
 		-- Attempt to teleport the player

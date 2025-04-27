@@ -9,6 +9,8 @@ export type UpdateStateAction = {
 	type: "UpdateStage",
 	amount: number,
 } | {
+	type: "ResetStage",
+} | {
 	type: "UpdateDeaths",
 	amount: number,
 } | {
@@ -46,6 +48,8 @@ export type UpdateStateAction = {
 return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
 	if action.type == "UpdateStage" then
 		playerData.stage += action.amount
+	elseif action.type == "ResetStage" then
+		playerData.stage = 0
 	elseif action.type == "UpdateDeaths" then
 		playerData.deaths += action.amount
 	elseif action.type == "UpdateSetting" then
@@ -75,11 +79,9 @@ return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
 		print("UpdateTeleporting - origin: " .. tostring(action.origin))
 		playerData.teleporting.world = action.world
 		playerData.teleporting.origin = action.origin
-		task.wait(2)
 	elseif action.type == "UpdateCurrentWorld" then
 		print("UpdateCurrentWorld - world: " .. tostring(action.world))
 		playerData.currentWorld = action.world
-		task.wait(2)
 	else
 		error("Invalid action type: " .. tostring(action.type))
 	end

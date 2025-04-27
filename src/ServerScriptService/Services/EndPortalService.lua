@@ -26,7 +26,7 @@ Shared.OnStart = function()
 	end)
 end
 
-Local.SetupPortal = function(player: Player, state: PlayerData.PlayerData)
+Local.SetupPortal = function(player: Player, initialState: PlayerData.PlayerData)
 	for _, descendant in Workspace.EndPortal:GetDescendants() do
 		if descendant.Name == "Inside" then
 			descendant.Touched:Connect(function(otherPart: BasePart)
@@ -35,7 +35,13 @@ Local.SetupPortal = function(player: Player, state: PlayerData.PlayerData)
 
 				if player and not playerDebounce[player.UserId] then
 					print("EndPortalService - player and not playerDebounce[player.UserId]")
-					local playerStage = state.stage
+					-- Always get the latest state from PlayerDataService
+					local currentState = PlayerDataService.GetState(player)
+					if not currentState then
+						playerDebounce[player.UserId] = nil
+						return
+					end
+					local playerStage = currentState.stage
 					local isLastStage = playerStage == StagesConfig.GetTotalStages()
 					if not isLastStage then
 						playerDebounce[player.UserId] = nil
@@ -93,7 +99,7 @@ Local.SetupPortal = function(player: Player, state: PlayerData.PlayerData)
 
 					PlayerDataService.UpdateState(player, action)
 
-					WorldPortalService.TeleportPlayer(player, state, worldName, placeId)
+					WorldPortalService.TeleportPlayer(player, worldName, placeId)
 
 					-- Reset the debounce after 3 seconds
 					-- This is needed in case teleport fails or player stays in range
