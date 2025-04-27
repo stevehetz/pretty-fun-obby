@@ -15,6 +15,14 @@ local SKIP_BUTTON_TEXT = "REPLACE"
 local Local = {}
 local Shared = {}
 
+function Shared.HideSkipButton()
+	OpenButton.Visible = false
+end
+
+function Shared.ShowSkipButton()
+	OpenButton.Visible = true
+end
+
 function Shared.OnStart()
 	OpenButton.MouseButton1Click:Connect(function()
 		local skipAmount = StateController.GetState().skips.amount

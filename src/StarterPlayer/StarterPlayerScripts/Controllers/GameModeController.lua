@@ -6,6 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Player = Players.LocalPlayer
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 
+local SkipsGui = require(script.Parent.Guis.Skips)
 local GuiController = require(script.Parent.GuiController)
 
 local Label = GuiController.Guis.TopTwo.Frame.TimerLabel
@@ -18,7 +19,6 @@ local TimedDoorInside = TimedDoorModel:WaitForChild("Inside")
 local FinishDoorModel = GameModeFolder:WaitForChild("FinishDoor")
 local FinishDoorInside = FinishDoorModel:WaitForChild("Inside")
 
-local gameMode = "Casual"
 local finished = false
 local timerRunning = false
 local startTime = 0
@@ -26,6 +26,8 @@ local elapsedTime = 0
 
 local Local = {}
 local Shared = {}
+
+Shared.GameMode = "Casual"
 
 function Shared.OnStart()
 	RunService.Heartbeat:Connect(function()
@@ -36,12 +38,13 @@ function Shared.OnStart()
 	end)
 
 	TimedDoorInside.Touched:Connect(function(hit)
-		if gameMode == "Timed" then
+		if Shared.GameMode == "Timed" then
 			return
 		end
 		local char = hit.Parent
 		if char and char:FindFirstChild("Humanoid") and not timerRunning then
-			gameMode = "Timed"
+			Shared.GameMode = "Timed"
+			SkipsGui.HideSkipButton()
 			Label.Visible = true
 			timerRunning = true
 			startTime = tick()
@@ -50,23 +53,25 @@ function Shared.OnStart()
 	end)
 
 	CasualDoorInside.Touched:Connect(function(hit)
-		if gameMode == "Casual" then
+		if Shared.GameMode == "Casual" then
 			return
 		end
 		local char = hit.Parent
 		if char and char:FindFirstChild("Humanoid") and timerRunning then
-			gameMode = "Casual"
+			Shared.GameMode = "Casual"
+			SkipsGui.ShowSkipButton()
 			timerRunning = false
 			Label.Visible = false
 		end
 	end)
 
 	FinishDoorInside.Touched:Connect(function(hit)
-		if gameMode == "Casual" or finished == true then
+		if Shared.GameMode == "Casual" or finished == true then
 			return
 		end
 		local char = hit.Parent
 		if char and char:FindFirstChild("Humanoid") and timerRunning then
+			SkipsGui.ShowSkipButton()
 			finished = true
 			timerRunning = false
 			Label.TextColor3 = Color3.fromRGB(0, 255, 0)
