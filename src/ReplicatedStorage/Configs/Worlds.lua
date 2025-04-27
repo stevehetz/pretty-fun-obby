@@ -31,4 +31,16 @@ function Shared.GetDisplayNameFromWorldName(worldName: WorldName): string?
 	return displayName
 end
 
+function Shared.GetCurrentWorldName(): WorldName?
+	local placeId = game.PlaceId
+
+	for worldName, id in pairs(PLACE_IDS) do
+		if id == placeId then
+			return worldName
+		end
+	end
+
+	return nil
+end
+
 return Shared

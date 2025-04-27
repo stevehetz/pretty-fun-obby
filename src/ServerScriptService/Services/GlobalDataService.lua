@@ -4,17 +4,21 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
+local WorldsConfig = require(ReplicatedStorage.Configs.Worlds)
+
 -- Create appropriate DataStore prefix based on environment
 local StorePrefix = RunService:IsStudio() and "Test_" or "Prod_"
 local GlobalFinishersKey = StorePrefix .. "GlobalFinishers"
 local GlobalTimesKey = StorePrefix .. "GlobalTimes"
 local PlayerInfoKey = StorePrefix .. "PlayerInfo"
 
+local CurrentWorldName = WorldsConfig.GetCurrentWorldName()
+
 local GlobalFinishesStore = DataStoreService:GetOrderedDataStore(GlobalFinishersKey)
-local GlobalTimesStore = DataStoreService:GetOrderedDataStore(GlobalTimesKey)
+local GlobalTimesStore = DataStoreService:GetOrderedDataStore(GlobalTimesKey .. "_" .. CurrentWorldName)
 
 local GlobalFinishesMemoryStore = MemoryStoreService:GetSortedMap(GlobalFinishersKey)
-local GlobalTimesMemoryStore = MemoryStoreService:GetSortedMap(GlobalTimesKey)
+local GlobalTimesMemoryStore = MemoryStoreService:GetSortedMap(GlobalTimesKey .. "_" .. CurrentWorldName)
 local PlayerInfoMemoryStore = MemoryStoreService:GetHashMap(PlayerInfoKey)
 
 local GetTopFinishersRF = Instance.new("RemoteFunction")
