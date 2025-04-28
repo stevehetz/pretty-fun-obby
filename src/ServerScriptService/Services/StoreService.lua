@@ -104,21 +104,21 @@ function Local.ProcessGamepassPurchasedFromWebsite(player: Player)
 end
 
 function Local.PurchaseProduct(receiptInfo: ReceiptInfo)
-	local deceision = Enum.ProductPurchaseDecision.NotProcessedYet
+	local decision = Enum.ProductPurchaseDecision.NotProcessedYet
 
 	local player = Players:GetPlayerByUserId(receiptInfo.PlayerId)
 	if not player then
-		return deceision
+		return decision
 	end
 
 	local state = PlayerDataService.GetState(player)
 	if not state then
-		return deceision
+		return decision
 	end
 
 	local productInfo = StoreConfig.GetStoreItemInfo(receiptInfo.ProductId)
 	if not productInfo then
-		return deceision
+		return decision
 	end
 
 	local is5Skips = productInfo.Name == "5 Skips"
@@ -129,12 +129,41 @@ function Local.PurchaseProduct(receiptInfo: ReceiptInfo)
 			amount = isVIP and 10 or 5,
 		}
 		PlayerDataService.UpdateState(player, action)
-		deceision = Enum.ProductPurchaseDecision.PurchaseGranted
+		decision = Enum.ProductPurchaseDecision.PurchaseGranted
 	end
 
-	BadgesConfig.RewardBadge(player, "Supporter")
+	local isTeleportWorld2 = productInfo.Name == "Teleport to World 2"
+	if isTeleportWorld2 then
+		print("Purchase Granted: Teleporting to World 2")
 
-	return deceision
+		-- Get the WorldPortalService
+		local WorldPortalService = require(script.Parent.WorldPortalService)
+
+		-- Check if there's pending teleport info for this player
+		if WorldPortalService.pendingTeleports and WorldPortalService.pendingTeleports[player.UserId] then
+			local teleportInfo = WorldPortalService.pendingTeleports[player.UserId]
+
+			-- Freeze the player so they can't move during teleport
+			local character = player.Character
+			if character and character:FindFirstChild("Humanoid") then
+				local humanoid = character.Humanoid
+				humanoid.WalkSpeed = 0
+				humanoid.JumpHeight = 0
+			end
+
+			-- Teleport the player
+			WorldPortalService.TeleportPlayer(player, teleportInfo.worldName, teleportInfo.placeId)
+
+			-- Clear the pending teleport
+			WorldPortalService.pendingTeleports[player.UserId] = nil
+		end
+
+		decision = Enum.ProductPurchaseDecision.PurchaseGranted
+	end
+
+	-- BadgesConfig.RewardBadge(player, "Supporter")
+
+	return decision
 end
 
 return Shared

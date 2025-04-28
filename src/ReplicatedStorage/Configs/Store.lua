@@ -31,6 +31,9 @@ Shared.Store = {
 		{
 			Id = 3265508606, -- 5 skips
 		},
+		{
+			Id = 3275590834, -- Teleport to World 2
+		},
 	},
 
 	Subscriptions = {

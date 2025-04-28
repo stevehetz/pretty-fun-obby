@@ -4,14 +4,17 @@ local Workspace = game:GetService("Workspace")
 local TeleportService = game:GetService("TeleportService")
 local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
+local MarketplaceService = game:GetService("MarketplaceService")
 
 local PlayerData = require(ReplicatedStorage.PlayerData)
 local WorldsConfig = require(ReplicatedStorage.Configs.Worlds)
+local StoreConfig = require(ReplicatedStorage.Configs.Store)
 
 local Local = {}
 local Shared = {}
 
 local playerDebounce = {}
+Local.pendingTeleports = {}
 
 Shared.HandleWorldTeleportComplete = Instance.new("BindableEvent")
 Shared.HandleRebirth = Instance.new("BindableEvent")
@@ -143,6 +146,32 @@ function Shared.SetupPortals()
 						return
 					end
 
+					-- If this is World 2 portal, prompt purchase instead of direct teleport
+					if worldName == "World2" then
+						-- Get the product ID for "Teleport to World 2"
+						local productInfo = StoreConfig.GetStoreItemInfo("Teleport to World 2")
+						if productInfo then
+							print("WorldPortalService - Prompting purchase for World 2")
+
+							-- Store teleport info in the pendingTeleports table for later use when purchase completes
+							Local.pendingTeleports[player.UserId] = {
+								worldName = worldName,
+								placeId = placeId,
+							}
+
+							-- Prompt the purchase
+							MarketplaceService:PromptProductPurchase(player, productInfo.Id)
+
+							-- Reset the debounce after a delay
+							task.delay(3, function()
+								if playerDebounce[player.UserId] then
+									playerDebounce[player.UserId] = nil
+								end
+							end)
+							return
+						end
+					end
+
 					-- If in studio, do not teleport or freeze the player
 					if RunService:IsStudio() then
 						task.delay(3, function()
@@ -214,5 +243,8 @@ function Shared.TeleportPlayer(player: Player, worldName: string, placeId: numbe
 		TeleportService:Teleport(placeId, player, nil)
 	end)
 end
+
+-- Expose pendingTeleports through the Shared table
+Shared.pendingTeleports = Local.pendingTeleports
 
 return Shared
