@@ -10,6 +10,9 @@ local PlayerData = require(ReplicatedStorage.PlayerData)
 local WorldsConfig = require(ReplicatedStorage.Configs.Worlds)
 local StoreConfig = require(ReplicatedStorage.Configs.Store)
 
+-- Configuration flag to control whether World 2 requires purchase
+local REQUIRE_WORLD2_PURCHASE = false -- Set to true to re-enable purchase requirement
+
 local Local = {}
 local Shared = {}
 
@@ -146,8 +149,8 @@ function Shared.SetupPortals()
 						return
 					end
 
-					-- If this is World 2 portal, prompt purchase instead of direct teleport
-					if worldName == "World2" then
+					-- If this is World 2 portal, check if purchase is required
+					if worldName == "World2" and REQUIRE_WORLD2_PURCHASE then
 						-- Get the product ID for "Teleport to World 2"
 						local productInfo = StoreConfig.GetStoreItemInfo("Teleport to World 2")
 						if productInfo then
