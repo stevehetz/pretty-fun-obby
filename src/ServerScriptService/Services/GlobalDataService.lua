@@ -130,7 +130,7 @@ end
 
 function Shared.GetTopFinishers()
 	local ok, list = pcall(function()
-		return GlobalFinishesMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, 20)
+		return GlobalFinishesMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, 10)
 	end)
 	if not ok then
 		return {}
@@ -167,7 +167,7 @@ end
 
 function Shared.GetTopTimes()
 	local ok, list = pcall(function()
-		return GlobalTimesMemoryStore:GetRangeAsync(Enum.SortDirection.Ascending, 20)
+		return GlobalTimesMemoryStore:GetRangeAsync(Enum.SortDirection.Ascending, 10)
 	end)
 	if not ok then
 		return {}
