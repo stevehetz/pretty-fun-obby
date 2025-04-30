@@ -3,7 +3,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local GetTopFinishersRF = ReplicatedStorage:WaitForChild("GetTopFinishers")
 local GetTopTimesRF = ReplicatedStorage:WaitForChild("GetTopTimes")
+local GetTimeUntilRefreshRF = ReplicatedStorage:WaitForChild("GetTimeUntilRefresh")
+local GetTopTwoTimesPerWorldRF = ReplicatedStorage:WaitForChild("GetTopTwoTimesPerWorldRF")
 local leaderboardsFolder = Workspace:WaitForChild("Leaderboards")
+local worldPortalsFolder = Workspace:WaitForChild("WorldPortals")
 
 local REFRESH_INTERVAL = 60 -- Refresh leaderboard every 60 seconds
 
@@ -13,19 +16,32 @@ local Shared = {}
 -- Store the current leaderboard data
 Shared.FinishesLeaderboardData = {}
 Shared.TimesLeaderboardData = {}
+Shared.TopTwoTimesPerWorldData = {}
 Shared.LastRefreshTime = 0
 
 Shared.OnStart = function()
 	-- Initial fetch
 	Shared.RefreshFinishesLeaderboard()
 	Shared.RefreshTimesLeaderboard()
+	Shared.RefreshTopTwoTimesPerWorld()
+	Shared.UpdateTimeUntilRefresh()
 
-	-- Set up periodic refresh
+	-- Set up periodic refresh for leaderboards
 	task.spawn(function()
 		while true do
 			task.wait(REFRESH_INTERVAL)
 			Shared.RefreshFinishesLeaderboard()
 			Shared.RefreshTimesLeaderboard()
+			Shared.RefreshTopTwoTimesPerWorld()
+		end
+	end)
+
+	-- Set up periodic refresh for time until refresh (every minute)
+	task.spawn(function()
+		Shared.UpdateTimeUntilRefresh()
+		while true do
+			task.wait(60) -- Update every minute
+			Shared.UpdateTimeUntilRefresh()
 		end
 	end)
 end
@@ -54,7 +70,6 @@ function Shared.RefreshTimesLeaderboard()
 	if success and data then
 		Shared.LastRefreshTime = os.time()
 		Shared.TimesLeaderboardData = data
-		print("Times Leaderboard Data: ", data)
 		Local.UpdateAllTimesLeaderboardUI(data)
 		return data
 	else
@@ -252,6 +267,148 @@ function Local.UpdateTimesLeaderboardUI(leaderboard, data)
 
 		-- Parent after fully configuring
 		row.Parent = rowsFrame
+	end
+end
+
+-- Function to update the time until refresh display
+function Shared.UpdateTimeUntilRefresh()
+	local success, timeUntilRefresh = pcall(function()
+		return GetTimeUntilRefreshRF:InvokeServer()
+	end)
+
+	if not success or not timeUntilRefresh then
+		warn("Failed to get time until refresh")
+		return
+	end
+
+	-- Format the time into days, hours, minutes
+	local days = math.floor(timeUntilRefresh / (24 * 60 * 60))
+	local hours = math.floor((timeUntilRefresh % (24 * 60 * 60)) / 3600)
+	local minutes = math.floor((timeUntilRefresh % 3600) / 60)
+
+	local formattedTime = string.format("%d days %d hr %d min", days, hours, minutes)
+
+	-- Find all refresh time labels in the leaderboards folder
+	local signs = leaderboardsFolder:GetDescendants()
+	for _, sign in ipairs(signs) do
+		if sign.Name == "Sign" and sign:IsA("Model") then
+			local display = sign:WaitForChild("Display", 5)
+			local surfaceGui = display:WaitForChild("SurfaceGui", 5)
+			local frame = surfaceGui:WaitForChild("Frame", 5)
+			local label = frame:WaitForChild("TimeRemaining", 5)
+			label.Text = formattedTime
+		end
+	end
+end
+
+function Shared.RefreshTopTwoTimesPerWorld()
+	local success, data = pcall(function()
+		return GetTopTwoTimesPerWorldRF:InvokeServer()
+	end)
+
+	if success and data then
+		Shared.LastRefreshTime = os.time()
+		Shared.TopTwoTimesPerWorldData = data
+		Local.UpdateAllLeaderScreens(data)
+		return data
+	else
+		warn("Failed to refresh top two times per world data")
+		return Shared.TopTwoTimesPerWorldData
+	end
+end
+
+function Local.UpdateAllLeaderScreens(data)
+	-- Find all LeaderScreen objects in the WorldPortals folder
+	for _, worldModel in ipairs(worldPortalsFolder:GetChildren()) do
+		if worldModel:IsA("Model") then
+			local worldName = worldModel.Name
+
+			-- Find LeaderScreen in this world folder
+			for _, leaderScreen in ipairs(worldModel:GetDescendants()) do
+				if leaderScreen.Name == "LeaderScreen" and leaderScreen:IsA("Model") then
+					-- Update this LeaderScreen with data for its world
+					Local.UpdateLeaderScreen(leaderScreen, worldName, data[worldName] or {})
+				end
+			end
+		end
+	end
+end
+
+function Local.UpdateLeaderScreen(leaderScreen, worldName, worldData)
+	-- Use pcall with WaitForChild to handle cases where children might not exist
+	local success, result = pcall(function()
+		local display = leaderScreen:WaitForChild("display", 5)
+		local surfaceGui = display:WaitForChild("SurfaceGui", 5)
+		local frame = surfaceGui:WaitForChild("Frame", 5)
+		local rowTemplate = frame:WaitForChild("RowTemplate", 5)
+
+		return {
+			display = display,
+			surfaceGui = surfaceGui,
+			frame = frame,
+			rowTemplate = rowTemplate,
+		}
+	end)
+
+	if not success then
+		warn("Failed to update LeaderScreen UI for " .. worldName .. ": " .. tostring(result))
+		return
+	end
+
+	local frame = result.frame
+	local rowTemplate = result.rowTemplate
+
+	-- Clear existing rows
+	for _, child in ipairs(frame:GetChildren()) do
+		if child:IsA("Frame") and child.Name ~= "RowTemplate" and not child:FindFirstChild("UIListLayout") then
+			child:Destroy()
+		end
+	end
+
+	-- Make sure template is properly configured and hidden
+	rowTemplate.Visible = false
+
+	-- If we have no data for this world, show a message
+	if #worldData == 0 then
+		local noDataLabel = Instance.new("TextLabel")
+		noDataLabel.Name = "NoDataLabel"
+		noDataLabel.Size = UDim2.new(1, 0, 0, 80)
+		noDataLabel.BackgroundTransparency = 1
+		noDataLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+		noDataLabel.Text = "No times recorded yet"
+		noDataLabel.TextSize = 60
+		noDataLabel.Font = Enum.Font.GothamBold
+		noDataLabel.Parent = frame
+		return
+	end
+
+	-- Populate with top 2 players
+	for _, entry in ipairs(worldData) do
+		-- Create a deep copy of the template
+		local row = rowTemplate:Clone()
+		row.Name = "Row" .. entry.rank
+		row.Visible = true
+
+		-- Set the rank label
+		local lblRank = row:FindFirstChild("Rank")
+		if lblRank then
+			lblRank.Text = "#" .. entry.rank
+		end
+
+		-- Set avatar image
+		local avatar = row:FindFirstChild("Avatar")
+		if avatar then
+			avatar.Image = entry.avatarUrl
+		end
+
+		-- Set the player name label
+		local playerLabel = row:FindFirstChild("Player")
+		if playerLabel then
+			playerLabel.Text = entry.username
+		end
+
+		-- Parent after fully configuring
+		row.Parent = frame
 	end
 end
 

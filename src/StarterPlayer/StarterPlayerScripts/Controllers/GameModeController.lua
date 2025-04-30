@@ -75,7 +75,7 @@ function Shared.OnStart()
 			end
 
 			Shared.GameMode = "Timed"
-			SkipsGui.HideSkipButton()
+			-- SkipsGui.HideSkipButton()
 			Label.TextColor3 = originalColor
 			Label.TextSize = originalSize
 			Label.Visible = true
@@ -160,7 +160,6 @@ function Shared.OnStart()
 end
 
 Local.Reset = function()
-	print("GameModeController - Reset")
 	Label.TextColor3 = originalColor
 	Label.TextSize = originalSize
 	SkipsGui.ShowSkipButton()

@@ -11,11 +11,13 @@ local StorePrefix = RunService:IsStudio() and "Test_" or "Prod_"
 local GlobalFinishersKey = StorePrefix .. "GlobalFinishers"
 local GlobalTimesKey = StorePrefix .. "GlobalTimes"
 local PlayerInfoKey = StorePrefix .. "PlayerInfo"
+local WeeklyResetKey = StorePrefix .. "WeeklyReset"
 
 local CurrentWorldName = WorldsConfig.GetCurrentWorldName()
 
 local GlobalFinishesStore = DataStoreService:GetOrderedDataStore(GlobalFinishersKey .. "_" .. CurrentWorldName)
 local GlobalTimesStore = DataStoreService:GetOrderedDataStore(GlobalTimesKey .. "_" .. CurrentWorldName)
+local WeeklyResetStore = DataStoreService:GetDataStore(WeeklyResetKey)
 
 local GlobalFinishesMemoryStore = MemoryStoreService:GetSortedMap(GlobalFinishersKey .. "_" .. CurrentWorldName)
 local GlobalTimesMemoryStore = MemoryStoreService:GetSortedMap(GlobalTimesKey .. "_" .. CurrentWorldName)
@@ -29,10 +31,134 @@ local GetTopTimesRF = Instance.new("RemoteFunction")
 GetTopTimesRF.Name = "GetTopTimes"
 GetTopTimesRF.Parent = ReplicatedStorage
 
+local GetTimeUntilRefreshRF = Instance.new("RemoteFunction")
+GetTimeUntilRefreshRF.Name = "GetTimeUntilRefresh"
+GetTimeUntilRefreshRF.Parent = ReplicatedStorage
+
+local GetTopTwoTimesPerWorldRF = Instance.new("RemoteFunction")
+GetTopTwoTimesPerWorldRF.Name = "GetTopTwoTimesPerWorldRF"
+GetTopTwoTimesPerWorldRF.Parent = ReplicatedStorage
+
 local Local = {}
 local Shared = {}
 
+-- Function to clear all entries from both global stores
+function Local.ClearGlobalStores()
+	-- 1. Clear the DataStores
+	-- We need to fetch all entries and remove them one by one
+	local function clearOrderedDataStore(store, memoryStore, storeName)
+		local success, pages = pcall(function()
+			return store:GetSortedAsync(false, 100) -- Get up to 100 entries
+		end)
+
+		if success then
+			local entries = pages:GetCurrentPage()
+
+			local successCount = 0
+			local failCount = 0
+
+			for _, entry in ipairs(entries) do
+				-- Remove from DataStore
+				local dsSuccess = pcall(function()
+					store:RemoveAsync(entry.key)
+				end)
+
+				-- Remove from MemoryStore
+				local msSuccess = pcall(function()
+					memoryStore:RemoveAsync(entry.key)
+				end)
+
+				if dsSuccess and msSuccess then
+					successCount = successCount + 1
+				else
+					failCount = failCount + 1
+				end
+			end
+		else
+			warn("Failed to fetch entries for clearing " .. storeName .. ":", pages)
+		end
+	end
+
+	-- Get all worlds from WorldsConfig
+	local worlds = WorldsConfig.GetAllWorlds()
+
+	-- Clear stores for each world
+	for _, worldName in ipairs(worlds) do
+		-- Create connections to this world's stores
+		local worldTimesStore = DataStoreService:GetOrderedDataStore(GlobalTimesKey .. "_" .. worldName)
+		local worldTimesMemoryStore = MemoryStoreService:GetSortedMap(GlobalTimesKey .. "_" .. worldName)
+
+		-- Clear Times Store for this world
+		clearOrderedDataStore(worldTimesStore, worldTimesMemoryStore, "GlobalTimesStore_" .. worldName)
+
+		print("Cleared global stores for " .. worldName)
+	end
+
+	-- Update the last reset timestamp
+	local success, err = pcall(function()
+		WeeklyResetStore:SetAsync("LastReset", os.time())
+	end)
+
+	if not success then
+		warn("Failed to update last reset timestamp:", err)
+	end
+
+	return true
+end
+
+-- Function to check if a weekly reset is needed
+function Local.CheckWeeklyReset()
+	local success, lastReset = pcall(function()
+		return WeeklyResetStore:GetAsync("LastReset")
+	end)
+
+	if not success then
+		warn("Failed to get last reset timestamp, assuming reset is needed")
+		return Local.ClearGlobalStores()
+	end
+
+	local currentTime = os.time()
+	local oneWeekInSeconds = 7 * 24 * 60 * 60 -- 7 days in seconds
+
+	-- If we've never reset or it's been more than a week since the last reset
+	if not lastReset or (currentTime - lastReset) >= oneWeekInSeconds then
+		return Local.ClearGlobalStores()
+	end
+	-- Local.ClearGlobalStores()
+
+	-- Calculate time until next reset
+	if lastReset then
+		local nextResetTime = lastReset + oneWeekInSeconds
+		local timeUntilReset = nextResetTime - currentTime
+		local daysUntilReset = math.floor(timeUntilReset / (24 * 60 * 60))
+		local hoursUntilReset = math.floor((timeUntilReset % (24 * 60 * 60)) / 3600)
+
+		-- Store the next reset time for the GetTimeUntilRefresh function
+		Shared.nextResetTime = nextResetTime
+	end
+
+	return false
+end
+
+-- Function to manually trigger a reset (can be exposed via admin commands if needed)
+function Shared.ManualResetGlobalStores()
+	return Local.ClearGlobalStores()
+end
+
 Shared.OnStart = function()
+	-- Check for weekly reset on server start
+	task.spawn(function()
+		Local.CheckWeeklyReset()
+	end)
+
+	-- Set up a timer to check for weekly reset every hour
+	task.spawn(function()
+		while true do
+			task.wait(3600) -- Check every hour (3600 seconds)
+			Local.CheckWeeklyReset()
+		end
+	end)
+
 	-- Get top finishes from the persistent store and cache them in MemoryStore
 	task.spawn(function()
 		local success, pages = pcall(function()
@@ -85,6 +211,14 @@ Shared.OnStart = function()
 
 	GetTopTimesRF.OnServerInvoke = function()
 		return Shared.GetTopTimes()
+	end
+
+	GetTimeUntilRefreshRF.OnServerInvoke = function()
+		return Shared.GetTimeUntilRefresh()
+	end
+
+	GetTopTwoTimesPerWorldRF.OnServerInvoke = function()
+		return Shared.GetTopTwoTimesPerWorld()
 	end
 end
 
@@ -318,6 +452,79 @@ function Shared.RecordTimeFinish(player, time)
 			Local.FetchAndCachePlayerInfo(player.UserId)
 		end)
 	end
+end
+
+-- Function to get the time until the next leaderboard refresh
+function Shared.GetTimeUntilRefresh()
+	-- If we don't have a next reset time stored, try to calculate it
+	if not Shared.nextResetTime then
+		local success, lastReset = pcall(function()
+			return WeeklyResetStore:GetAsync("LastReset")
+		end)
+
+		if success and lastReset then
+			local oneWeekInSeconds = 7 * 24 * 60 * 60 -- 7 days in seconds
+			Shared.nextResetTime = lastReset + oneWeekInSeconds
+		else
+			-- If we can't get the last reset time, return nil
+			return nil
+		end
+	end
+
+	local currentTime = os.time()
+	local timeUntilReset = Shared.nextResetTime - currentTime
+
+	-- If the time is negative, a reset is due but hasn't happened yet
+	if timeUntilReset < 0 then
+		return 0
+	end
+
+	-- Return the time remaining in seconds
+	return timeUntilReset
+end
+
+-- Function to get the top two times for each world
+function Shared.GetTopTwoTimesPerWorld()
+	local worlds = WorldsConfig.GetAllWorlds()
+	local results = {}
+
+	for _, worldName in ipairs(worlds) do
+		-- Create a temporary connection to this world's GlobalTimesMemoryStore
+		local worldTimesMemoryStore = MemoryStoreService:GetSortedMap(GlobalTimesKey .. "_" .. worldName)
+
+		-- Get the top 2 times from this world's memory store
+		local ok, list = pcall(function()
+			return worldTimesMemoryStore:GetRangeAsync(Enum.SortDirection.Ascending, 2)
+		end)
+
+		if ok and list then
+			local worldTimes = {}
+
+			for _, entry in ipairs(list) do
+				local uid = tonumber(entry.key)
+				-- Convert stored integer time back to float (seconds)
+				local time = entry.value / 1000
+
+				-- Get player info (from cache if available)
+				local playerInfo = Local.FetchAndCachePlayerInfo(uid)
+
+				table.insert(worldTimes, {
+					userId = uid,
+					username = playerInfo.username,
+					avatarUrl = playerInfo.avatarUrl,
+					time = time,
+					rank = #worldTimes + 1,
+				})
+			end
+
+			results[worldName] = worldTimes
+		else
+			-- If there was an error or no times, return an empty array
+			results[worldName] = {}
+		end
+	end
+
+	return results
 end
 
 return Shared

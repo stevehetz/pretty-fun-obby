@@ -13,6 +13,16 @@ local DISPLAY_NAMES = {
 local Local = {}
 local Shared = {}
 
+function Shared.GetAllWorlds(): { WorldName }
+	local worlds = {}
+
+	for worldName, _ in pairs(PLACE_IDS) do
+		table.insert(worlds, worldName)
+	end
+
+	return worlds
+end
+
 function Shared.GetPlaceIdFromWorldName(worldName: WorldName): number?
 	local placeId = PLACE_IDS[worldName]
 	if not placeId then
