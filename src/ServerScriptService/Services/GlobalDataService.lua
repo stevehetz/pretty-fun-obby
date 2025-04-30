@@ -492,9 +492,9 @@ function Shared.GetTopTwoTimesPerWorld()
 		-- Create a temporary connection to this world's GlobalTimesMemoryStore
 		local worldTimesMemoryStore = MemoryStoreService:GetSortedMap(GlobalTimesKey .. "_" .. worldName)
 
-		-- Get the top 2 times from this world's memory store
+		-- Get the top 20 times from this world's memory store (like GetTopTimes does)
 		local ok, list = pcall(function()
-			return worldTimesMemoryStore:GetRangeAsync(Enum.SortDirection.Ascending, 2)
+			return worldTimesMemoryStore:GetRangeAsync(Enum.SortDirection.Ascending, 20)
 		end)
 
 		if ok and list then
@@ -513,11 +513,26 @@ function Shared.GetTopTwoTimesPerWorld()
 					username = playerInfo.username,
 					avatarUrl = playerInfo.avatarUrl,
 					time = time,
-					rank = #worldTimes + 1,
 				})
 			end
 
-			results[worldName] = worldTimes
+			-- Ensure results are sorted by time in ascending order
+			table.sort(worldTimes, function(a, b)
+				return a.time < b.time
+			end)
+
+			-- Assign ranks based on sorted order
+			for i, entry in ipairs(worldTimes) do
+				entry.rank = i
+			end
+
+			-- Only return the top 2 entries for this world
+			local topTwoEntries = {}
+			for i = 1, math.min(2, #worldTimes) do
+				table.insert(topTwoEntries, worldTimes[i])
+			end
+
+			results[worldName] = topTwoEntries
 		else
 			-- If there was an error or no times, return an empty array
 			results[worldName] = {}
