@@ -20,19 +20,29 @@ Shared.TopTwoTimesPerWorldData = {}
 Shared.LastRefreshTime = 0
 
 Shared.OnStart = function()
-	-- Initial fetch
-	Shared.RefreshFinishesLeaderboard()
-	Shared.RefreshTimesLeaderboard()
-	Shared.RefreshTopTwoTimesPerWorld()
+	-- Initial fetch - do sequentially to ensure each completes before moving to the next
+	local finishesData = Shared.RefreshFinishesLeaderboard()
+	task.wait(0.5) -- Small delay between refreshes
+
+	local timesData = Shared.RefreshTimesLeaderboard()
+	task.wait(0.5) -- Small delay between refreshes
+
+	local topTwoData = Shared.RefreshTopTwoTimesPerWorld()
 	Shared.UpdateTimeUntilRefresh()
 
 	-- Set up periodic refresh for leaderboards
 	task.spawn(function()
 		while true do
 			task.wait(REFRESH_INTERVAL)
-			Shared.RefreshFinishesLeaderboard()
-			Shared.RefreshTimesLeaderboard()
-			Shared.RefreshTopTwoTimesPerWorld()
+
+			-- Refresh leaderboards sequentially to ensure each completes before moving to the next
+			local finishesData = Shared.RefreshFinishesLeaderboard()
+			task.wait(0.5) -- Small delay between refreshes
+
+			local timesData = Shared.RefreshTimesLeaderboard()
+			task.wait(0.5) -- Small delay between refreshes
+
+			local topTwoData = Shared.RefreshTopTwoTimesPerWorld()
 		end
 	end)
 
@@ -40,7 +50,7 @@ Shared.OnStart = function()
 	task.spawn(function()
 		Shared.UpdateTimeUntilRefresh()
 		while true do
-			task.wait(60) -- Update every minute
+			task.wait(10) -- Update every minute
 			Shared.UpdateTimeUntilRefresh()
 		end
 	end)
@@ -302,9 +312,12 @@ function Shared.UpdateTimeUntilRefresh()
 end
 
 function Shared.RefreshTopTwoTimesPerWorld()
+	print("Refreshing Top Two Times Per World")
 	local success, data = pcall(function()
 		return GetTopTwoTimesPerWorldRF:InvokeServer()
 	end)
+
+	print("Top Two Times Per World Data: ", data)
 
 	if success and data then
 		Shared.LastRefreshTime = os.time()
@@ -318,6 +331,7 @@ function Shared.RefreshTopTwoTimesPerWorld()
 end
 
 function Local.UpdateAllLeaderScreens(data)
+	print("Updating all LeaderScreens")
 	-- Find all LeaderScreen objects in the WorldPortals folder
 	for _, worldModel in ipairs(worldPortalsFolder:GetChildren()) do
 		if worldModel:IsA("Model") then
@@ -335,6 +349,7 @@ function Local.UpdateAllLeaderScreens(data)
 end
 
 function Local.UpdateLeaderScreen(leaderScreen, worldName, worldData)
+	print("Updating LeaderScreen for world: " .. worldName)
 	-- Use pcall with WaitForChild to handle cases where children might not exist
 	local success, result = pcall(function()
 		local display = leaderScreen:WaitForChild("display", 5)
@@ -368,8 +383,11 @@ function Local.UpdateLeaderScreen(leaderScreen, worldName, worldData)
 	-- Make sure template is properly configured and hidden
 	rowTemplate.Visible = false
 
+	print("World Data: ", worldData)
+
 	-- If we have no data for this world, show a message
 	if #worldData == 0 then
+		print("No data for world: " .. worldName)
 		local noDataLabel = Instance.new("TextLabel")
 		noDataLabel.Name = "NoDataLabel"
 		noDataLabel.Size = UDim2.new(1, 0, 0, 80)
