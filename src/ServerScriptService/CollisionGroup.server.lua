@@ -18,10 +18,8 @@ PhysicsService:CollisionGroupSetCollidable("Players", "Players", false)
 
 Players.PlayerAdded:Connect(function(player)
 	player.CharacterAdded:Connect(function(char)
-		print("Setting collision group for character parts")
 		for _, part in ipairs(char:GetDescendants()) do
 			if part:IsA("BasePart") then
-				print("Setting collision group for part: " .. part.Name)
 				part.CollisionGroup = "Players"
 			end
 		end

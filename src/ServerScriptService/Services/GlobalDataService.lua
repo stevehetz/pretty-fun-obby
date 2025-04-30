@@ -162,7 +162,13 @@ function Shared.GetTopFinishers()
 		entry.rank = i
 	end
 
-	return out
+	-- Only return the top 10 entries
+	local topEntries = {}
+	for i = 1, math.min(10, #out) do
+		table.insert(topEntries, out[i])
+	end
+
+	return topEntries
 end
 
 function Shared.GetTopTimes()
@@ -200,7 +206,13 @@ function Shared.GetTopTimes()
 		entry.rank = i
 	end
 
-	return out
+	-- Only return the top 10 entries
+	local topEntries = {}
+	for i = 1, math.min(10, #out) do
+		table.insert(topEntries, out[i])
+	end
+
+	return topEntries
 end
 
 function Shared.RecordWorldFinish(player, totalFinishes)
