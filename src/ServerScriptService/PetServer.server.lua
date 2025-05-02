@@ -11,8 +11,8 @@ Players.PlayerAdded:Connect(function(player)
 	folder.Parent = PlayerPets
 
 	-- local pet = PetsFolder:WaitForChild("HallowsSpider"):Clone()
-	-- local pet = PetsFolder:WaitForChild("LilDemon"):Clone()
-	-- pet.Parent = folder
+	local pet = PetsFolder:WaitForChild("LilDemon"):Clone()
+	pet.Parent = folder
 end)
 
 Players.PlayerRemoving:Connect(function(player)
