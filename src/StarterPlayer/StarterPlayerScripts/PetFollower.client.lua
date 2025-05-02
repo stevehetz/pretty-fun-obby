@@ -2,7 +2,7 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local playerPets = Workspace:WaitForChild("PlayerPets")
-local petOffset = CFrame.new(3, 0, 2)
+local petOffset = CFrame.new(4, 1, 4)
 local hoverSpeed = 3
 local hoverSize = 0.5
 

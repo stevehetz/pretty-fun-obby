@@ -312,12 +312,9 @@ function Shared.UpdateTimeUntilRefresh()
 end
 
 function Shared.RefreshTopTwoTimesPerWorld()
-	print("Refreshing Top Two Times Per World")
 	local success, data = pcall(function()
 		return GetTopTwoTimesPerWorldRF:InvokeServer()
 	end)
-
-	print("Top Two Times Per World Data: ", data)
 
 	if success and data then
 		Shared.LastRefreshTime = os.time()
@@ -331,7 +328,6 @@ function Shared.RefreshTopTwoTimesPerWorld()
 end
 
 function Local.UpdateAllLeaderScreens(data)
-	print("Updating all LeaderScreens")
 	-- Find all LeaderScreen objects in the WorldPortals folder
 	for _, worldModel in ipairs(worldPortalsFolder:GetChildren()) do
 		if worldModel:IsA("Model") then
@@ -349,7 +345,6 @@ function Local.UpdateAllLeaderScreens(data)
 end
 
 function Local.UpdateLeaderScreen(leaderScreen, worldName, worldData)
-	print("Updating LeaderScreen for world: " .. worldName)
 	-- Use pcall with WaitForChild to handle cases where children might not exist
 	local success, result = pcall(function()
 		local display = leaderScreen:WaitForChild("display", 5)
@@ -383,11 +378,8 @@ function Local.UpdateLeaderScreen(leaderScreen, worldName, worldData)
 	-- Make sure template is properly configured and hidden
 	rowTemplate.Visible = false
 
-	print("World Data: ", worldData)
-
 	-- If we have no data for this world, show a message
 	if #worldData == 0 then
-		print("No data for world: " .. worldName)
 		local noDataLabel = Instance.new("TextLabel")
 		noDataLabel.Name = "NoDataLabel"
 		noDataLabel.Size = UDim2.new(1, 0, 0, 80)
