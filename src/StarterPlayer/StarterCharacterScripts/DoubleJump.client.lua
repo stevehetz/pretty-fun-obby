@@ -4,7 +4,7 @@ local PlayerScripts = Player:WaitForChild("PlayerScripts")
 local StateController = require(PlayerScripts:WaitForChild("Controllers"):WaitForChild("StateController"))
 
 local MaxJumps = 2
-local jumpAnimationAssetId = "rbxassetid://112665726164183" -- Replace with your actual asset id
+local jumpAnimationAssetId = "rbxassetid://136637623641505" -- Replace with your actual asset id
 
 local UIS = game:GetService("UserInputService")
 local PlayerGui = Player:WaitForChild("PlayerGui")
