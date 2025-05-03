@@ -11,9 +11,16 @@ local Template = Container.Template
 local PETS = {
 	"Dog",
 	"Cat",
-	"LilDemon",
+	"Fox",
+	"Shark",
 	"HallowsSpider",
+	"Dominus Crystal",
+	"Dragon",
+	"Ice Dragon",
+	"LilDemon",
 	"Cerberus",
+	"Galactic Overlord",
+	"Sun Flare",
 }
 
 local Local = {}
