@@ -7,6 +7,7 @@ local Gui = GuiController.Guis.Pets
 local Frame = Gui.Frame
 local Container = Frame.Container
 local Template = Container.Template
+local OpenButton = GuiController.Guis.Left.Frame.Pets
 
 local PETS = {
 	"Dog",
@@ -27,6 +28,7 @@ local Local = {}
 local Shared = {}
 
 function Shared.OnStart()
+	GuiController.SetupGui(Gui, OpenButton)
 	Local.SetupPets()
 end
 
