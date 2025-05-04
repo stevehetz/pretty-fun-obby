@@ -57,6 +57,7 @@ function Local.AddProductInfo()
 		local productInfo = StoreConfig.GetStoreItemInfo(petName)
 
 		if productInfo then
+			pet.GamePassId = productInfo.Id
 			pet.Name = productInfo.Name
 			pet.Description = productInfo.Description
 			pet.Price = productInfo.Price
@@ -71,6 +72,16 @@ Local.AddProductInfo()
 
 function Shared.GetPets(): { PetInfo }
 	return Local.Pets
+end
+
+function Shared.GetPetFromGamePassId(id: number): PetInfo?
+	for _, pet in ipairs(Local.Pets) do
+		if pet.GamePassId == id then
+			return pet
+		end
+	end
+
+	return nil
 end
 
 return Shared

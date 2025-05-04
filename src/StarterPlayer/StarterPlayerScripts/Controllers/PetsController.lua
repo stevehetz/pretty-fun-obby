@@ -9,11 +9,11 @@ local Local = {}
 local Shared = {}
 
 function Shared.OnStart()
-	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
-		if action.type == "UpdateEquippedPets" then
-			print(action)
-		end
-	end)
+	-- StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
+	-- 	if action.type == "UpdateEquippedPets" then
+	-- 		print(action)
+	-- 	end
+	-- end)
 end
 
 function Shared.ToggleEquippedPet(pet: PetsConfig.PetInfo)

@@ -9,6 +9,8 @@ export type StoreItemInfo = {
 	Description: string,
 	Price: number,
 	Image: string,
+	IsTool: boolean?,
+	IsPet: boolean?,
 }
 
 local Local = {}
@@ -18,12 +20,43 @@ Shared.Store = {
 	Gamepasses = {
 		{
 			Id = 1157798560, -- Gravity Coil
+			IsTool = true,
 		},
 		{
 			Id = 1157906298, -- Speed Coil
+			IsTool = true,
 		},
 		{
 			Id = 1160545563, -- Double Jump
+			IsPet = true,
+		},
+		{
+			Id = 1198006484, --  Fox
+			IsPet = true,
+		},
+		{
+			Id = 1197084528, -- Dominus Crystal
+			IsPet = true,
+		},
+		{
+			Id = 1199016473, -- Dragon
+			IsPet = true,
+		},
+		{
+			Id = 1198272735, -- Ice Dragon
+			IsPet = true,
+		},
+		{
+			Id = 1196970764, -- Cerberus
+			IsPet = true,
+		},
+		{
+			Id = 1198896690, -- Galactic Overlord
+			IsPet = true,
+		},
+		{
+			Id = 1197718750, -- Sun Flare
+			IsPet = true,
 		},
 	},
 
@@ -34,9 +67,6 @@ Shared.Store = {
 		{
 			Id = 3275590834, -- Teleport to World 2
 		},
-		{
-			Id = 3279416811, -- Fox
-		},
 	},
 
 	Subscriptions = {
@@ -45,6 +75,26 @@ Shared.Store = {
 		},
 	},
 }
+
+function Shared.IsGamepassTool(id: number | string): boolean
+	for _, gamepassInfo in Shared.Store.Gamepasses do
+		if gamepassInfo.Id == id or gamepassInfo.Name == id then
+			return gamepassInfo.IsTool or false
+		end
+	end
+
+	return false
+end
+
+function Shared.IsGamepassPet(id: number | string): boolean
+	for _, gamepassInfo in Shared.Store.Gamepasses do
+		if gamepassInfo.Id == id or gamepassInfo.Name == id then
+			return gamepassInfo.IsPet or false
+		end
+	end
+
+	return false
+end
 
 function Local.PopulateProductInfo(products: table, infoType: Enum.InfoType)
 	for _, product in products do

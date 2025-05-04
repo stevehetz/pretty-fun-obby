@@ -4,6 +4,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local PlayerDataService = require(script.Parent.PlayerDataService)
 local ToolsService = require(script.Parent.ToolsService)
+local PetService = require(script.Parent.PetService)
+local PetsConfig = require(ReplicatedStorage.Configs.Pets)
 local BadgesConfig = require(ReplicatedStorage.Configs.Badges)
 local StoreConfig = require(ReplicatedStorage.Configs.Store)
 local Remotes = ReplicatedStorage.Remotes
@@ -88,10 +90,19 @@ function Local.PurchaseGamepass(player: Player, id: number, didPurchase: boolean
 		gamepassId = id,
 	}
 	PlayerDataService.UpdateState(player, action)
-	BadgesConfig.RewardBadge(player, "Supporter")
+	-- BadgesConfig.RewardBadge(player, "Supporter")
 
-	local gamepassInfo = StoreConfig.GetStoreItemInfo(id)
-	ToolsService.GiveTool(player, gamepassInfo.Name)
+	-- Only do this for Tools (Gravity Coil, Speed Coil)
+	if StoreConfig.IsGamepassTool(id) then
+		local gamepassInfo = StoreConfig.GetStoreItemInfo(id)
+		ToolsService.GiveTool(player, gamepassInfo.Name)
+		return
+	end
+
+	if StoreConfig.IsGamepassPet(id) then
+		local pet = PetsConfig.GetPetFromGamePassId(id)
+		PetService.UpdateEquippedPets(player, pet)
+	end
 end
 
 function Local.ProcessGamepassPurchasedFromWebsite(player: Player)

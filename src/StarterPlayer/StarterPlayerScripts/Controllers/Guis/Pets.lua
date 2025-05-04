@@ -1,7 +1,12 @@
+local MarketPlaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+
+local Player = Players.LocalPlayer
 
 local ViewportHelper = require(ReplicatedStorage.Libs.ViewportHelper)
 local PetsConfig = require(ReplicatedStorage.Configs.Pets)
+local StoreConfig = require(ReplicatedStorage.Configs.Store)
 local GuiController = require(script.Parent.Parent.GuiController)
 local PetsController = require(script.Parent.Parent.PetsController)
 local StateController = require(script.Parent.Parent.StateController)
@@ -24,7 +29,7 @@ function Shared.OnStart()
 
 	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
 		if action.type == "UpdateEquippedPets" then
-			Local.RefreshEquippedStatus()
+			Local.RefreshStatus()
 		end
 	end)
 end
@@ -38,6 +43,7 @@ function Local.SetupPetStore()
 		petFrame.Parent = Container
 		petFrame.Name = pet.Name
 		petFrame.Visible = true
+		petFrame.NameLabel.Text = pet.Name
 
 		Local.SetupPetStoreStatus(pet, petFrame, equippedPets)
 		Local.SetupPetStoreViewPort(pet, petFrame)
@@ -45,7 +51,7 @@ function Local.SetupPetStore()
 	end
 end
 
-function Local.RefreshEquippedStatus()
+function Local.RefreshStatus()
 	local equippedPets = StateController.GetState().equippedPets
 	for _, pet in ipairs(Local.Pets) do
 		local petFrame = Container:FindFirstChild(pet.Name)
@@ -71,12 +77,19 @@ function Local.SetupPetStoreStatus(pet: PetsConfig.PetInfo, petFrame, equippedPe
 		statusFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 		petFrame.Icon.UIStroke.Color = Color3.fromRGB(70, 255, 107)
 	elseif pet.Price then
-		statusImage.Visible = true
+		local state = StateController.GetState()
+		local owned = StoreConfig.DoesPlayerOwnGamepass(state, pet.GamePassId)
 		statusText.TextColor3 = Color3.fromRGB(52, 52, 52)
 		statusFrame.UIStroke.Color = Color3.fromRGB(21, 97, 159)
 		statusFrame.BackgroundColor3 = Color3.fromRGB(202, 221, 255)
 		petFrame.Icon.UIStroke.Color = Color3.fromRGB(21, 97, 159)
-		statusText.Text = pet.Price
+		if owned then
+			statusImage.Visible = false
+			statusText.Text = "Owned"
+		else
+			statusImage.Visible = true
+			statusText.Text = pet.Price
+		end
 	else
 		statusImage.Visible = false
 		statusText.TextColor3 = Color3.fromRGB(52, 52, 52)
@@ -108,16 +121,17 @@ function Local.SetupPetStoreClickHandler(pet, petFrame)
 	-- Use InputBegan instead of MouseButton1Click
 	petFrame.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			print("Pet clicked:", pet.Name)
-			print("Description:", pet.Description or "No description")
-			print("Price:", pet.Price or "Free")
+			local state = StateController.GetState()
 
-			-- Print all available pet info
-			for key, value in pairs(pet) do
-				print(key, ":", value)
+			-- Is free or player already owns the pet
+			if not pet.GamePassId or StoreConfig.DoesPlayerOwnGamepass(state, pet.GamePassId) then
+				PetsController.ToggleEquippedPet(pet)
+				return
 			end
 
-			PetsController.ToggleEquippedPet(pet)
+			-- Is not free and player doesn't own the pet
+			-- Prompt the purchase
+			MarketPlaceService:PromptGamePassPurchase(Player, pet.GamePassId)
 		end
 	end)
 end
