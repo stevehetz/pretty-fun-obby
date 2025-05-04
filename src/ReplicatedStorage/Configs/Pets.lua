@@ -1,35 +1,76 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StoreConfig = require(ReplicatedStorage.Configs.Store)
+
+export type PetInfo = {
+	Name: string,
+	Description: string?,
+	Price: number?,
+	Image: string?,
+}
+
 local Local = {}
 local Shared = {}
 
-Shared.FreePets = {
+Local.Pets = {
 	{
 		Name = "Dog",
-		Price = 0,
 	},
 	{
 		Name = "Cat",
-		Price = 0,
+	},
+	{
+		Name = "Fox",
+	},
+	-- {
+	-- 	Name = "Shark",
+	-- },
+	-- {
+	-- 	Name = "HallowsSpider",
+	-- },
+	{
+		Name = "Dominus Crystal",
+	},
+	{
+		Name = "Dragon",
+	},
+	{
+		Name = "Ice Dragon",
+	},
+	-- {
+	-- 	Name = "LilDemon",
+	-- },
+	{
+		Name = "Cerberus",
+	},
+	{
+		Name = "Galactic Overlord",
+	},
+	{
+		Name = "Sun Flare",
 	},
 }
 
-Shared.PremiumPets = {}
+function Local.AddProductInfo()
+	-- loop through petss
+	for _, pet in ipairs(Local.Pets) do
+		local petName = pet.Name
+		local productInfo = StoreConfig.GetStoreItemInfo(petName)
 
-Shared.Pets = {}
+		if productInfo then
+			pet.Name = productInfo.Name
+			pet.Description = productInfo.Description
+			pet.Price = productInfo.Price
+			pet.Image = string.format("rbxassetid://%s", productInfo.Image)
+		end
+	end
 
-function Shared.OnStart()
-	Local.SetupPets()
+	Shared.Pets = Local.Pets
 end
 
-function LocalSetupPets()
-	for _, freePets in ipairs(Shared.FreePets) do
-		-- Add to Pets
-		table.insert(Shared.Pets, freePets.Name)
-	end
+Local.AddProductInfo()
 
-	for _, premiumPets in ipairs(Shared.PremiumPets) do
-		-- Add to Pets
-		table.insert(Shared.Pets, premiumPets.Name)
-	end
+function Shared.GetPets(): { PetInfo }
+	return Local.Pets
 end
 
 return Shared

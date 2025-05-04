@@ -34,6 +34,9 @@ Shared.Store = {
 		{
 			Id = 3275590834, -- Teleport to World 2
 		},
+		{
+			Id = 3279416811, -- Fox
+		},
 	},
 
 	Subscriptions = {

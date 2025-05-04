@@ -43,6 +43,14 @@ export type UpdateStateAction = {
 } | {
 	type: "UpdateCurrentWorld",
 	world: string,
+} | {
+	type: "UpdateOwnedPets",
+	petName: string,
+	value: boolean,
+} | {
+	type: "UpdateEquippedPets",
+	petName: string,
+	value: boolean,
 }
 
 return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
@@ -82,6 +90,19 @@ return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
 	elseif action.type == "UpdateCurrentWorld" then
 		print("UpdateCurrentWorld - world: " .. tostring(action.world))
 		playerData.currentWorld = action.world
+	elseif action.type == "UpdateOwnedPets" then
+		playerData.ownedPets[action.petName] = action.value
+	elseif action.type == "UpdateEquippedPets" then
+		if action.value == true then
+			playerData.equippedPets = {}
+			playerData.equippedPets = {
+				[action.petName] = true,
+			}
+		elseif action.value == false then
+			playerData.equippedPets = {}
+			return
+		end
+		print("UpdateEquippedPets - petName: " .. tostring(action.petName))
 	else
 		error("Invalid action type: " .. tostring(action.type))
 	end

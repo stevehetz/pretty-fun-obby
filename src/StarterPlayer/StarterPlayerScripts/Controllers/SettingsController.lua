@@ -9,8 +9,6 @@ local Remotes = ReplicatedStorage.Remotes.PlayerData
 local Local = {}
 local Shared = {}
 
-Shared.UpdateState = Instance.new("BindableEvent")
-
 function Shared.OnStart()
 	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
 		if action.type == "UpdateSetting" then
@@ -23,7 +21,6 @@ function Shared.OnStart()
 
 	local isSoundEffectsEnabled = SettingsConfig.GetSettingValue(StateController.GetState(), "Sound Effects")
 	Local.UpdateSetting("Sound Effects", isSoundEffectsEnabled)
-
 end
 
 function Local.UpdateSetting(setting: SettingsConfig.Setting, enabled: boolean)
@@ -34,7 +31,6 @@ function Local.UpdateSetting(setting: SettingsConfig.Setting, enabled: boolean)
 
 	local isSoundEffects = setting == "Sound Effects"
 	if isSoundEffects then
-		
 		for _, sound: Sound in ReplicatedStorage.Sounds:GetChildren() do
 			sound.Volume = if enabled then 1 else 0
 		end
@@ -61,7 +57,6 @@ function Local.PlayMusic(shouldPlay: boolean)
 	else
 		song:Stop()
 	end
-
 end
 
 return Shared
