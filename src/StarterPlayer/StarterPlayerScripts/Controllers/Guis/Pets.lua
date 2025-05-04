@@ -118,20 +118,48 @@ function Local.SetupPetStoreClickHandler(pet, petFrame)
 	petFrame.Active = true
 	petFrame.Selectable = true
 
-	-- Use InputBegan instead of MouseButton1Click
-	petFrame.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			local state = StateController.GetState()
+	-- Variables to track touch/click position
+	local inputStartPosition = nil
+	local inputObject = nil
+	local MAX_DRAG_DISTANCE = 2 -- Maximum pixels to consider as a tap rather than a scroll
 
-			-- Is free or player already owns the pet
-			if not pet.GamePassId or StoreConfig.DoesPlayerOwnGamepass(state, pet.GamePassId) then
-				PetsController.ToggleEquippedPet(pet)
-				return
+	-- Track when input begins
+	petFrame.InputBegan:Connect(function(input)
+		if
+			input.UserInputType == Enum.UserInputType.MouseButton1
+			or input.UserInputType == Enum.UserInputType.Touch
+		then
+			-- Store the starting position and input object
+			inputStartPosition = input.Position
+			inputObject = input
+		end
+	end)
+
+	-- Track when input ends
+	petFrame.InputEnded:Connect(function(input)
+		-- Only process if this is the same input object we started with
+		if input == inputObject and inputStartPosition then
+			-- Calculate how far the input moved
+			local dragDistance = (input.Position - inputStartPosition).Magnitude
+
+			-- Only consider it a tap/click if it didn't move much
+			if dragDistance <= MAX_DRAG_DISTANCE then
+				local state = StateController.GetState()
+
+				-- Is free or player already owns the pet
+				if not pet.GamePassId or StoreConfig.DoesPlayerOwnGamepass(state, pet.GamePassId) then
+					PetsController.ToggleEquippedPet(pet)
+					return
+				end
+
+				-- Is not free and player doesn't own the pet
+				-- Prompt the purchase
+				MarketPlaceService:PromptGamePassPurchase(Player, pet.GamePassId)
 			end
 
-			-- Is not free and player doesn't own the pet
-			-- Prompt the purchase
-			MarketPlaceService:PromptGamePassPurchase(Player, pet.GamePassId)
+			-- Reset tracking variables
+			inputStartPosition = nil
+			inputObject = nil
 		end
 	end)
 end
