@@ -115,8 +115,8 @@ end
 
 function Local.SetupPetStoreClickHandler(pet, petFrame)
 	-- Make the frame clickable
-	petFrame.Active = true
-	petFrame.Selectable = true
+	-- petFrame.Active = true
+	-- petFrame.Selectable = true
 
 	-- Variables to track touch/click position
 	local inputStartPosition = nil
