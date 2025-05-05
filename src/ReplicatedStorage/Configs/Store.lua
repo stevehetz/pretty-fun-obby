@@ -98,6 +98,7 @@ end
 
 function Local.PopulateProductInfo(products: table, infoType: Enum.InfoType)
 	for _, product in products do
+		-- print("Calling product info from Marketplace service", product.Id, product.Name)
 		local info = MarketPlaceService:GetProductInfo(product.Id, infoType)
 		product.Name = info.Name
 		product.Description = info.Description
