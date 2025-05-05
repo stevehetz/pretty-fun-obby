@@ -393,6 +393,11 @@ function Shared.RecordWorldFinish(player, totalFinishes)
 
 		-- 4) Mirror into MemoryStore cache
 		--    (we can reuse entries array length to know if we need to drop one)
+		-- First remove the key from MemoryStore to clear any cached value
+		pcall(function()
+			GlobalFinishesMemoryStore:RemoveAsync(key)
+		end)
+
 		GlobalFinishesMemoryStore:UpdateAsync(key, function()
 			return totalFinishes
 		end, 86400) -- Cache for 24 hours
@@ -462,6 +467,13 @@ function Shared.RecordTimeFinish(player, time)
 
 		-- b) Mirror into MemoryStore cache (also as integer)
 		print("Updating memory store for", key, timeInteger / 1000)
+
+		-- First remove the key from MemoryStore to clear any cached value
+		pcall(function()
+			GlobalTimesMemoryStore:RemoveAsync(key)
+		end)
+
+		-- Then add the new value
 		GlobalTimesMemoryStore:UpdateAsync(key, function()
 			return timeInteger
 		end, 86400) -- Cache for 24 hours

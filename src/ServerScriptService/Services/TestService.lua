@@ -13,9 +13,9 @@ end
 
 function Shared.RecordOneTime()
 	local player = {
-		UserId = 1011,
+		UserId = 1130,
 	}
-	local time = 181
+	local time = 170
 	GlobalDataService.RecordTimeFinish(player, time)
 	print("Recorded time for Player " .. player.UserId .. ": " .. time .. " seconds")
 end
