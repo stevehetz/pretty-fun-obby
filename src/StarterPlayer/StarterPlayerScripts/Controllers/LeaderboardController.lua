@@ -8,7 +8,7 @@ local GetTopTwoTimesPerWorldRF = ReplicatedStorage:WaitForChild("GetTopTwoTimesP
 local leaderboardsFolder = Workspace:WaitForChild("Leaderboards")
 local worldPortalsFolder = Workspace:WaitForChild("WorldPortals")
 
-local REFRESH_INTERVAL = 10 -- Refresh leaderboard every 60 seconds
+local REFRESH_INTERVAL = 60 -- Refresh leaderboard every 60 seconds
 
 local Local = {}
 local Shared = {}

@@ -90,8 +90,6 @@ function Local.ClearGlobalStores()
 
 		-- Clear Times Store for this world
 		clearOrderedDataStore(worldTimesStore, worldTimesMemoryStore, "GlobalTimesStore_" .. worldName)
-
-		print("Cleared global stores for " .. worldName)
 	end
 
 	-- Update the last reset timestamp
@@ -335,8 +333,6 @@ function Shared.GetTopTimes()
 		return a.time < b.time
 	end)
 
-	print(out)
-
 	-- Assign ranks based on sorted order
 	for i, entry in ipairs(out) do
 		entry.rank = i
@@ -361,11 +357,26 @@ function Shared.RecordWorldFinish(player, totalFinishes)
 
 	-- 1) Fetch the top 21 entries from the persistent store
 	local ok, pages = pcall(function()
-		return GlobalFinishesStore:GetSortedAsync(false, 21)
+		return GlobalFinishesStore:GetSortedAsync(false, 20)
 	end)
 	if not ok then
 		warn("Failed to fetch top entries for prune check:", pages)
 		return
+	end
+
+	-- print("new finish for " .. key .. ":", totalFinishes)
+
+	-- -- print top 20 finishes for debugging
+	-- for index, entry in ipairs(pages:GetCurrentPage()) do
+	-- 	print(index .. ":", entry.key, entry.value)
+	-- end
+
+	local isPlayerAlreadyOnLeaderboard = false
+	for _, entry in ipairs(pages:GetCurrentPage()) do
+		if entry.key == key then
+			isPlayerAlreadyOnLeaderboard = true
+			break
+		end
 	end
 
 	local entries = pages:GetCurrentPage()
@@ -384,25 +395,23 @@ function Shared.RecordWorldFinish(player, totalFinishes)
 			warn("Failed to set global finish for", key, sErr)
 		end
 
-		-- b) Prune the 21st entry if it exists
-		if countEntries >= 20 and entries[21] then
-			pcall(function()
-				GlobalFinishesStore:RemoveAsync(entries[21].key)
-			end)
-		end
-
-		-- 4) Mirror into MemoryStore cache
-		--    (we can reuse entries array length to know if we need to drop one)
 		-- First remove the key from MemoryStore to clear any cached value
 		pcall(function()
 			GlobalFinishesMemoryStore:RemoveAsync(key)
 		end)
 
+		-- Then add the new value
 		GlobalFinishesMemoryStore:UpdateAsync(key, function()
 			return totalFinishes
 		end, 86400) -- Cache for 24 hours
-		if countEntries >= 20 and entries[21] then
-			GlobalFinishesMemoryStore:RemoveAsync(entries[21].key)
+
+		-- b) Prune the now 21st entry if it exists from the persistent store and MemoryStore
+		if not isPlayerAlreadyOnLeaderboard and countEntries >= 20 and entries[20] then
+			pcall(function()
+				GlobalFinishesStore:RemoveAsync(entries[20].key)
+			end)
+
+			GlobalFinishesMemoryStore:RemoveAsync(entries[20].key)
 		end
 
 		-- 5) Pre-cache this player's info since they're on the leaderboard now
@@ -428,12 +437,12 @@ function Shared.RecordTimeFinish(player, time)
 		return
 	end
 
-	print("new time for " .. key .. ":", timeInteger / 1000)
+	-- print("new time for " .. key .. ":", timeInteger / 1000)
 
-	-- print top 21 times for debugging
-	for index, entry in ipairs(pages:GetCurrentPage()) do
-		print(index .. ":", entry.key, entry.value / 1000)
-	end
+	-- -- print top 21 times for debugging
+	-- for index, entry in ipairs(pages:GetCurrentPage()) do
+	-- 	print(index .. ":", entry.key, entry.value / 1000)
+	-- end
 
 	local isPlayerAlreadyOnLeaderboard = false
 	for _, entry in ipairs(pages:GetCurrentPage()) do
@@ -443,22 +452,16 @@ function Shared.RecordTimeFinish(player, time)
 		end
 	end
 
-	print("isPlayerAlreadyOnLeaderboard:", isPlayerAlreadyOnLeaderboard)
-
 	local entries = pages:GetCurrentPage()
 	local countEntries = #entries
 
 	-- Convert any existing entries from integer back to float for comparison
 	local cutoffValue = (countEntries < 20) and math.huge or (entries[20].value / 1000)
 
-	print("Cutoff value:", cutoffValue)
-
 	-- 3) Only set/prune if this player's time beats the cutoff
 	if time < cutoffValue then
-		print("New time is better than cutoff, updating leaderboard")
 		-- a) Write into the persistent OrderedDataStore (as integer)
 		local sOk, sErr = pcall(function()
-			print("Setting global time for", key, timeInteger / 1000)
 			GlobalTimesStore:SetAsync(key, timeInteger)
 		end)
 		if not sOk then
@@ -466,8 +469,6 @@ function Shared.RecordTimeFinish(player, time)
 		end
 
 		-- b) Mirror into MemoryStore cache (also as integer)
-		print("Updating memory store for", key, timeInteger / 1000)
-
 		-- First remove the key from MemoryStore to clear any cached value
 		pcall(function()
 			GlobalTimesMemoryStore:RemoveAsync(key)
@@ -478,9 +479,8 @@ function Shared.RecordTimeFinish(player, time)
 			return timeInteger
 		end, 86400) -- Cache for 24 hours
 
-		-- c) Prune the 21st entry if it exists
+		-- c) Pruning the now 21st entry if it exists from the persistent store and MemoryStore
 		if not isPlayerAlreadyOnLeaderboard and countEntries >= 20 and entries[20] then
-			print("Pruning datastore and memory entry:", entries[20].key, entries[20].value / 1000)
 			pcall(function()
 				GlobalTimesStore:RemoveAsync(entries[20].key)
 			end)
