@@ -8,7 +8,7 @@ local Shared = {}
 function Shared.OnStart()
 	task.wait(5)
 	-- Shared.AddTopTwentyTimes()
-	Shared.RecordOneTime()
+	-- Shared.RecordOneTime()
 end
 
 function Shared.RecordOneTime()
