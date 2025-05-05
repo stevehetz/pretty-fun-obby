@@ -75,7 +75,7 @@ function Shared.OnStart()
 			end
 
 			Shared.GameMode = "Timed"
-			SkipsGui.HideSkipButton()
+			-- SkipsGui.HideSkipButton()
 			Label.TextColor3 = originalColor
 			Label.TextSize = originalSize
 			Label.Visible = true

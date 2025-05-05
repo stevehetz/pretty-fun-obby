@@ -372,11 +372,20 @@ function Shared.RecordWorldFinish(player, totalFinishes)
 	-- end
 
 	local isPlayerAlreadyOnLeaderboard = false
+	local currentFinishes = 0
+
 	for _, entry in ipairs(pages:GetCurrentPage()) do
 		if entry.key == key then
 			isPlayerAlreadyOnLeaderboard = true
+			currentFinishes = entry.value
 			break
 		end
+	end
+
+	-- If player is already on leaderboard and has more finishes than the new value,
+	-- don't update the leaderboard
+	if isPlayerAlreadyOnLeaderboard and totalFinishes <= currentFinishes then
+		return
 	end
 
 	local entries = pages:GetCurrentPage()
@@ -445,11 +454,20 @@ function Shared.RecordTimeFinish(player, time)
 	-- end
 
 	local isPlayerAlreadyOnLeaderboard = false
+	local currentTimeInteger = 0
+
 	for _, entry in ipairs(pages:GetCurrentPage()) do
 		if entry.key == key then
 			isPlayerAlreadyOnLeaderboard = true
+			currentTimeInteger = entry.value
 			break
 		end
+	end
+
+	-- If player is already on leaderboard and has a faster time than the new time,
+	-- don't update the leaderboard
+	if isPlayerAlreadyOnLeaderboard and timeInteger >= currentTimeInteger then
+		return
 	end
 
 	local entries = pages:GetCurrentPage()
