@@ -335,10 +335,17 @@ function Shared.GetTopTimes()
 		return a.time < b.time
 	end)
 
+	print(out)
+
 	-- Assign ranks based on sorted order
 	for i, entry in ipairs(out) do
 		entry.rank = i
 	end
+
+	-- print out all times for debugging
+	-- for index, entry in ipairs(out) do
+	-- 	print(index .. ":", entry.userId, entry.time)
+	-- end
 
 	-- Only return the top 10 entries
 	local topEntries = {}
@@ -409,12 +416,29 @@ function Shared.RecordTimeFinish(player, time)
 
 	-- 1) Fetch the top 21 entries from the persistent store
 	local ok, pages = pcall(function()
-		return GlobalTimesStore:GetSortedAsync(false, 21)
+		return GlobalTimesStore:GetSortedAsync(true, 20)
 	end)
 	if not ok then
 		warn("Failed to fetch top entries for prune check:", pages)
 		return
 	end
+
+	print("new time for " .. key .. ":", timeInteger / 1000)
+
+	-- print top 21 times for debugging
+	for index, entry in ipairs(pages:GetCurrentPage()) do
+		print(index .. ":", entry.key, entry.value / 1000)
+	end
+
+	local isPlayerAlreadyOnLeaderboard = false
+	for _, entry in ipairs(pages:GetCurrentPage()) do
+		if entry.key == key then
+			isPlayerAlreadyOnLeaderboard = true
+			break
+		end
+	end
+
+	print("isPlayerAlreadyOnLeaderboard:", isPlayerAlreadyOnLeaderboard)
 
 	local entries = pages:GetCurrentPage()
 	local countEntries = #entries
@@ -422,29 +446,34 @@ function Shared.RecordTimeFinish(player, time)
 	-- Convert any existing entries from integer back to float for comparison
 	local cutoffValue = (countEntries < 20) and math.huge or (entries[20].value / 1000)
 
+	print("Cutoff value:", cutoffValue)
+
 	-- 3) Only set/prune if this player's time beats the cutoff
 	if time < cutoffValue then
+		print("New time is better than cutoff, updating leaderboard")
 		-- a) Write into the persistent OrderedDataStore (as integer)
 		local sOk, sErr = pcall(function()
+			print("Setting global time for", key, timeInteger / 1000)
 			GlobalTimesStore:SetAsync(key, timeInteger)
 		end)
 		if not sOk then
 			warn("Failed to set global time for", key, sErr)
 		end
 
-		-- b) Prune the 21st entry if it exists
-		if countEntries >= 20 and entries[21] then
-			pcall(function()
-				GlobalTimesStore:RemoveAsync(entries[21].key)
-			end)
-		end
-
-		-- 4) Mirror into MemoryStore cache (also as integer)
+		-- b) Mirror into MemoryStore cache (also as integer)
+		print("Updating memory store for", key, timeInteger / 1000)
 		GlobalTimesMemoryStore:UpdateAsync(key, function()
 			return timeInteger
 		end, 86400) -- Cache for 24 hours
-		if countEntries >= 20 and entries[21] then
-			GlobalTimesMemoryStore:RemoveAsync(entries[21].key)
+
+		-- c) Prune the 21st entry if it exists
+		if not isPlayerAlreadyOnLeaderboard and countEntries >= 20 and entries[20] then
+			print("Pruning datastore and memory entry:", entries[20].key, entries[20].value / 1000)
+			pcall(function()
+				GlobalTimesStore:RemoveAsync(entries[20].key)
+			end)
+
+			GlobalTimesMemoryStore:RemoveAsync(entries[20].key)
 		end
 
 		-- 5) Pre-cache this player's info since they're on the leaderboard now
