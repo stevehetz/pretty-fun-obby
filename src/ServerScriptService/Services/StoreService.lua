@@ -108,7 +108,7 @@ end
 
 function Local.ProcessGamepassPurchasedFromWebsite(player: Player)
 	for _, gamepassInfo in StoreConfig.Store.Gamepasses do
-		print("Checking if player owns gamepass from website", gamepassInfo.Id, player.UserId)
+		-- print("Checking if player owns gamepass from website", gamepassInfo.Id, player.UserId)
 		local ownsGamepass = MarketplaceService:UserOwnsGamePassAsync(player.UserId, gamepassInfo.Id)
 		if ownsGamepass then
 			Local.PurchaseGamepass(player, gamepassInfo.Id, true)
