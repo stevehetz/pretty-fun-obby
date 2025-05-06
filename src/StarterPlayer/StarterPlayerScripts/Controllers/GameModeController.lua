@@ -17,10 +17,10 @@ local TestConfig = require(ReplicatedStorage.Configs.Test)
 local Label = GuiController.Guis.TopTwo.Frame.TimerLabel
 
 local GameModeFolder = Workspace:WaitForChild("GameMode")
-local CasualDoorModel = GameModeFolder:WaitForChild("CasualDoor")
-local CasualDoorInside = CasualDoorModel:WaitForChild("Inside")
-local TimedDoorModel = GameModeFolder:WaitForChild("TimedDoor")
-local TimedDoorInside = TimedDoorModel:WaitForChild("Inside")
+-- local CasualDoorModel = GameModeFolder:WaitForChild("CasualDoor")
+-- local CasualDoorInside = CasualDoorModel:WaitForChild("Inside")
+-- local TimedDoorModel = GameModeFolder:WaitForChild("TimedDoor")
+-- local TimedDoorInside = TimedDoorModel:WaitForChild("Inside")
 local FinishDoorModel = GameModeFolder:WaitForChild("FinishDoor")
 local FinishDoorInside = FinishDoorModel:WaitForChild("Inside")
 
@@ -51,66 +51,66 @@ function Shared.OnStart()
 		end
 	end)
 
-	RunService.Heartbeat:Connect(function()
-		if timerRunning then
-			elapsedTime = tick() - startTime
-			Label.Text = message or Local.FormatTime(elapsedTime)
-		end
-	end)
+	-- RunService.Heartbeat:Connect(function()
+	-- 	if timerRunning then
+	-- 		elapsedTime = tick() - startTime
+	-- 		Label.Text = message or Local.FormatTime(elapsedTime)
+	-- 	end
+	-- end)
 
-	TimedDoorInside.Touched:Connect(function(hit)
-		local char = hit.Parent
-		if char and char:FindFirstChild("Humanoid") and char == Player.Character and not timerRunning then
-			if timedDoorDebounce then
-				return
-			end
-			timedDoorDebounce = true
-			task.delay(2, function()
-				timedDoorDebounce = false
-			end)
+	-- TimedDoorInside.Touched:Connect(function(hit)
+	-- 	local char = hit.Parent
+	-- 	if char and char:FindFirstChild("Humanoid") and char == Player.Character and not timerRunning then
+	-- 		if timedDoorDebounce then
+	-- 			return
+	-- 		end
+	-- 		timedDoorDebounce = true
+	-- 		task.delay(2, function()
+	-- 			timedDoorDebounce = false
+	-- 		end)
 
-			local playerState = StateController.GetState()
-			if playerState and playerState.stage > 0 then
-				Local.Reset()
-				Remotes.Rebirth:FireServer()
-				return
-			end
+	-- 		local playerState = StateController.GetState()
+	-- 		if playerState and playerState.stage > 0 then
+	-- 			Local.Reset()
+	-- 			Remotes.Rebirth:FireServer()
+	-- 			return
+	-- 		end
 
-			Shared.GameMode = "Timed"
-			if not TestController.IsDev() then
-				SkipsGui.HideSkipButton()
-			end
-			Label.TextColor3 = originalColor
-			Label.TextSize = originalSize
-			Label.Visible = true
-			timerRunning = true
-			startTime = tick()
-			Label.Text = Local.FormatTime(0)
-		end
-	end)
+	-- 		Shared.GameMode = "Timed"
+	-- 		if not TestController.IsDev() then
+	-- 			SkipsGui.HideSkipButton()
+	-- 		end
+	-- 		Label.TextColor3 = originalColor
+	-- 		Label.TextSize = originalSize
+	-- 		Label.Visible = true
+	-- 		timerRunning = true
+	-- 		startTime = tick()
+	-- 		Label.Text = Local.FormatTime(0)
+	-- 	end
+	-- end)
 
-	CasualDoorInside.Touched:Connect(function(hit)
-		local char = hit.Parent
-		if not char or not char:FindFirstChild("Humanoid") or char ~= Player.Character then
-			return
-		end
+	-- CasualDoorInside.Touched:Connect(function(hit)
+	-- 	local char = hit.Parent
+	-- 	if not char or not char:FindFirstChild("Humanoid") or char ~= Player.Character then
+	-- 		return
+	-- 	end
 
-		if casualDoorDebounce then
-			return
-		end
-		casualDoorDebounce = true
-		task.delay(2, function()
-			casualDoorDebounce = false
-		end)
+	-- 	if casualDoorDebounce then
+	-- 		return
+	-- 	end
+	-- 	casualDoorDebounce = true
+	-- 	task.delay(2, function()
+	-- 		casualDoorDebounce = false
+	-- 	end)
 
-		if Shared.GameMode == "Casual" then
-			return
-		end
-		if Shared.GameMode == "Timed" then
-			Local.Reset()
-			return
-		end
-	end)
+	-- 	if Shared.GameMode == "Casual" then
+	-- 		return
+	-- 	end
+	-- 	if Shared.GameMode == "Timed" then
+	-- 		Local.Reset()
+	-- 		return
+	-- 	end
+	-- end)
 
 	FinishDoorInside.Touched:Connect(function(hit)
 		local char = hit.Parent

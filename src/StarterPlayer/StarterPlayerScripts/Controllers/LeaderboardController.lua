@@ -24,11 +24,11 @@ Shared.OnStart = function()
 	local finishesData = Shared.RefreshFinishesLeaderboard()
 	task.wait(0.5) -- Small delay between refreshes
 
-	local timesData = Shared.RefreshTimesLeaderboard()
-	task.wait(0.5) -- Small delay between refreshes
+	-- local timesData = Shared.RefreshTimesLeaderboard()
+	-- task.wait(0.5) -- Small delay between refreshes
 
-	local topTwoData = Shared.RefreshTopTwoTimesPerWorld()
-	Shared.UpdateTimeUntilRefresh()
+	-- local topTwoData = Shared.RefreshTopTwoTimesPerWorld()
+	-- Shared.UpdateTimeUntilRefresh()
 
 	-- Set up periodic refresh for leaderboards
 	task.spawn(function()
