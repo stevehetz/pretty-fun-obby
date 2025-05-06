@@ -21,17 +21,17 @@ function Local.SkipStage(player: Player)
 		return
 	end
 
-	if TestService.IsDev() then
-		local currentStage = state.stage
-		local lastStage = StagesConfig.GetTotalStages() - currentStage
-		local action: PlayerDataService.UpdateStateAction = {
-			type = "UpdateStage",
-			amount = lastStage,
-		}
-		PlayerDataService.UpdateState(player, action)
-		RespawnService.RespawnPlayer(player)
-		return
-	end
+	-- if TestService.IsDev() then
+	-- 	local currentStage = state.stage
+	-- 	local lastStage = StagesConfig.GetTotalStages() - currentStage
+	-- 	local action: PlayerDataService.UpdateStateAction = {
+	-- 		type = "UpdateStage",
+	-- 		amount = lastStage,
+	-- 	}
+	-- 	PlayerDataService.UpdateState(player, action)
+	-- 	RespawnService.RespawnPlayer(player)
+	-- 	return
+	-- end
 
 	local hasSkips = state.skips.amount > 0
 	if not hasSkips then
