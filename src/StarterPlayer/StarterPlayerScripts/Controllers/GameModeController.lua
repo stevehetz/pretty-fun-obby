@@ -9,8 +9,10 @@ local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local SkipsGui = require(script.Parent.Guis.Skips)
 local GuiController = require(script.Parent.GuiController)
 local StateController = require(script.Parent.StateController)
+local TestController = require(script.Parent.TestController)
 local LeaderboardController = require(script.Parent.LeaderboardController)
 local StagesConfig = require(ReplicatedStorage.Configs.Stages)
+local TestConfig = require(ReplicatedStorage.Configs.Test)
 
 local Label = GuiController.Guis.TopTwo.Frame.TimerLabel
 
@@ -75,7 +77,9 @@ function Shared.OnStart()
 			end
 
 			Shared.GameMode = "Timed"
-			SkipsGui.HideSkipButton()
+			if not TestController.IsDev() then
+				SkipsGui.HideSkipButton()
+			end
 			Label.TextColor3 = originalColor
 			Label.TextSize = originalSize
 			Label.Visible = true
@@ -124,9 +128,10 @@ function Shared.OnStart()
 			end)
 
 			local currentStage = StateController.GetState().stage
+			-- currentStage = currentStage - 1
 
 			if currentStage < StagesConfig.GetTotalStages() then
-				message = "Must finish all stages!"
+				message = "Must finish all stages! Current: " .. currentStage .. " / " .. StagesConfig.GetTotalStages()
 				Label.Visible = true
 				Label.TextColor3 = Color3.fromRGB(255, 0, 0)
 				Label.TextSize = 40
@@ -145,6 +150,11 @@ function Shared.OnStart()
 			if Shared.GameMode == "Timed" then
 				-- add 7 minutes to the elapsed time for testing purposes
 				-- elapsedTime = elapsedTime + 420
+				if TestController.IsDev() then
+					timerRunning = false
+					elapsedTime = 206.50
+					Label.Text = Local.FormatTime(elapsedTime)
+				end
 				Remotes.TimedFinish:FireServer(elapsedTime)
 				SkipsGui.ShowSkipButton()
 				Label.TextColor3 = Color3.fromRGB(0, 255, 0)

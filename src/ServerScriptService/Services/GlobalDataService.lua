@@ -260,6 +260,26 @@ function Local.FetchAndCachePlayerInfo(userId)
 	return playerInfo
 end
 
+function Shared.RemovePlayerFromTimeLeaderboard(player)
+	-- Remove player from time leaderboards of all worlds
+	local worlds = WorldsConfig.GetAllWorlds()
+	for _, worldName in ipairs(worlds) do
+		print("Removing player from leaderboard:", player.UserId, worldName)
+		local worldTimesStore = DataStoreService:GetOrderedDataStore(GlobalTimesKey .. "_" .. worldName)
+		local worldTimesMemoryStore = MemoryStoreService:GetSortedMap(GlobalTimesKey .. "_" .. worldName)
+
+		-- Remove from DataStore
+		pcall(function()
+			worldTimesStore:RemoveAsync(player.UserId)
+		end)
+
+		-- Remove from MemoryStore
+		pcall(function()
+			worldTimesMemoryStore:RemoveAsync(player.UserId)
+		end)
+	end
+end
+
 function Shared.GetTopFinishers()
 	local ok, list = pcall(function()
 		return GlobalFinishesMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, 20)

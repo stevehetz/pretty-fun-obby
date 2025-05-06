@@ -4,6 +4,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local PlayerDataService = require(script.Parent.PlayerDataService)
 local ProgressService = require(ServerScriptService.Services.ProgressService)
 local RespawnService = require(ServerScriptService.Services.RespawnService)
+local TestService = require(ServerScriptService.Services.TestService)
 local StagesConfig = require(ReplicatedStorage.Configs.Stages)
 local Remotes = ReplicatedStorage.Remotes
 
@@ -17,6 +18,18 @@ end
 function Local.SkipStage(player: Player)
 	local state = PlayerDataService.GetState(player)
 	if not state then
+		return
+	end
+
+	if TestService.IsDev() then
+		local currentStage = state.stage
+		local lastStage = StagesConfig.GetTotalStages() - currentStage
+		local action: PlayerDataService.UpdateStateAction = {
+			type = "UpdateStage",
+			amount = lastStage,
+		}
+		PlayerDataService.UpdateState(player, action)
+		RespawnService.RespawnPlayer(player)
 		return
 	end
 

@@ -1,16 +1,48 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
+local PlayerDataService = require(ServerScriptService.Services.PlayerDataService)
 local GlobalDataService = require(ServerScriptService.Services.GlobalDataService)
+local TestConfig = require(ReplicatedStorage.Configs.Test)
 
 local Local = {}
 local Shared = {}
 
+Local.CurrentPlayer = nil
+
 function Shared.OnStart()
-	-- task.wait(5)
+	PlayerDataService.ProfileLoaded.Event:Connect(function(player: Player)
+		-- print("RespawnService - PlayerDataService.ProfileLoaded.Event")
+		Local.CurrentPlayer = player
+	end)
+	-- task.wait(2)
+	GlobalDataService.RemovePlayerFromTimeLeaderboard(TestConfig.Players.ra1n_zer0)
+	GlobalDataService.RemovePlayerFromTimeLeaderboard(TestConfig.Players.ra1n_test1)
+	GlobalDataService.RemovePlayerFromTimeLeaderboard(TestConfig.Players.ra1n_test2)
+	-- GlobalDataService.RemovePlayerFromTimeLeaderboard(TestConfig.Players.ra1n_test1)
+	-- GlobalDataService.RemovePlayerFromTimeLeaderboard(TestConfig.Players.ra1n_test2)
+	-- Shared.PrintTopTimes()
+	-- task.wait(3)
 	-- Shared.RecordOneFinish()
 	-- Shared.RecordOneTime()
 	-- Shared.AddTopTwentyFinishes()
 	-- Shared.AddTopTwentyTimes()
+end
+
+Shared.IsDev = function()
+	if Local.CurrentPlayer then
+		return TestConfig.IsDev(Local.CurrentPlayer.Name)
+	end
+
+	return false
+end
+
+function Shared.PrintTopTimes()
+	local topTimes = GlobalDataService.GetTopTimes()
+	print("Top Times:")
+	for _, time in ipairs(topTimes) do
+		print("UserId: " .. time.userId .. ", Time: " .. time.time)
+	end
 end
 
 function Shared.RecordOneFinish()
@@ -24,9 +56,9 @@ end
 
 function Shared.RecordOneTime()
 	local player = {
-		UserId = 2345349,
+		UserId = 2345340,
 	}
-	local time = 168
+	local time = 207
 	GlobalDataService.RecordTimeFinish(player, time)
 	print("Recorded time for Player " .. player.UserId .. ": " .. time .. " seconds")
 end
