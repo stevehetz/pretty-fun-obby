@@ -32,8 +32,9 @@ GetStoreItemInfoRF.Parent = ReplicatedStorage
 
 function Shared.OnStart()
 	GetStoreRF.OnServerInvoke = StoreConfig.GetStore
-	GetStoreItemInfoRF.OnServerInvoke = StoreConfig.GetStoreItemInfo
-	DoesPlayerOwnGamepassRF.OnServerInvoke = Shared.DoesPlayerOwnGamepass
+	GetStoreItemInfoRF.OnServerInvoke = function(player: Player, id: number | string)
+		return StoreConfig.GetStoreItemInfo(id)
+	end
 
 	MarketplaceService.PromptGamePassPurchaseFinished:Connect(Local.PurchaseGamepass)
 	MarketplaceService.ProcessReceipt = Local.PurchaseProduct
@@ -42,23 +43,21 @@ function Shared.OnStart()
 
 	PlayerDataService.ProfileLoaded.Event:Connect(function(player: Player)
 		Local.ProcessGamepassPurchasedFromWebsite(player)
-		Local.ProcessSubscription(player, Local.Store.Subscriptions[1].Id)
+		Local.ProcessSubscription(player, StoreConfig.GetStore().Subscriptions[1].Id)
 	end)
-
-	Local.LoadStoreInfo()
 end
 
 function Local.ProcessGamepassPurchasedFromWebsite(player: Player)
+	-- Check playersate if they own the gamepass
+	local state = PlayerDataService.GetState(player)
+	if not state then
+		return
+	end
+
 	for _, gamepassInfo in StoreConfig.GetStore().Gamepasses do
 		-- print("Checking if player owns gamepass from website", gamepassInfo.Id, player.UserId)
 
-		-- Check playersate if they own the gamepass
-		local state = PlayerDataService.GetState(player)
-		if not state then
-			return
-		end
-
-		local ownsGamepass = Shared.DoesPlayerOwnGamepass(state, gamepassInfo.Id)
+		local ownsGamepass = state.gamepasses[tostring(gamepassInfo.Id)] or false
 
 		-- If the player already owns the gamepass, skip it
 		if ownsGamepass then
@@ -82,6 +81,7 @@ function Local.ProcessGamepassPurchasedFromWebsite(player: Player)
 end
 
 function Local.PurchaseGamepass(player: Player, id: number, didPurchase: boolean)
+	print("PurchaseGamepass", player.Name, id, didPurchase)
 	if not didPurchase then
 		return
 	end
@@ -91,7 +91,7 @@ function Local.PurchaseGamepass(player: Player, id: number, didPurchase: boolean
 		return
 	end
 
-	local ownsGamepass = Shared.DoesPlayerOwnGamepass(state, id)
+	local ownsGamepass = state.gamepasses[tostring(id)] or false
 	if ownsGamepass then
 		return
 	end
@@ -104,8 +104,9 @@ function Local.PurchaseGamepass(player: Player, id: number, didPurchase: boolean
 	PlayerDataService.UpdateState(player, action)
 
 	if StoreConfig.IsGamepassTool(id) then
+		print("Giving tool to player", player.Name, id)
 		local gamepassInfo = StoreConfig.GetStoreItemInfo(id)
-		ToolsService.GiveTool(player, gamepassInfo.Name)
+		ToolsService.GiveTool(player, gamepassInfo.Name, gamepassInfo.Id)
 		return
 	end
 
@@ -145,8 +146,6 @@ function Local.PurchaseProduct(receiptInfo: ReceiptInfo)
 
 	local isTeleportWorld2 = productInfo.Name == "Teleport to World 2"
 	if isTeleportWorld2 then
-		print("Purchase Granted: Teleporting to World 2")
-
 		-- Get the WorldPortalService
 		local WorldPortalService = require(script.Parent.WorldPortalService)
 

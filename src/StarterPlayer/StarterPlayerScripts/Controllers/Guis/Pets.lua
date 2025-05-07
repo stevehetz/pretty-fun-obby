@@ -20,6 +20,15 @@ local OpenButton = GuiController.Guis.Left.Frame.Pets
 local Local = {}
 local Shared = {}
 
+local FREE_PETS = {
+	{
+		Name = "Dog",
+	},
+	{
+		Name = "Cat",
+	},
+}
+
 function Shared.OnStart()
 	GuiController.SetupGui(Gui, OpenButton)
 	Local.AddOpenButtonImage()
@@ -41,6 +50,17 @@ function Local.GetPets()
 	if not success then
 		warn("Failed to get store data: ", store)
 		return
+	end
+
+	for _, freePet in ipairs(FREE_PETS) do
+		local petInfo = {
+			Name = freePet.Name,
+			Id = nil,
+			Price = nil,
+			Image = nil,
+			IsPet = true,
+		}
+		table.insert(pets, petInfo)
 	end
 
 	for _, gamepassInfo in ipairs(store.Gamepasses) do

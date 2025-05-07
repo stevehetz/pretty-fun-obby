@@ -1,7 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local PlayerDataService = require(script.Parent.PlayerDataService)
-local StoreService = require(script.Parent.StoreService)
 
 local Local = {}
 local Shared = {}
@@ -23,7 +22,7 @@ function Shared.GiveTool(player: Player, toolName: string, gamepassId: number)
 		return
 	end
 
-	local playerOwnsGamepass = state.gamepasses[gamepassId] or false
+	local playerOwnsGamepass = state.gamepasses[tostring(gamepassId)] or false
 	local ownsTool = playerOwnsGamepass
 	if not ownsTool then
 		return

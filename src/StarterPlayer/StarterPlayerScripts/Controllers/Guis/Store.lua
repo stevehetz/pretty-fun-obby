@@ -63,7 +63,7 @@ function Local.SetupButton(info, isGamepass: boolean?)
 	end
 
 	local state = StateController.GetState()
-	local playerOwnsGamepass = state.gamepasses[info.Id] or false
+	local playerOwnsGamepass = state.gamepasses[tostring(info.Id)] or false
 	local isOwned = if isGamepass then playerOwnsGamepass else state.vip
 
 	button.Name = info.Id

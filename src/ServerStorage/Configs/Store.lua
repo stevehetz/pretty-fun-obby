@@ -1,7 +1,7 @@
 local RunService = game:GetService("RunService")
 local MarketplaceService = game:GetService("MarketplaceService")
 
-export type GamepassName = "Gravity Coil" | "Speed Coil" | "Double Jump"
+export type GamepassName = "Gravity Coil" | "Speed Coil"
 
 export type StoreItemInfo = {
 	Id: number | string, -- EXP-337322008051974488
@@ -22,10 +22,6 @@ local _store = {
 		{
 			Id = 1157906298, -- Speed Coil
 			IsTool = true,
-		},
-		{
-			Id = 1160545563, -- Double Jump
-			IsPet = true,
 		},
 		{
 			Id = 1198006484, --  Fox
@@ -78,11 +74,9 @@ local Shared = {}
 
 Local.StoreItemInfoReady = false
 
-Local.LoadStoreInfo()
-
 function Local.LoadStoreInfo()
 	-- Load gamepass info
-	for _, product in Local.Store.Gamepasses do
+	for _, product in _store.Gamepasses do
 		local info = MarketplaceService:GetProductInfo(product.Id, Enum.InfoType.GamePass)
 		product.Name = info.Name
 		product.Description = info.Description
@@ -91,7 +85,7 @@ function Local.LoadStoreInfo()
 	end
 
 	-- Load product info
-	for _, product in Local.Store.Products do
+	for _, product in _store.Products do
 		local info = MarketplaceService:GetProductInfo(product.Id, Enum.InfoType.Product)
 		product.Name = info.Name
 		product.Description = info.Description
@@ -102,7 +96,7 @@ function Local.LoadStoreInfo()
 	-- Load subscription info
 	local isClient = RunService:IsClient()
 	if isClient then
-		for _, subscription in Local.Store.Subscriptions do
+		for _, subscription in _store.Subscriptions do
 			local info = MarketplaceService:GetSubscriptionProductInfoAsync(subscription.Id)
 			subscription.Name = info.Name
 			subscription.Description = info.Description
@@ -114,11 +108,13 @@ function Local.LoadStoreInfo()
 	Local.StoreItemInfoReady = true
 end
 
+Local.LoadStoreInfo()
+
 function Shared.GetStore()
 	while not Local.StoreItemInfoReady do
 		task.wait(0.1) -- Small wait to prevent tight loops
 	end
-	return Local.Store
+	return _store
 end
 
 function Shared.GetStoreItemInfo(id: number | string): StoreItemInfo
