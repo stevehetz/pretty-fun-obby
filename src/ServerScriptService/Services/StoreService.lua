@@ -28,7 +28,6 @@ function Shared.OnStart()
 
 	Players.UserSubscriptionStatusChanged:Connect(Local.ProcessSubscription)
 	PlayerDataService.ProfileLoaded.Event:Connect(function(player: Player)
-		-- print("StoreService - PlayerDataService.ProfileLoaded", player.Name)
 		Local.ProcessSubscription(player, StoreConfig.Store.Subscriptions[1].Id)
 		Local.ProcessGamepassPurchasedFromWebsite(player)
 	end)
@@ -109,9 +108,32 @@ end
 function Local.ProcessGamepassPurchasedFromWebsite(player: Player)
 	for _, gamepassInfo in StoreConfig.Store.Gamepasses do
 		-- print("Checking if player owns gamepass from website", gamepassInfo.Id, player.UserId)
-		local ownsGamepass = MarketplaceService:UserOwnsGamePassAsync(player.UserId, gamepassInfo.Id)
+
+		-- Check playersate if they own the gamepass
+		local state = PlayerDataService.GetState(player)
+		if not state then
+			return
+		end
+
+		local ownsGamepass = StoreConfig.DoesPlayerOwnGamepass(state, gamepassInfo.Id)
+
+		-- If the player already owns the gamepass, skip it
 		if ownsGamepass then
+			-- print("Player " .. player.Name .. " already owns gamepass " .. gamepassInfo.Name)
+			continue
+		end
+
+		-- Player doesn't own gamepass, check if they purchased it from the website
+		-- print("Checking if player " .. player.Name .. " owns gamepass " .. gamepassInfo.Name .. " from website")
+		ownsGamepass = MarketplaceService:UserOwnsGamePassAsync(player.UserId, gamepassInfo.Id)
+
+		if ownsGamepass then
+			print("Player " .. player.Name .. " purchased " .. gamepassInfo.Name .. " from website")
+			-- They must have purchased it from the website
+			-- Update the player data to reflect that they own the gamepass
 			Local.PurchaseGamepass(player, gamepassInfo.Id, true)
+		else
+			-- print("Player " .. player.Name .. " does not own gamepass " .. gamepassInfo.Name)
 		end
 	end
 end

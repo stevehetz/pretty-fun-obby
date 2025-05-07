@@ -160,11 +160,14 @@ function SetState()
 	end
 
 	-- Check if the gamepass exists by ID (1160545563 from Store.lua)
-	if state.gamepasses[tostring(doubleJumpGamePassId)] then
-		hasDoubleJump = true
-	else
-		hasDoubleJump = false
-	end
+	-- if state.gamepasses[tostring(doubleJumpGamePassId)] then
+	-- 	hasDoubleJump = true
+	-- else
+	-- 	hasDoubleJump = false
+	-- end
+
+	-- Enable for everyone
+	hasDoubleJump = true
 end
 
 OnStart()
