@@ -1,5 +1,6 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage = game:GetService("ServerStorage")
 local Workspace = game:GetService("Workspace")
 local TeleportService = game:GetService("TeleportService")
 local RunService = game:GetService("RunService")
@@ -8,7 +9,7 @@ local MarketplaceService = game:GetService("MarketplaceService")
 
 local PlayerData = require(ReplicatedStorage.PlayerData)
 local WorldsConfig = require(ReplicatedStorage.Configs.Worlds)
-local StoreConfig = require(ReplicatedStorage.Configs.Store)
+local StoreConfig = require(ServerStorage.Configs.Store)
 
 -- Configuration flag to control whether World 2 requires purchase
 local REQUIRE_WORLD2_PURCHASE = false -- Set to true to re-enable purchase requirement

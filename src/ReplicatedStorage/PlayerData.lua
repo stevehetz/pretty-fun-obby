@@ -1,5 +1,4 @@
 local SettingsConfig = require(script.Parent.Configs.Settings)
-local StoreConfig = require(script.Parent.Configs.Store)
 
 export type PlayerData = {
 	stage: number,
@@ -36,11 +35,6 @@ for setting, value in SettingsConfig.Config do
 	SettingsData[setting] = value
 end
 
-local GamepassesData = {}
-for _, gamepassInfo in StoreConfig.Store.Gamepasses do
-	GamepassesData[tostring(gamepassInfo.Id)] = false
-end
-
 local WorldFinishes = {}
 for _, world in ipairs(Worlds) do
 	WorldFinishes[world] = 0
@@ -54,7 +48,7 @@ local DEFAULT_PLAYER_DATA: PlayerData = {
 		amount = 0,
 	},
 	vip = false,
-	gamepasses = GamepassesData,
+	gamepasses = {},
 	finishes = 0,
 	teleporting = {
 		world = nil,

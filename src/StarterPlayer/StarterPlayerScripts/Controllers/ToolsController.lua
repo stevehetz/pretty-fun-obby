@@ -1,7 +1,8 @@
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local StoreConfig = require(ReplicatedStorage.Configs.Store)
+
+local GetStoreItemInfoRF = ReplicatedStorage:WaitForChild("GetStoreItemInfoRF")
 
 local Player = Players.LocalPlayer
 
@@ -76,11 +77,18 @@ function Local.CoilEffect(coil: Coil, didEquip: boolean)
 end
 
 function Local.ApplyIconToTool(tool)
-	-- look up the info by name or Id, whichever you prefer
-	local info = StoreConfig.GetStoreItemInfo(tool.Name)
+	local success, info = pcall(function()
+		return GetStoreItemInfoRF:InvokeServer(tool.Name)
+	end)
+
+	if not success then
+		warn("Failed to get store data: ", info)
+		return
+	end
+
 	if info and info.Image then
-		tool.TextureId = info.Image -- this is what the Backpack GUI uses
-		tool.ToolTip = info.Name -- optional: hover-text
+		tool.TextureId = info.Image
+		tool.ToolTip = tool.Name
 	end
 end
 

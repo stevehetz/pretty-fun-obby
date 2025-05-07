@@ -2,7 +2,8 @@ local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local StoreConfig = require(ReplicatedStorage.Configs.Store)
+local GetStoreItemInfoRF = ReplicatedStorage:WaitForChild("GetStoreRF")
+
 local GuiController = require(script.Parent.Parent.GuiController)
 local StateController = require(script.Parent.Parent.StateController)
 local Remotes = ReplicatedStorage.Remotes
@@ -25,9 +26,18 @@ end
 
 function Shared.OnStart()
 	OpenButton.MouseButton1Click:Connect(function()
+		local success, SkipsGamepass = pcall(function()
+			return GetStoreItemInfoRF:InvokeServer("5 Skips")
+		end)
+
+		if not success then
+			warn("Failed to get store data: ", SkipsGamepass)
+			return
+		end
+
 		local skipAmount = StateController.GetState().skips.amount
 		if skipAmount <= 0 then
-			local productId = StoreConfig.GetStoreItemInfo("5 Skips").Id
+			local productId = SkipsGamepass.Id
 			MarketplaceService:PromptProductPurchase(Players.LocalPlayer, productId)
 			return
 		end

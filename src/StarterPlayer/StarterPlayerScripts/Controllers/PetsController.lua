@@ -1,7 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
-local PetsConfig = require(ReplicatedStorage.Configs.Pets)
 local StateController = require(script.Parent.StateController)
 local Remotes = ReplicatedStorage.Remotes.PlayerData
 
@@ -16,7 +15,7 @@ function Shared.OnStart()
 	-- end)
 end
 
-function Shared.ToggleEquippedPet(pet: PetsConfig.PetInfo)
+function Shared.ToggleEquippedPet(pet)
 	Remotes.UpdateEquippedPet:FireServer(pet)
 end
 

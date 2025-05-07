@@ -3,7 +3,6 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local PlayerDataService = require(script.Parent.PlayerDataService)
-local PetsConfig = require(ReplicatedStorage.Configs.Pets)
 local PlayerPets = Workspace:WaitForChild("PlayerPets")
 local PetsFolder = ReplicatedStorage:WaitForChild("Pets")
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
@@ -28,7 +27,7 @@ function Shared.OnStart()
 	end)
 end
 
-function Shared.UpdateEquippedPets(player: Player, pet: PetsConfig.PetInfo)
+function Shared.UpdateEquippedPets(player: Player, pet)
 	local state = PlayerDataService.GetState(player)
 	if not state then
 		return
