@@ -47,7 +47,6 @@ function Shared.EnableAttack(config: EnemyUtilConfig)
 					if startMoveDistance < attackDistance then
 						config.movingToPlayerId = player.UserId
 
-						-- Get the platform boundaries
 						local platformBoundaries = {
 							min = Vector3.new(-math.huge, -math.huge, -math.huge),
 							max = Vector3.new(math.huge, math.huge, math.huge),
