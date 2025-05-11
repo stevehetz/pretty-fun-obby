@@ -1,4 +1,4 @@
-WorldsConfig = require(game.ReplicatedStorage.Configs.Worlds)
+local WorldsConfig = require(game.ReplicatedStorage.Configs.Worlds)
 
 if not WorldsConfig.IsWorld("World2") then
 	return
