@@ -46,7 +46,6 @@ function Shared.EnableAttack(config: EnemyUtilConfig)
 
 					if startMoveDistance < attackDistance then
 						config.movingToPlayerId = player.UserId
-						-- Start following in a separate thread to avoid blocking the main loops
 
 						-- Get the platform boundaries
 						local platformBoundaries = {
