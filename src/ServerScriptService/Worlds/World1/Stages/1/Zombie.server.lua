@@ -1,14 +1,17 @@
-local WorldsConfig = require(game.ReplicatedStorage.Configs.Worlds)
-local BoundaryHelper = require(game.ReplicatedStorage.Utils.BoundaryHelper)
-local EnemyHelper = require(game.ReplicatedStorage.Utils.EnemyHelper)
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+
+local Zombie = Workspace.Rigs.Zombie
+local WorldsConfig = require(ReplicatedStorage.Configs.Worlds)
+local EnemyUtil = require(ReplicatedStorage.Utils.EnemyUtil.EnemyUtil)
 
 if not WorldsConfig.IsWorld("World1") then
 	return
 end
 
-local config: EnemyHelper.EnemyHelperConfig = {
-	rig = game.Workspace.Rigs.Zombie,
-	platformBoundaries = BoundaryHelper.GetBoundaryOfRig(game.Workspace.Rigs.Zombie),
+local config: EnemyUtil.EnemyUtilConfig = {
+	rig = Zombie,
+	setPlatformBoundaries = true,
 	damageAmount = 60,
 	damageCooldown = 1,
 	attackDistance = 50,
@@ -19,4 +22,4 @@ local config: EnemyHelper.EnemyHelperConfig = {
 	},
 }
 
-EnemyHelper.EnableAttack(config)
+EnemyUtil.EnableAttack(config)
