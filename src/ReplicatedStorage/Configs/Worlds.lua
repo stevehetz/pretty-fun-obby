@@ -13,6 +13,12 @@ local DISPLAY_NAMES = {
 local Local = {}
 local Shared = {}
 
+function Shared.IsWorld(worldName: string): boolean
+	local currentPlaceId = game.PlaceId
+	local placeId = PLACE_IDS[worldName]
+	return placeId and currentPlaceId == placeId
+end
+
 function Shared.GetAllWorlds(): { WorldName }
 	local worlds = {}
 

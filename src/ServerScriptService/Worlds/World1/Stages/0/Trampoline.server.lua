@@ -1,2 +1,0 @@
--- local part = game.Workspace.Stages["0"].Trampoline.Inner
--- part.AssemblyLinearVelocity = Vector3.new(0, 250, 0)

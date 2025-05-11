@@ -1,10 +1,6 @@
 WorldsConfig = require(game.ReplicatedStorage.Configs.Worlds)
 
-local placeId = game.PlaceId
-local worldName = "World1"
-local worldPlaceId = WorldsConfig.GetPlaceIdFromWorldName(worldName)
-
-if placeId ~= worldPlaceId then
+if not WorldsConfig.IsWorld("World1") then
 	return
 end
 
