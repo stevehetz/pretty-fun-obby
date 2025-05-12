@@ -22,8 +22,6 @@ local GameModeFolder = Workspace:FindFirstChild("GameMode")
 -- local CasualDoorInside = CasualDoorModel:WaitForChild("Inside")
 -- local TimedDoorModel = GameModeFolder:WaitForChild("TimedDoor")
 -- local TimedDoorInside = TimedDoorModel:WaitForChild("Inside")
-local FinishDoorModel = GameModeFolder:WaitForChild("FinishDoor")
-local FinishDoorInside = FinishDoorModel:WaitForChild("Inside")
 
 local finished = false
 local timerRunning = false
@@ -42,6 +40,10 @@ local Shared = {}
 Shared.GameMode = "Casual"
 
 function Shared.OnStart()
+	if not GameModeFolder then
+		return
+	end
+
 	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
 		-- Get Player State
 		if action.type == "UpdateStage" then
@@ -113,6 +115,8 @@ function Shared.OnStart()
 	-- 	end
 	-- end)
 
+	local FinishDoorModel = GameModeFolder:FindFirstChild("FinishDoor")
+	local FinishDoorInside = FinishDoorModel:FindFirstChild("Inside")
 	FinishDoorInside.Touched:Connect(function(hit)
 		local char = hit.Parent
 		if char and char:FindFirstChild("Humanoid") and char == Player.Character then

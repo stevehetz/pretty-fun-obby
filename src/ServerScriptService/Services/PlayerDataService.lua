@@ -7,6 +7,7 @@ local TeleportService = game:GetService("TeleportService")
 local PlayerData = require(ReplicatedStorage.PlayerData)
 local GlobalDataService = require(ServerScriptService.Services.GlobalDataService)
 local WorldsConfig = require(ReplicatedStorage.Configs.Worlds)
+local StagesConfig = require(ReplicatedStorage.Configs.Stages)
 local TestConfig = require(ReplicatedStorage.Configs.Test)
 local ProfileService = require(ServerScriptService.Libs.ProfileService)
 local WorldPortalService = require(ServerScriptService.Services.WorldPortalService)
@@ -95,13 +96,23 @@ end
 function Shared.GetState(player: Player)
 	local profile = Profiles[player]
 	if profile then
-		if TestConfig.IsDev(player.Name) then
-			profile.Data.skips.amount = 2000
-		end
+		Local.InitState(profile)
 		return profile.Data
 	end
 
 	return nil
+end
+
+function Local.InitState(profile: ProfileService.Profile<DataTemplate.PlayerData>)
+	local totalStages = StagesConfig.GetTotalStages()
+
+	if totalStages < 0 or profile.Data.stage > totalStages then
+		profile.Data.stage = 0
+	end
+
+	if TestConfig.IsDev(profile.Name) then
+		profile.Data.skips.amount = 2000
+	end
 end
 
 -- Export this function so WorldPortalService can call it

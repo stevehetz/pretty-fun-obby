@@ -60,6 +60,10 @@ Shared.OnStart = function()
 end
 
 function Shared.RefreshFinishesLeaderboard()
+	if not leaderboardsFolder then
+		return
+	end
+
 	local success, data = pcall(function()
 		return GetTopFinishersRF:InvokeServer()
 	end)
@@ -76,6 +80,10 @@ function Shared.RefreshFinishesLeaderboard()
 end
 
 function Shared.RefreshTimesLeaderboard()
+	if not leaderboardsFolder then
+		return
+	end
+
 	local success, data = pcall(function()
 		return GetTopTimesRF:InvokeServer()
 	end)
