@@ -126,7 +126,11 @@ function Shared.HandleWorldTeleport(player: Player, state: PlayerData.PlayerData
 end
 
 function Shared.SetupPortals()
-	-- World Portals at beginning of worlds
+	local WorldPortals = Workspace:FindFirstChild("WorldPortals")
+	if not WorldPortals then
+		return
+	end
+
 	for _, descendant in Workspace.WorldPortals:GetDescendants() do
 		if descendant.Name == "Inside" then
 			descendant.Touched:Connect(function(otherPart: BasePart)

@@ -16,7 +16,8 @@ local TestConfig = require(ReplicatedStorage.Configs.Test)
 
 local Label = GuiController.Guis.TopTwo.Frame.TimerLabel
 
-local GameModeFolder = Workspace:WaitForChild("GameMode")
+local GameModeFolder = Workspace:FindFirstChild("GameMode")
+
 -- local CasualDoorModel = GameModeFolder:WaitForChild("CasualDoor")
 -- local CasualDoorInside = CasualDoorModel:WaitForChild("Inside")
 -- local TimedDoorModel = GameModeFolder:WaitForChild("TimedDoor")

@@ -3,11 +3,13 @@ export type WorldName = "World1" | "World2"
 local PLACE_IDS = {
 	["World1"] = 139398903012255,
 	["World2"] = 71122824760185,
+	["World3"] = 128199095645816,
 }
 
 local DISPLAY_NAMES = {
 	["World1"] = "World 1",
 	["World2"] = "World 2",
+	["World3"] = "World 3",
 }
 
 local Local = {}

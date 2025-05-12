@@ -27,6 +27,11 @@ Shared.OnStart = function()
 end
 
 Local.SetupPortal = function(player: Player, initialState: PlayerData.PlayerData)
+	local EndPortal = Workspace:FindFirstChild("EndPortal")
+	if not EndPortal then
+		return
+	end
+
 	for _, descendant in Workspace.EndPortal:GetDescendants() do
 		if descendant.Name == "Inside" then
 			descendant.Touched:Connect(function(otherPart: BasePart)

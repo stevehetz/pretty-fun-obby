@@ -5,8 +5,7 @@ local GetTopFinishersRF = ReplicatedStorage:WaitForChild("GetTopFinishers")
 local GetTopTimesRF = ReplicatedStorage:WaitForChild("GetTopTimes")
 local GetTimeUntilRefreshRF = ReplicatedStorage:WaitForChild("GetTimeUntilRefresh")
 local GetTopTwoTimesPerWorldRF = ReplicatedStorage:WaitForChild("GetTopTwoTimesPerWorldRF")
-local leaderboardsFolder = Workspace:WaitForChild("Leaderboards")
-local worldPortalsFolder = Workspace:WaitForChild("WorldPortals")
+local leaderboardsFolder = Workspace:FindFirstChild("Leaderboards")
 
 local REFRESH_INTERVAL = 60 -- Refresh leaderboard every 60 seconds
 
@@ -20,6 +19,10 @@ Shared.TopTwoTimesPerWorldData = {}
 Shared.LastRefreshTime = 0
 
 Shared.OnStart = function()
+	if not leaderboardsFolder then
+		return
+	end
+
 	-- Initial fetch - do sequentially to ensure each completes before moving to the next
 	local finishesData = Shared.RefreshFinishesLeaderboard()
 	task.wait(0.5) -- Small delay between refreshes
@@ -327,22 +330,22 @@ function Shared.RefreshTopTwoTimesPerWorld()
 	end
 end
 
-function Local.UpdateAllLeaderScreens(data)
-	-- Find all LeaderScreen objects in the WorldPortals folder
-	for _, worldModel in ipairs(worldPortalsFolder:GetChildren()) do
-		if worldModel:IsA("Model") then
-			local worldName = worldModel.Name
+-- function Local.UpdateAllLeaderScreens(data)
+-- 	-- Find all LeaderScreen objects in the WorldPortals folder
+-- 	for _, worldModel in ipairs(worldPortalsFolder:GetChildren()) do
+-- 		if worldModel:IsA("Model") then
+-- 			local worldName = worldModel.Name
 
-			-- Find LeaderScreen in this world folder
-			for _, leaderScreen in ipairs(worldModel:GetDescendants()) do
-				if leaderScreen.Name == "LeaderScreen" and leaderScreen:IsA("Model") then
-					-- Update this LeaderScreen with data for its world
-					Local.UpdateLeaderScreen(leaderScreen, worldName, data[worldName] or {})
-				end
-			end
-		end
-	end
-end
+-- 			-- Find LeaderScreen in this world folder
+-- 			for _, leaderScreen in ipairs(worldModel:GetDescendants()) do
+-- 				if leaderScreen.Name == "LeaderScreen" and leaderScreen:IsA("Model") then
+-- 					-- Update this LeaderScreen with data for its world
+-- 					Local.UpdateLeaderScreen(leaderScreen, worldName, data[worldName] or {})
+-- 				end
+-- 			end
+-- 		end
+-- 	end
+-- end
 
 function Local.UpdateLeaderScreen(leaderScreen, worldName, worldData)
 	-- Use pcall with WaitForChild to handle cases where children might not exist

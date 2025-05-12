@@ -29,6 +29,8 @@ local hasDoubleJump = false -- Flag to check if double jump is available
 function OnStart()
 	SetState()
 
+	print("Double Jump Script Started")
+
 	-- Find the jump button in the mobile controls
 	local function findJumpButton()
 		local mobileControls = PlayerGui:FindFirstChild("MobileControls") or PlayerGui:FindFirstChild("TouchGui")

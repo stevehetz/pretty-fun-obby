@@ -17,6 +17,11 @@ Shared.OnStart = function()
 end
 
 Local.SetupPortal = function(player: Player)
+	local RetryPortal = Workspace:FindFirstChild("RetryPortal")
+	if not RetryPortal then
+		return
+	end
+
 	for _, descendant in Workspace.RetryPortal:GetDescendants() do
 		if descendant.Name == "Inside" then
 			descendant.Touched:Connect(function(otherPart: BasePart)

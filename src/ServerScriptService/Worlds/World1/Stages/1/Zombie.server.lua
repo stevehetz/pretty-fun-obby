@@ -1,13 +1,14 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
-local Zombie = Workspace.Rigs.Zombie
 local WorldsConfig = require(ReplicatedStorage.Configs.Worlds)
 local EnemyUtil = require(ReplicatedStorage.Utils.EnemyUtil.EnemyUtil)
 
 if not WorldsConfig.IsWorld("World1") then
 	return
 end
+
+local Zombie = Workspace.Rigs.Zombie
 
 local config: EnemyUtil.EnemyUtilConfig = {
 	rig = Zombie,
