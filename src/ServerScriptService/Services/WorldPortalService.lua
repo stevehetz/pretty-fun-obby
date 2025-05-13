@@ -9,6 +9,7 @@ local MarketplaceService = game:GetService("MarketplaceService")
 
 local PlayerData = require(ReplicatedStorage.PlayerData)
 local WorldsConfig = require(ReplicatedStorage.Configs.Worlds)
+local TestConfig = require(ReplicatedStorage.Configs.Test)
 local StoreConfig = require(ServerStorage.Configs.Store)
 
 -- Configuration flag to control whether World 2 requires purchase
@@ -144,8 +145,24 @@ function Shared.SetupPortals()
 						return
 					end
 
+					local parent = descendant.Parent
+					local access = parent:GetAttribute("Access")
+					local isDev = TestConfig.IsDev(player.Name)
+
+					if access == "DevOnly" then
+						if isDev then
+							print("DevOnly access")
+						else
+							return
+						end
+					end
+
 					-- Set debounce for this player
 					playerDebounce[player.UserId] = true
+					print(
+						"WorldPortalService - playerDebounce[player.UserId]: "
+							.. tostring(playerDebounce[player.UserId])
+					)
 
 					print("WorldPortalService - worldName: " .. worldName)
 					local placeId = WorldsConfig.GetPlaceIdFromWorldName(worldName)

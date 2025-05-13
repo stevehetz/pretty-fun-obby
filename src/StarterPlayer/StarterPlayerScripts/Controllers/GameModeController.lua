@@ -41,6 +41,7 @@ Shared.GameMode = "Casual"
 
 function Shared.OnStart()
 	if not GameModeFolder then
+		warn("GameModeFolder not found in Workspace")
 		return
 	end
 
@@ -116,7 +117,15 @@ function Shared.OnStart()
 	-- end)
 
 	local FinishDoorModel = GameModeFolder:FindFirstChild("FinishDoor")
+	if not FinishDoorModel then
+		warn("FinishDoorModel not found in GameModeFolder")
+		return
+	end
 	local FinishDoorInside = FinishDoorModel:FindFirstChild("Inside")
+	if not FinishDoorInside then
+		warn("FinishDoorInside not found in FinishDoorModel")
+		return
+	end
 	FinishDoorInside.Touched:Connect(function(hit)
 		local char = hit.Parent
 		if char and char:FindFirstChild("Humanoid") and char == Player.Character then
