@@ -46,6 +46,8 @@ function Shared.Load(config: EnemyManagerConfig)
 				enemyOriginalPositions[child] = child.HumanoidRootPart.Position
 			end
 
+			print("Loading enemy: " .. child.Name)
+
 			task.spawn(function()
 				local config: EnemyUtil.EnemyUtilConfig = {
 					rig = child,
@@ -54,7 +56,7 @@ function Shared.Load(config: EnemyManagerConfig)
 					damageAmount = 100,
 					damageCooldown = 1,
 					attackDistance = 50,
-					animationAssetId = "rbxassetid://92262968786285",
+					-- animationAssetId = "rbxassetid://92262968786285",
 					damageParts = {
 						"LeftLowerLeg",
 						"RightLowerLeg",

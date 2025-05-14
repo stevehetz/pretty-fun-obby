@@ -46,7 +46,7 @@ function Shared.EnableAttack(config: EnemyUtilConfig)
 	-- Set collision group for all enemy parts to prevent them from pushing/climbing each other
 	-- setCollisionGroup(rig, "Enemies")
 
-	local animateEnemy = EnemyAnimate.Create(animationAssetId, rig)
+	local animateEnemy = animationAssetId and EnemyAnimate.Create(animationAssetId, rig)
 
 	EnemyTouchDamage.Setup(rig, damageParts, damageAmount, damageCooldown)
 
@@ -86,6 +86,8 @@ function Shared.EnableAttack(config: EnemyUtilConfig)
 end
 
 function Local.FollowPlayer(config, player, platformBoundaries, animateEnemy)
+	print("Following player:", player.Name)
+	print("Platform boundaries:", platformBoundaries.min, platformBoundaries.max)
 	while true do
 		if not player or not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
 			config.movingToPlayerId = nil
@@ -133,7 +135,9 @@ function Local.MoveRigToPlayer(config, player, platformBoundaries, animateEnemy)
 		config.rig.Humanoid:MoveTo(clampedPosition)
 	end
 
-	animateEnemy:play()
+	if animateEnemy then
+		animateEnemy:play()
+	end
 end
 
 function Local.StopRig(config, animateEnemy)
@@ -147,7 +151,9 @@ function Local.StopRig(config, animateEnemy)
 		config.rig.Humanoid:MoveTo(config.rig.HumanoidRootPart.Position)
 	end
 
-	animateEnemy:stop()
+	if animateEnemy then
+		animateEnemy:stop()
+	end
 end
 
 function Local.GetPlayerDistanceFromRig(config, player)
