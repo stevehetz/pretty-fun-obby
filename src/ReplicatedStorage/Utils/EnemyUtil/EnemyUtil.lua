@@ -19,6 +19,7 @@ export type EnemyUtilConfig = {
 	animationAssetId: string,
 	damageParts: { string }?,
 	movingToPlayerId: number?,
+	originalPosition: Vector3?,
 }
 
 local Local = {}
@@ -93,9 +94,17 @@ function Local.FollowPlayer(config, player, platformBoundaries, animateEnemy)
 
 		local distanceFromRig = Local.GetPlayerDistanceFromRig(config, player)
 
-		-- Player too far away, stop following
+		-- Player too far away, stop following and return to original position
 		if distanceFromRig > config.attackDistance then
 			Local.StopRig(config, animateEnemy)
+
+			-- Wait for the enemy to return to its original position
+			-- before allowing it to target another player
+			if config.originalPosition then
+				local returnDelay = 3 -- Give the enemy time to return
+				task.wait(returnDelay)
+			end
+
 			return
 		end
 
@@ -129,7 +138,16 @@ end
 
 function Local.StopRig(config, animateEnemy)
 	config.movingToPlayerId = nil
-	config.rig.Humanoid:MoveTo(config.rig.HumanoidRootPart.Position)
+
+	-- Return to original position if it exists
+	if config.originalPosition then
+		config.rig.Humanoid:MoveTo(config.originalPosition)
+		print("Enemy returning to original position:", config.originalPosition)
+	else
+		-- Fallback to stopping in place if no original position is available
+		config.rig.Humanoid:MoveTo(config.rig.HumanoidRootPart.Position)
+	end
+
 	animateEnemy:stop()
 end
 

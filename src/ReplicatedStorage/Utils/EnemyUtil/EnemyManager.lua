@@ -71,6 +71,7 @@ function Shared.Load(config: EnemyManagerConfig)
 						"LeftHand",
 						"RightHand",
 					},
+					originalPosition = child.HumanoidRootPart.Position,
 				}
 
 				EnemyUtil.EnableAttack(config)
