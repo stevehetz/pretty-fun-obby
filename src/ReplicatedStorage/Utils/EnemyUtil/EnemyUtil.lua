@@ -142,7 +142,6 @@ function Local.StopRig(config, animateEnemy)
 	-- Return to original position if it exists
 	if config.originalPosition then
 		config.rig.Humanoid:MoveTo(config.originalPosition)
-		print("Enemy returning to original position:", config.originalPosition)
 	else
 		-- Fallback to stopping in place if no original position is available
 		config.rig.Humanoid:MoveTo(config.rig.HumanoidRootPart.Position)

@@ -14,9 +14,6 @@ local Shared = {}
 function Shared.Load(config: EnemyManagerConfig)
 	local enemiesFolder = config.enemiesFolder
 
-	-- Keep track of enemy count to assign unique identifiers
-	local enemyCount = 0
-
 	-- Store original positions of enemies for respawning
 	local enemyOriginalPositions = {}
 
@@ -34,8 +31,6 @@ function Shared.Load(config: EnemyManagerConfig)
 		-- Reset the enemy's humanoid
 		enemy.Humanoid.Health = enemy.Humanoid.MaxHealth
 		enemy.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-
-		print("Respawned enemy at original position")
 	end
 
 	-- Find the EnemyPlatform part to use as the boundary
@@ -45,14 +40,7 @@ function Shared.Load(config: EnemyManagerConfig)
 	local deathYLevel = enemyPlatform and (enemyPlatform.Position.Y - 10) or -50
 
 	for _, child in enemiesFolder:GetChildren() do
-		print("Child: ", child.Name)
 		if child:IsA("Model") then
-			-- Increment enemy count and assign a unique index
-			enemyCount = enemyCount + 1
-			child:SetAttribute("EnemyIndex", enemyCount)
-
-			print("Setting up enemy " .. enemyCount)
-
 			-- Store the original position for respawning
 			if child:FindFirstChild("HumanoidRootPart") then
 				enemyOriginalPositions[child] = child.HumanoidRootPart.Position
@@ -63,13 +51,13 @@ function Shared.Load(config: EnemyManagerConfig)
 					rig = child,
 					setPlatformBoundaries = true,
 					platform = enemyPlatform, -- Pass the platform to use as boundary
-					damageAmount = 2,
+					damageAmount = 100,
 					damageCooldown = 1,
 					attackDistance = 50,
-					animationAssetId = "rbxassetid://137589538429321",
+					animationAssetId = "rbxassetid://92262968786285",
 					damageParts = {
-						"LeftHand",
-						"RightHand",
+						"LeftLowerLeg",
+						"RightLowerLeg",
 					},
 					originalPosition = child.HumanoidRootPart.Position,
 				}
@@ -90,8 +78,6 @@ function Shared.Load(config: EnemyManagerConfig)
 			end
 		end
 	end)
-
-	print("Total enemies set up: " .. enemyCount)
 end
 
 return Shared

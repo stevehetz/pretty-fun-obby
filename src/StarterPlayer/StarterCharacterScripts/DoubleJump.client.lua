@@ -159,8 +159,11 @@ function SetState()
 		return
 	end
 
-	-- Enable for everyone
-	hasDoubleJump = true
+	if state.gamepass and state.gamepass[doubleJumpGamePassId] then
+		hasDoubleJump = true
+	else
+		hasDoubleJump = false
+	end
 end
 
 OnStart()

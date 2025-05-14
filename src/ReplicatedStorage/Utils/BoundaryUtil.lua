@@ -49,7 +49,7 @@ function Shared.GetBoundaryOfRig(rig, platform)
 				Vector3.new(platformBoundaries.min.X, platformBoundaries.min.Y, platformBoundaries.max.Z)
 		end
 
-		print("Platform boundaries set: Min =", platformBoundaries.min, "Max =", platformBoundaries.max)
+		-- print("Platform boundaries set: Min =", platformBoundaries.min, "Max =", platformBoundaries.max)
 
 		return platformBoundaries
 	else
