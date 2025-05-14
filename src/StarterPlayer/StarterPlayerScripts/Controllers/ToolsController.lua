@@ -19,7 +19,7 @@ local COIL_EFFECTS = {
 	Default = {
 		WalkSpeed = 16,
 		Gravity = 196.2,
-		JumpHeight = 7.2,
+		JumpHeight = 10,
 	},
 }
 
