@@ -159,9 +159,6 @@ function SetState()
 		return
 	end
 
-	print("Gamepass:", state.gamepasses)
-	print("Double Jump Gamepass ID:", doubleJumpGamePassId)
-	print("Has Double Jump:", state.gamepasses and state.gamepasses[tostring(doubleJumpGamePassId)])
 	if state.gamepasses and state.gamepasses[tostring(doubleJumpGamePassId)] then
 		hasDoubleJump = true
 	else
