@@ -1,4 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local PhysicsService = game:GetService("PhysicsService")
 local BoundaryUtil = require(ReplicatedStorage.Utils.BoundaryUtil)
 
 local EnemyAnimate = require(ReplicatedStorage.Utils.EnemyUtil.EnemyAnimate)
@@ -10,15 +11,27 @@ export type EnemyUtilConfig = {
 		min: Vector3,
 		max: Vector3,
 	},
+	platform: BasePart?,
+	setPlatformBoundaries: boolean?,
 	damageAmount: number,
 	damageCooldown: number,
 	attackDistance: number,
 	animationAssetId: string,
+	damageParts: { string }?,
 	movingToPlayerId: number?,
 }
 
 local Local = {}
 local Shared = {}
+
+-- Function to set collision group for all parts in a model
+local function setCollisionGroup(model, groupName)
+	for _, part in pairs(model:GetDescendants()) do
+		if part:IsA("BasePart") then
+			part.CollisionGroup = groupName
+		end
+	end
+end
 
 function Shared.EnableAttack(config: EnemyUtilConfig)
 	local rig = config.rig
@@ -28,6 +41,9 @@ function Shared.EnableAttack(config: EnemyUtilConfig)
 	local damageCooldown = config.damageCooldown or 1
 	local animationAssetId = config.animationAssetId
 	local damageParts = config.damageParts or {}
+
+	-- Set collision group for all enemy parts to prevent them from pushing/climbing each other
+	-- setCollisionGroup(rig, "Enemies")
 
 	local animateEnemy = EnemyAnimate.Create(animationAssetId, rig)
 
@@ -53,7 +69,8 @@ function Shared.EnableAttack(config: EnemyUtilConfig)
 						}
 
 						if setPlatformBoundaries then
-							platformBoundaries = BoundaryUtil.GetBoundaryOfRig(rig)
+							-- Use the provided platform if available, otherwise use raycast
+							platformBoundaries = BoundaryUtil.GetBoundaryOfRig(rig, config.platform)
 						end
 
 						task.spawn(function()

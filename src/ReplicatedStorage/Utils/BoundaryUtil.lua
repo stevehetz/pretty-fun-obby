@@ -39,6 +39,16 @@ function Shared.GetBoundaryOfRig(rig, platform)
 		platformBoundaries.min = platformPosition - cornerOffset
 		platformBoundaries.max = platformPosition + cornerOffset
 
+		-- Check to make sure the boundaries are valid
+		if platformBoundaries.min.X > platformBoundaries.max.X then
+			platformBoundaries.min =
+				Vector3.new(platformBoundaries.max.X, platformBoundaries.min.Y, platformBoundaries.min.Z)
+		end
+		if platformBoundaries.min.Z > platformBoundaries.max.Z then
+			platformBoundaries.min =
+				Vector3.new(platformBoundaries.min.X, platformBoundaries.min.Y, platformBoundaries.max.Z)
+		end
+
 		print("Platform boundaries set: Min =", platformBoundaries.min, "Max =", platformBoundaries.max)
 
 		return platformBoundaries
