@@ -46,8 +46,6 @@ function Shared.Load(config: EnemyManagerConfig)
 				enemyOriginalPositions[child] = child.HumanoidRootPart.Position
 			end
 
-			print("Loading enemy: " .. child.Name)
-
 			task.spawn(function()
 				local config: EnemyUtil.EnemyUtilConfig = {
 					rig = child,
