@@ -39,7 +39,7 @@ function Shared.Load(config: EnemyManagerConfig)
 					setPlatformBoundaries = true,
 					platform = enemiesFolder:FindFirstChild("EnemyPlatform"),
 					walkSpeed = 23,
-					damageAmount = 10,
+					damageAmount = 100,
 					damageCooldown = 1,
 					attackDistance = 50,
 					animationAssetId = "rbxassetid://95135060939003",
