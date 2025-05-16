@@ -36,8 +36,8 @@ function Shared.GetBoundaryOfRig(rig, platform)
 		cornerOffset = cornerOffset - Vector3.new(margin, 0, margin)
 
 		-- Calculate min and max points in world space
-		-- platformBoundaries.min = platformPosition - cornerOffset
-		-- platformBoundaries.max = platformPosition + cornerOffset
+		platformBoundaries.min = platformPosition - cornerOffset
+		platformBoundaries.max = platformPosition + cornerOffset
 
 		-- print("Platform boundaries set: Min =", platformBoundaries.min, "Max =", platformBoundaries.max)
 
