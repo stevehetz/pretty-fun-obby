@@ -47,7 +47,7 @@ function Shared.EnableAttack(config: EnemyUtilConfig)
 	rig.Humanoid.WalkSpeed = 25
 
 	-- Set collision group for all enemy parts to prevent them from pushing/climbing each other
-	setCollisionGroup(rig, "Enemies")
+	-- setCollisionGroup(rig, "Enemies")
 
 	local animateEnemy = animationAssetId and EnemyAnimate.Create(animationAssetId, rig)
 
