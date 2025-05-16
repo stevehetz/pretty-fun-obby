@@ -43,8 +43,11 @@ function Shared.EnableAttack(config: EnemyUtilConfig)
 	local animationAssetId = config.animationAssetId
 	local damageParts = config.damageParts or {}
 
+	-- Make rig speed 25
+	rig.Humanoid.WalkSpeed = 25
+
 	-- Set collision group for all enemy parts to prevent them from pushing/climbing each other
-	-- setCollisionGroup(rig, "Enemies")
+	setCollisionGroup(rig, "Enemies")
 
 	local animateEnemy = animationAssetId and EnemyAnimate.Create(animationAssetId, rig)
 
@@ -53,6 +56,17 @@ function Shared.EnableAttack(config: EnemyUtilConfig)
 	while task.wait(1) do
 		-- Only look for players to follow if we're not already following someone
 		if config.movingToPlayerId == nil then
+			-- Get platform boundaries first
+			local platformBoundaries = {
+				min = Vector3.new(-math.huge, -math.huge, -math.huge),
+				max = Vector3.new(math.huge, math.huge, math.huge),
+			}
+
+			if setPlatformBoundaries then
+				-- Use the provided platform if available, otherwise use raycast
+				platformBoundaries = BoundaryUtil.GetBoundaryOfRig(rig, config.platform)
+			end
+
 			-- Look for a player to follow
 			for _, player in ipairs(game.Players:GetPlayers()) do
 				if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
@@ -61,18 +75,12 @@ function Shared.EnableAttack(config: EnemyUtilConfig)
 						rig.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position
 					).Magnitude
 
-					if startMoveDistance < attackDistance then
+					local playerPosition = player.Character.HumanoidRootPart.Position
+					local isPlayerOnPlatform = BoundaryUtil.IsPositionOnPlatform(playerPosition, platformBoundaries)
+
+					-- Only chase if player is within attack distance AND on the platform
+					if startMoveDistance < attackDistance and isPlayerOnPlatform then
 						config.movingToPlayerId = player.UserId
-
-						local platformBoundaries = {
-							min = Vector3.new(-math.huge, -math.huge, -math.huge),
-							max = Vector3.new(math.huge, math.huge, math.huge),
-						}
-
-						if setPlatformBoundaries then
-							-- Use the provided platform if available, otherwise use raycast
-							platformBoundaries = BoundaryUtil.GetBoundaryOfRig(rig, config.platform)
-						end
 
 						task.spawn(function()
 							Local.FollowPlayer(config, player, platformBoundaries, animateEnemy)
@@ -95,9 +103,12 @@ function Local.FollowPlayer(config, player, platformBoundaries, animateEnemy)
 		end
 
 		local distanceFromRig = Local.GetPlayerDistanceFromRig(config, player)
+		local playerPosition = player.Character.HumanoidRootPart.Position
+		local isPlayerOnPlatform = BoundaryUtil.IsPositionOnPlatform(playerPosition, platformBoundaries)
 
-		-- Player too far away, stop following and return to original position
-		if distanceFromRig > config.attackDistance then
+		-- Stop following if player is too far away OR if player is no longer on the platform
+		if distanceFromRig > config.attackDistance or not isPlayerOnPlatform then
+			print("Player left platform or is too far away, stopping chase")
 			Local.StopRig(config, animateEnemy)
 
 			-- Wait for the enemy to return to its original position
@@ -110,8 +121,8 @@ function Local.FollowPlayer(config, player, platformBoundaries, animateEnemy)
 			return
 		end
 
-		-- Within the attack distance, move towards the player
-		if distanceFromRig < config.attackDistance and distanceFromRig > -1 then
+		-- Within the attack distance and on platform, move towards the player
+		if distanceFromRig < config.attackDistance and distanceFromRig > -1 and isPlayerOnPlatform then
 			Local.MoveRigToPlayer(config, player, platformBoundaries, animateEnemy)
 			task.wait(0.2)
 		end
