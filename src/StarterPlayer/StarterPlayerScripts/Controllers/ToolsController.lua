@@ -17,14 +17,21 @@ local COIL_EFFECTS = {
 		JumpHeight = 50,
 	},
 	Default = {
-		WalkSpeed = 16,
-		Gravity = 196.2,
-		JumpHeight = 10,
+		WalkSpeed = nil, -- Will be set to player's original value
+		Gravity = nil, -- Will be set to workspace's original value
+		JumpHeight = nil, -- Will be set to player's original value
 	},
 }
 
 local Local = {}
 local Shared = {}
+
+-- Store original values when character loads
+local originalValues = {
+	WalkSpeed = nil,
+	Gravity = nil,
+	JumpHeight = nil,
+}
 
 function Shared.OnStart()
 	Player.CharacterAdded:Connect(function(character)
@@ -39,6 +46,19 @@ function Local.SetupCharacter(player: Player)
 	local backpack = player.Backpack or player:WaitForChild("Backpack")
 	if not character or not backpack then
 		return
+	end
+
+	-- Store original values when character loads
+	local humanoid = character:WaitForChild("Humanoid")
+	if humanoid then
+		originalValues.WalkSpeed = humanoid.WalkSpeed
+		originalValues.JumpHeight = humanoid.JumpHeight
+		originalValues.Gravity = Workspace.Gravity
+
+		-- Update default values with original values
+		COIL_EFFECTS.Default.WalkSpeed = originalValues.WalkSpeed
+		COIL_EFFECTS.Default.JumpHeight = originalValues.JumpHeight
+		COIL_EFFECTS.Default.Gravity = originalValues.Gravity
 	end
 
 	for _, tool in backpack:GetChildren() do
