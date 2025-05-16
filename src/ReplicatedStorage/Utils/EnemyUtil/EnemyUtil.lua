@@ -13,6 +13,7 @@ export type EnemyUtilConfig = {
 	},
 	platform: BasePart?,
 	setPlatformBoundaries: boolean?,
+	walkSpeed: number?,
 	damageAmount: number,
 	damageCooldown: number,
 	attackDistance: number,
@@ -37,14 +38,15 @@ end
 function Shared.EnableAttack(config: EnemyUtilConfig)
 	local rig = config.rig
 	local setPlatformBoundaries = config.setPlatformBoundaries
+	local walkSpeed = config.walkSpeed or 22
 	local attackDistance = config.attackDistance or 50
 	local damageAmount = config.damageAmount or 60
 	local damageCooldown = config.damageCooldown or 1
 	local animationAssetId = config.animationAssetId
 	local damageParts = config.damageParts or {}
 
-	-- Make rig speed 25
-	rig.Humanoid.WalkSpeed = 25
+	-- Set Walkspeed for the rig
+	rig.Humanoid.WalkSpeed = walkSpeed
 
 	-- Set collision group for all enemy parts to prevent them from pushing/climbing each other
 	-- setCollisionGroup(rig, "Enemies")
@@ -94,8 +96,6 @@ function Shared.EnableAttack(config: EnemyUtilConfig)
 end
 
 function Local.FollowPlayer(config, player, platformBoundaries, animateEnemy)
-	print("Following player:", player.Name)
-	print("Platform boundaries:", platformBoundaries.min, platformBoundaries.max)
 	while true do
 		if not player or not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
 			config.movingToPlayerId = nil

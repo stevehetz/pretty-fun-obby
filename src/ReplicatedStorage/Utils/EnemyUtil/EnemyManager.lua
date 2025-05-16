@@ -50,14 +50,15 @@ function Shared.Load(config: EnemyManagerConfig)
 				local config: EnemyUtil.EnemyUtilConfig = {
 					rig = child,
 					setPlatformBoundaries = true,
-					platform = enemyPlatform, -- Pass the platform to use as boundary
-					damageAmount = 100,
+					platform = enemyPlatform,
+					walkSpeed = 23,
+					damageAmount = 10,
 					damageCooldown = 1,
 					attackDistance = 50,
-					-- animationAssetId = "rbxassetid://92262968786285",
+					animationAssetId = "rbxassetid://95135060939003",
 					damageParts = {
-						"LeftLowerLeg",
-						"RightLowerLeg",
+						"LeftFoot",
+						"RightFoot",
 					},
 					originalPosition = child.HumanoidRootPart.Position,
 				}

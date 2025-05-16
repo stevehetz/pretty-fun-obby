@@ -1,6 +1,8 @@
 local Local = {}
 local Shared = {}
 
+local animateSpeed = 0.2
+
 function Shared.Create(animationAssetId: string, rig: Model)
 	local EnemyAnimate = {}
 	EnemyAnimate.__index = EnemyAnimate
@@ -25,7 +27,7 @@ function Shared.Create(animationAssetId: string, rig: Model)
 			if self.isAnimationPlaying then
 				self.animTrack:AdjustSpeed(0)
 			else
-				self.animTrack:AdjustSpeed(1)
+				self.animTrack:AdjustSpeed(animateSpeed)
 			end
 		end)
 
@@ -34,7 +36,7 @@ function Shared.Create(animationAssetId: string, rig: Model)
 
 	function EnemyAnimate:play()
 		if not self.isAnimationPlaying then
-			self.animTrack:AdjustSpeed(1)
+			self.animTrack:AdjustSpeed(animateSpeed)
 			self.animTrack:Play()
 			self.isAnimationPlaying = true
 		end
@@ -42,7 +44,7 @@ function Shared.Create(animationAssetId: string, rig: Model)
 
 	function EnemyAnimate:stop()
 		if self.isAnimationPlaying then
-			self.animTrack:AdjustSpeed(1)
+			self.animTrack:AdjustSpeed(animateSpeed)
 			self.isAnimationPlaying = false
 		end
 	end
