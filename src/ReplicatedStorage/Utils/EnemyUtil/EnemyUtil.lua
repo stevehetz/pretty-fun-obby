@@ -117,7 +117,6 @@ function Local.FollowPlayer(config, player, platformBoundaries, animateEnemy)
 
 		-- Stop following if player is too far away OR if player is no longer on the platform
 		if distanceFromRig > config.attackDistance or not isPlayerOnPlatform then
-			print("Player left platform or is too far away, stopping chase")
 			Local.StopRig(config, animateEnemy)
 
 			-- Wait for the enemy to return to its original position

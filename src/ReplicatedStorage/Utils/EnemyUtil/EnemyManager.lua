@@ -27,8 +27,8 @@ function Shared.Load(config: EnemyManagerConfig)
 
 		-- Set the position
 		if newEnemy:FindFirstChild("HumanoidRootPart") then
-			-- set just the position
-			newEnemy.HumanoidRootPart.CFrame = CFrame.new(position)
+			-- set position and orientation separately
+			newEnemy.HumanoidRootPart.CFrame = CFrame.new(position) * orientation
 			newEnemy.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
 			newEnemy.HumanoidRootPart.RotVelocity = Vector3.new(0, 0, 0)
 		end
@@ -89,7 +89,9 @@ function Shared.Load(config: EnemyManagerConfig)
 			enemyCounter = enemyCounter + 1
 			local originalPosition = child.HumanoidRootPart.Position
 			enemyOriginalPositions[name] = originalPosition
-			local originalOrientation = child.HumanoidRootPart.CFrame
+			-- Store just the orientation part of the CFrame, not the entire CFrame
+			local _, _, _, m00, m01, m02, m10, m11, m12, m20, m21, m22 = child.HumanoidRootPart.CFrame:GetComponents()
+			local originalOrientation = CFrame.new(0, 0, 0, m00, m01, m02, m10, m11, m12, m20, m21, m22)
 			enemyOriginalOrientations[name] = originalOrientation
 
 			-- Create a clone of the enemy and store it
@@ -106,24 +108,27 @@ function Shared.Load(config: EnemyManagerConfig)
 	end
 
 	-- Check for enemies falling off the platform
-	RunService.Heartbeat:Connect(function()
-		task.wait(5)
-		for _, enemy in ipairs(enemiesFolder:GetChildren()) do
-			if enemy:IsA("Model") and enemy:FindFirstChild("HumanoidRootPart") then
-				-- Check if the enemy has fallen below the death Y-level
-				if enemy.HumanoidRootPart.Position.Y < deathYLevel then
-					-- Extract the base name (remove the unique ID suffix)
+	-- Check for fallen enemies every 5 seconds instead of yielding on every heartbeat
+	task.spawn(function()
+		while true do
+			task.wait(1)
+			for _, enemy in pairs(enemiesFolder:GetChildren()) do
+				if enemy:IsA("Model") and enemy:FindFirstChild("HumanoidRootPart") then
+					-- Check if the enemy has fallen below the death Y-level
+					if enemy.HumanoidRootPart.Position.Y < deathYLevel then
+						-- Extract the base name (remove the unique ID suffix)
 
-					local originalPosition = enemyOriginalPositions[enemy.Name]
-					local originalOrientation = enemyOriginalOrientations[enemy.Name]
-					if originalPosition then
-						-- Destroy the enemy
-						enemy:Destroy()
+						local originalPosition = enemyOriginalPositions[enemy.Name]
+						local originalOrientation = enemyOriginalOrientations[enemy.Name]
+						if originalPosition then
+							-- Destroy the enemy
+							enemy:Destroy()
 
-						-- Recreate the enemy after 10 seconds
-						task.delay(10, function()
-							createEnemy(enemyClones[enemy.Name], originalPosition, originalOrientation)
-						end)
+							-- Recreate the enemy after 10 seconds
+							task.delay(10, function()
+								createEnemy(enemyClones[enemy.Name], originalPosition, originalOrientation)
+							end)
+						end
 					end
 				end
 			end
