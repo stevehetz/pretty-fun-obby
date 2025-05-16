@@ -14,21 +14,19 @@ local Shared = {}
 function Shared.Load(config: EnemyManagerConfig)
 	local enemiesFolder = config.enemiesFolder
 
-	-- Store original positions and clones of enemies for respawning
-	local enemyOriginalPositions = {}
-	local enemyOriginalOrientations = {}
+	-- Store original CFrames and clones of enemies for respawning
+	local enemyOriginalCFrames = {}
 	local enemyClones = {}
 
-	-- Function to create an enemy at the specified position
-	local function createEnemy(enemyClone, position, orientation)
+	-- Function to create an enemy at the specified CFrame
+	local function createEnemy(enemyClone, originalCFrame)
 		-- Clone the original enemy model
 		local newEnemy = enemyClone:Clone()
 		newEnemy.Parent = enemiesFolder
 
-		-- Set the position
+		-- Set the CFrame
 		if newEnemy:FindFirstChild("HumanoidRootPart") then
-			-- set position and orientation separately
-			newEnemy.HumanoidRootPart.CFrame = CFrame.new(position) * orientation
+			newEnemy.HumanoidRootPart.CFrame = originalCFrame
 			newEnemy.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
 			newEnemy.HumanoidRootPart.RotVelocity = Vector3.new(0, 0, 0)
 		end
@@ -49,20 +47,19 @@ function Shared.Load(config: EnemyManagerConfig)
 						"LeftLowerLeg",
 						"RightLowerLeg",
 					},
-					originalPosition = position,
+					originalPosition = originalCFrame.Position,
 				}
 
 				-- Set up death event for this new enemy
 				newEnemy.Humanoid.Died:Connect(function()
-					local originalPos = position
-					local originalOrientation = orientation
+					local originalCF = enemyOriginalCFrames[newEnemy.Name]
 
 					-- Destroy the enemy
 					newEnemy:Destroy()
 
 					-- Recreate the enemy after 10 seconds
 					task.delay(10, function()
-						createEnemy(enemyClones[newEnemy.Name], originalPos, originalOrientation)
+						createEnemy(enemyClones[newEnemy.Name], originalCF)
 					end)
 				end)
 
@@ -84,15 +81,11 @@ function Shared.Load(config: EnemyManagerConfig)
 	-- First, create clones of all enemies
 	for _, child in enemiesFolder:GetChildren() do
 		if child:IsA("Model") and child:FindFirstChild("HumanoidRootPart") and child:FindFirstChild("Humanoid") then
-			-- Store the original position
+			-- Store the original CFrame
 			local name = child.Name .. "_" .. enemyCounter
 			enemyCounter = enemyCounter + 1
-			local originalPosition = child.HumanoidRootPart.Position
-			enemyOriginalPositions[name] = originalPosition
-			-- Store just the orientation part of the CFrame, not the entire CFrame
-			local _, _, _, m00, m01, m02, m10, m11, m12, m20, m21, m22 = child.HumanoidRootPart.CFrame:GetComponents()
-			local originalOrientation = CFrame.new(0, 0, 0, m00, m01, m02, m10, m11, m12, m20, m21, m22)
-			enemyOriginalOrientations[name] = originalOrientation
+			local originalCFrame = child.HumanoidRootPart.CFrame
+			enemyOriginalCFrames[name] = originalCFrame
 
 			-- Create a clone of the enemy and store it
 			local enemyClone = child:Clone()
@@ -102,7 +95,7 @@ function Shared.Load(config: EnemyManagerConfig)
 			child:Destroy()
 
 			task.spawn(function()
-				createEnemy(enemyClone, originalPosition, originalOrientation)
+				createEnemy(enemyClone, originalCFrame)
 			end)
 		end
 	end
@@ -118,15 +111,14 @@ function Shared.Load(config: EnemyManagerConfig)
 					if enemy.HumanoidRootPart.Position.Y < deathYLevel then
 						-- Extract the base name (remove the unique ID suffix)
 
-						local originalPosition = enemyOriginalPositions[enemy.Name]
-						local originalOrientation = enemyOriginalOrientations[enemy.Name]
-						if originalPosition then
+						local originalCFrame = enemyOriginalCFrames[enemy.Name]
+						if originalCFrame then
 							-- Destroy the enemy
 							enemy:Destroy()
 
 							-- Recreate the enemy after 10 seconds
 							task.delay(10, function()
-								createEnemy(enemyClones[enemy.Name], originalPosition, originalOrientation)
+								createEnemy(enemyClones[enemy.Name], originalCFrame)
 							end)
 						end
 					end
