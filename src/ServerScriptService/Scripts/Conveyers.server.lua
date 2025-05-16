@@ -8,7 +8,6 @@ for _, model in StagesFolder:GetDescendants() do
 	if model:IsA("Model") and model.Name == "Conveyer" then
 		local customSpeed = model:GetAttribute("Speed")
 		local speed = customSpeed or DEFAULT_SPEED
-		print("Conveyer speed:", speed)
 		local platform = model:FindFirstChild("Platform")
 		local target = model:FindFirstChild("Target")
 

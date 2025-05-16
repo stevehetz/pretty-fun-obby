@@ -44,6 +44,13 @@ function Shared.Load(config: EnemyManagerConfig)
 			-- Store the original position for respawning
 			if child:FindFirstChild("HumanoidRootPart") then
 				enemyOriginalPositions[child] = child.HumanoidRootPart.Position
+
+				-- Add death event handler with 10-second respawn delay
+				if child:FindFirstChild("Humanoid") then
+					child.Humanoid.Died:Connect(function()
+						respawnEnemy(child, enemyOriginalPositions[child])
+					end)
+				end
 			end
 
 			task.spawn(function()
