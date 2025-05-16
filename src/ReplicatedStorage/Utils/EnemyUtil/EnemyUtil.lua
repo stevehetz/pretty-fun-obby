@@ -56,6 +56,9 @@ function Shared.EnableAttack(config: EnemyUtilConfig)
 	EnemyTouchDamage.Setup(rig, damageParts, damageAmount, damageCooldown)
 
 	while task.wait(1) do
+		if not rig:FindFirstChild("HumanoidRootPart") then
+			return
+		end
 		-- Only look for players to follow if we're not already following someone
 		if config.movingToPlayerId == nil then
 			-- Get platform boundaries first
@@ -97,7 +100,13 @@ end
 
 function Local.FollowPlayer(config, player, platformBoundaries, animateEnemy)
 	while true do
-		if not player or not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
+		if
+			not player
+			or not player.Character
+			or not player.Character:FindFirstChild("HumanoidRootPart")
+			or not config.rig
+			or not config.rig:FindFirstChild("HumanoidRootPart")
+		then
 			config.movingToPlayerId = nil
 			return
 		end
