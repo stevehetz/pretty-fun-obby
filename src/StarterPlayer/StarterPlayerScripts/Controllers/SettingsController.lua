@@ -49,6 +49,7 @@ function Local.PlayMusic(shouldPlay: boolean)
 	local song = Workspace:FindFirstChild("Music")
 	if not song then
 		song = SoundsConfig.GetSound("Music")
+		song.Volume = 0.2
 		song.Parent = Workspace
 	end
 
