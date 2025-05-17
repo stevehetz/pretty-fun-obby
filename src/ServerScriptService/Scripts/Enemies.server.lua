@@ -7,13 +7,15 @@ local StagesFolder = Workspace.Stages
 
 for _, stageFolder in StagesFolder:GetChildren() do
 	if stageFolder:IsA("Folder") then
-		local enemiesFolder = stageFolder:FindFirstChild("Enemies")
-		if enemiesFolder then
-			task.spawn(function()
-				EnemyManager.Load({
-					enemiesFolder = enemiesFolder,
-				})
-			end)
+		for _, enemiesFolder in stageFolder:GetChildren() do
+			if enemiesFolder:IsA("Folder") and enemiesFolder.Name == "Enemies" then
+				-- Load the enemies for this stage
+				task.spawn(function()
+					EnemyManager.Load({
+						enemiesFolder = enemiesFolder,
+					})
+				end)
+			end
 		end
 	end
 end

@@ -55,7 +55,7 @@ function Shared.EnableAttack(config: EnemyUtilConfig)
 
 	EnemyTouchDamage.Setup(rig, damageParts, damageAmount, damageCooldown)
 
-	while task.wait(1) do
+	while task.wait(0.2) do
 		if not rig:FindFirstChild("HumanoidRootPart") then
 			return
 		end

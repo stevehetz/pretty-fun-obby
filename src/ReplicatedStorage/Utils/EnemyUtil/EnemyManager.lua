@@ -38,7 +38,7 @@ function Shared.Load(config: EnemyManagerConfig)
 					rig = newEnemy,
 					setPlatformBoundaries = true,
 					platform = enemiesFolder:FindFirstChild("EnemyPlatform"),
-					walkSpeed = 23,
+					walkSpeed = 25,
 					damageAmount = 100,
 					damageCooldown = 1,
 					attackDistance = 50,
