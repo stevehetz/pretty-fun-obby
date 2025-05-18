@@ -330,7 +330,7 @@ function Shared.RefreshTopTwoTimesPerWorld()
 	if success and data then
 		Shared.LastRefreshTime = os.time()
 		Shared.TopTwoTimesPerWorldData = data
-		Local.UpdateAllLeaderScreens(data)
+		-- Local.UpdateAllLeaderScreens(data)
 		return data
 	else
 		warn("Failed to refresh top two times per world data")
