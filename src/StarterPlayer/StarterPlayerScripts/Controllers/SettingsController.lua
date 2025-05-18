@@ -32,7 +32,9 @@ function Local.UpdateSetting(setting: SettingsConfig.Setting, enabled: boolean)
 	local isSoundEffects = setting == "Sound Effects"
 	if isSoundEffects then
 		for _, sound: Sound in ReplicatedStorage.Sounds:GetChildren() do
-			sound.Volume = if enabled then 1 else 0
+			if sound:IsA("Sound") then
+				sound.Volume = if enabled then 1 else 0
+			end
 		end
 
 		if enabled then
@@ -49,6 +51,7 @@ function Local.PlayMusic(shouldPlay: boolean)
 	local song = Workspace:FindFirstChild("Music")
 	if not song then
 		song = SoundsConfig.GetSound("Music")
+		song.Looped = true
 		song.Volume = 0.2
 		song.Parent = Workspace
 	end
