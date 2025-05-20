@@ -57,6 +57,9 @@ function Local.UpdateButton(id: string, isPurchased: boolean)
 end
 
 function Local.SetupButton(info, isGamepass: boolean?)
+	if not info or not info.Name then
+		return
+	end
 	local button: TextButton = Frame:FindFirstChild(info.Name:gsub(" ", ""))
 	if not button then
 		return

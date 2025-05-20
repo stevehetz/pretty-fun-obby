@@ -76,36 +76,55 @@ Local.StoreItemInfoReady = false
 
 function Local.LoadStoreInfo()
 	-- Load gamepass info
-	for _, product in _store.Gamepasses do
-		local info = MarketplaceService:GetProductInfo(product.Id, Enum.InfoType.GamePass)
-		product.Name = info.Name
-		product.Description = info.Description
-		product.Price = info.PriceInRobux
-		product.Image = string.format("rbxassetid://%s", info.IconImageAssetId)
-	end
+	task.spawn(function()
+		local success, errorMessage = pcall(function()
+			for _, product in _store.Gamepasses do
+				local info = MarketplaceService:GetProductInfo(product.Id, Enum.InfoType.GamePass)
+				product.Name = info.Name
+				product.Description = info.Description
+				product.Price = info.PriceInRobux
+				product.Image = string.format("rbxassetid://%s", info.IconImageAssetId)
+			end
+		end)
 
-	-- Load product info
-	for _, product in _store.Products do
-		local info = MarketplaceService:GetProductInfo(product.Id, Enum.InfoType.Product)
-		product.Name = info.Name
-		product.Description = info.Description
-		product.Price = info.PriceInRobux
-		product.Image = string.format("rbxassetid://%s", info.IconImageAssetId)
-	end
-
-	-- Load subscription info
-	local isClient = RunService:IsClient()
-	if isClient then
-		for _, subscription in _store.Subscriptions do
-			local info = MarketplaceService:GetSubscriptionProductInfoAsync(subscription.Id)
-			subscription.Name = info.Name
-			subscription.Description = info.Description
-			subscription.Price = info.Price
-			subscription.Image = string.format("rbxassetid://%s", info.IconImageAssetId)
+		if not success then
+			warn("Failed to load gamepass info: ", errorMessage)
 		end
-	end
 
-	Local.StoreItemInfoReady = true
+		-- Load product info
+		local success, errorMessage = pcall(function()
+			for _, product in _store.Products do
+				local info = MarketplaceService:GetProductInfo(product.Id, Enum.InfoType.Product)
+				product.Name = info.Name
+				product.Description = info.Description
+				product.Price = info.PriceInRobux
+				product.Image = string.format("rbxassetid://%s", info.IconImageAssetId)
+			end
+		end)
+
+		if not success then
+			warn("Failed to load product info: ", errorMessage)
+		end
+
+		-- Load subscription info
+		local isClient = RunService:IsClient()
+		if isClient then
+			local success, errorMessage = pcall(function()
+				for _, subscription in _store.Subscriptions do
+					local info = MarketplaceService:GetSubscriptionProductInfoAsync(subscription.Id)
+					subscription.Name = info.Name
+					subscription.Description = info.Description
+					subscription.Price = info.Price
+					subscription.Image = string.format("rbxassetid://%s", info.IconImageAssetId)
+				end
+			end)
+			if not success then
+				warn("Failed to load subscription info: ", errorMessage)
+			end
+		end
+
+		Local.StoreItemInfoReady = true
+	end)
 end
 
 Local.LoadStoreInfo()

@@ -65,6 +65,11 @@ function Local.GetPets()
 
 	for _, gamepassInfo in ipairs(store.Gamepasses) do
 		if gamepassInfo.IsPet then
+			if not gamepassInfo.Name then
+				-- This happens when marketplace service fails and could not
+				-- retrieve the gamepass info
+				continue
+			end
 			table.insert(pets, gamepassInfo)
 		end
 	end

@@ -116,12 +116,12 @@ function Shared.OnStart()
 	-- 	end
 	-- end)
 
-	local FinishDoorModel = GameModeFolder:FindFirstChild("FinishDoor")
+	local FinishDoorModel = GameModeFolder:WaitForChild("FinishDoor")
 	if not FinishDoorModel then
 		warn("FinishDoorModel not found in GameModeFolder")
 		return
 	end
-	local FinishDoorInside = FinishDoorModel:FindFirstChild("Inside")
+	local FinishDoorInside = FinishDoorModel:WaitForChild("Inside")
 	if not FinishDoorInside then
 		warn("FinishDoorInside not found in FinishDoorModel")
 		return
