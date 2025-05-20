@@ -22,6 +22,23 @@ type ReceiptInfo = {
 local Local = {}
 local Shared = {}
 
+-- Helper function to retry a function until it succeeds
+function Local.RetryUntilSuccess(funcToRetry, errorMessage)
+	return function()
+		while true do
+			local success, result = pcall(funcToRetry)
+
+			if success then
+				return result
+			else
+				warn(errorMessage, result)
+				print("Retrying in 10 seconds...")
+				task.wait(10)
+			end
+		end
+	end
+end
+
 local GetStoreRF = Instance.new("RemoteFunction")
 GetStoreRF.Name = "GetStoreRF"
 GetStoreRF.Parent = ReplicatedStorage
@@ -42,8 +59,10 @@ function Shared.OnStart()
 	Players.UserSubscriptionStatusChanged:Connect(Local.ProcessSubscription)
 
 	PlayerDataService.ProfileLoaded.Event:Connect(function(player: Player)
-		Local.ProcessGamepassPurchasedFromWebsite(player)
-		Local.ProcessSubscription(player, StoreConfig.GetStore().Subscriptions[1].Id)
+		task.spawn(function()
+			Local.ProcessGamepassPurchasedFromWebsite(player)
+			Local.ProcessSubscription(player, StoreConfig.GetStore().Subscriptions[1].Id)
+		end)
 	end)
 end
 
@@ -67,7 +86,9 @@ function Local.ProcessGamepassPurchasedFromWebsite(player: Player)
 
 		-- Player doesn't own gamepass, check if they purchased it from the website
 		-- print("Checking if player " .. player.Name .. " owns gamepass " .. gamepassInfo.Name .. " from website")
-		ownsGamepass = MarketplaceService:UserOwnsGamePassAsync(player.UserId, gamepassInfo.Id)
+		ownsGamepass = Local.RetryUntilSuccess(function()
+			return MarketplaceService:UserOwnsGamePassAsync(player.UserId, gamepassInfo.Id)
+		end, "Failed to check if player owns gamepass from website:")()
 
 		if ownsGamepass then
 			print("Player " .. player.Name .. " purchased " .. gamepassInfo.Name .. " from website")
@@ -201,13 +222,9 @@ function Local.ProcessSubscription(player: Player, id: string)
 end
 
 function Local.IsPlayerSubscribed(player: Player, id: string): boolean
-	local success, doesOwnSubscription = pcall(function()
+	local doesOwnSubscription = Local.RetryUntilSuccess(function()
 		return MarketplaceService:GetUserSubscriptionStatusAsync(player, id).IsSubscribed
-	end)
-
-	if not success then
-		return
-	end
+	end, "Failed to check subscription status:")()
 
 	return doesOwnSubscription
 end
