@@ -13,12 +13,6 @@ end
 function Shared.PlaySound(soundName: SoundName, part: Part | Attachment?)
 	local sound = Shared.GetSound(soundName)
 
-	if soundName == "Checkpoint" then
-		sound.Volume = 0.15
-	else
-		sound.Volume = 0.25
-	end
-
 	if part then
 		sound.Parent = part
 	else
