@@ -5,6 +5,7 @@ local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 
 local GetStoreRF = ReplicatedStorage:WaitForChild("GetStoreRF")
+local GetStoreItemInfoRF = ReplicatedStorage:WaitForChild("GetStoreItemInfoRF")
 
 local GuiController = require(script.Parent.Parent.GuiController)
 local StateController = require(script.Parent.Parent.StateController)
@@ -27,7 +28,19 @@ function Shared.OnStart()
 		if isSubscription then
 			-- ToDo
 		elseif isGamepass then
-			Local.UpdateButton(action.gamepassId, action.value)
+			local infoSuccess, gamepassInfo = pcall(function()
+				return GetStoreItemInfoRF:InvokeServer(action.gamepassId)
+			end)
+
+			if infoSuccess and gamepassInfo and gamepassInfo.Name then
+				if gamepassInfo.Name == "Double Jump" then
+					Local.SetupButton(gamepassInfo, true)
+				else
+					Local.UpdateButton(gamepassInfo.Name, action.value)
+				end
+			else
+				warn("Failed to get gamepass info for ID:", action.gamepassId)
+			end
 		elseif isDoubleJumpToggle then
 			Local.UpdateDoubleJumpButton(not action.value)
 		end
@@ -115,18 +128,14 @@ function Local.UpdateDoubleJumpButton(isEnabled)
 		return
 	end
 
-	local playerOwnsGamepass = state.gamepasses[tostring(1160545563)] or false
+	local playerOwnsGamepass = state.gamepasses[tostring(1226559308)] or false
 	isEnabled = isEnabled and playerOwnsGamepass
 
-	print("Updating Double Jump button appearance", isEnabled)
 	local doubleJumpButton = Frame:FindFirstChild("DoubleJump")
 	if doubleJumpButton then
-		print("Found Double Jump button")
 		local title = doubleJumpButton:FindFirstChild("Title")
 		local status = doubleJumpButton:FindFirstChild("Status")
 		if title then
-			print("Found title")
-			print("isEnabled: ", isEnabled)
 			title.TextColor3 = isEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 255, 255)
 		end
 		if status then

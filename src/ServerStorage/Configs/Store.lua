@@ -16,7 +16,8 @@ export type StoreItemInfo = {
 local _store = {
 	Gamepasses = {
 		{
-			Id = 1160545563, -- Double Jump
+			-- Id = 1160545563, -- Double Jump
+			Id = 1226559308, -- Double Jump
 		},
 		{
 			Id = 1157798560, -- Gravity Coil
