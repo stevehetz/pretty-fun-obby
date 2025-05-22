@@ -52,6 +52,7 @@ function Local.UpdateButton(id: string, isPurchased: boolean)
 	local button: TextButton = Frame:FindFirstChild(id)
 
 	if button then
+		print("Updating button: ", id, "Purchased: ", isPurchased)
 		button.Visible = not isPurchased
 	end
 end
@@ -60,6 +61,8 @@ function Local.SetupButton(info, isGamepass: boolean?)
 	if not info or not info.Name then
 		return
 	end
+
+	print("Setting up button: ", info.Name)
 	local button: TextButton = Frame:FindFirstChild(info.Name:gsub(" ", ""))
 	if not button then
 		return
