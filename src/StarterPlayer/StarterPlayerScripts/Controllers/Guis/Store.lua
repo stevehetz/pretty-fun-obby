@@ -5,7 +5,6 @@ local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 
 local GetStoreRF = ReplicatedStorage:WaitForChild("GetStoreRF")
-local GetStoreItemInfoRF = ReplicatedStorage:WaitForChild("GetStoreItemInfoRF")
 
 local GuiController = require(script.Parent.Parent.GuiController)
 local StateController = require(script.Parent.Parent.StateController)
@@ -17,37 +16,11 @@ local Frame = Gui.Frame
 local Local = {}
 local Shared = {}
 
-function Shared.OnStart()
-	Local.GenerateStore()
+Local.StoreItemInfoReady = false
 
-	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
-		local isSubscription = action.type == "UpdateVip"
-		local isGamepass = action.type == "UpdateGamepass"
-		local isDoubleJumpToggle = action.type == "UpdateDoubleJump"
+local _storeItems = {}
 
-		if isSubscription then
-			-- ToDo
-		elseif isGamepass then
-			local infoSuccess, gamepassInfo = pcall(function()
-				return GetStoreItemInfoRF:InvokeServer(action.gamepassId)
-			end)
-
-			if infoSuccess and gamepassInfo and gamepassInfo.Name then
-				if gamepassInfo.Name == "Double Jump" then
-					Local.SetupButton(gamepassInfo, true)
-				else
-					Local.UpdateButton(gamepassInfo.Name, action.value)
-				end
-			else
-				warn("Failed to get gamepass info for ID:", action.gamepassId)
-			end
-		elseif isDoubleJumpToggle then
-			Local.UpdateDoubleJumpButton(not action.value)
-		end
-	end)
-end
-
-function Local.GenerateStore()
+function Local.GetStoreInfoFromServer()
 	local success, store = pcall(function()
 		return GetStoreRF:InvokeServer()
 	end)
@@ -57,16 +30,139 @@ function Local.GenerateStore()
 		return
 	end
 
-	for _, info in store.Gamepasses do
-		Local.SetupButton(info, true)
-	end
+	Local.StoreItemInfoReady = true
 
-	-- for _, info in store.Subscriptions do
-	-- 	Local.SetupButton(info, false)
-	-- end
+	_storeItems = store
 end
 
-function Local.UpdateButton(name: string, isPurchased: boolean)
+function Local.GetStoreItems()
+	while not Local.StoreItemInfoReady do
+		task.wait(0.1)
+	end
+	return _storeItems
+end
+
+function Shared.OnStart()
+	-- Get the store data from the server
+	Local.GetStoreInfoFromServer()
+
+	-- Setup each button using store data
+	Local.SetupAllButtons()
+
+	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
+		local isGamepass = action.type == "UpdateGamepass"
+		local isDoubleJumpToggle = action.type == "UpdateDoubleJump"
+
+		local storeInfo = nil
+
+		if isGamepass then
+			storeInfo = Local.GetStoreInfoFromId(action.gamepassId)
+		elseif isDoubleJumpToggle then
+			storeInfo = Local.GetStoreInfoFromName("Double Jump")
+		else
+			return
+		end
+
+		if not storeInfo then
+			print("Store info not found")
+			return
+		end
+
+		-- Handle non double jump state change
+		-- This means someone bought a gamepass that was not double jump
+		-- Basically just need to toggle visibility of the button
+		if storeInfo.Name ~= "Double Jump" then
+			Local.SetButtonVisibility(storeInfo.Name, action.value)
+			return
+		end
+
+		-- Handle double jump state change
+		-- This means they bough double jump or toggled it
+		-- Click handler and UI state needs to be updated
+		if storeInfo.Name == "Double Jump" then
+			Local.UpdateDoubleJumpButton()
+			return
+		end
+	end)
+end
+
+-- Iterate through and setup all buttons
+function Local.SetupAllButtons()
+	for _, info in Local.GetStoreItems().Gamepasses do
+		-- Return if we dont have the info
+		if not info or not info.Name then
+			return
+		end
+
+		-- Make sure button with same name exists
+		local button: TextButton = Frame:FindFirstChild(info.Name:gsub(" ", ""))
+		if not button then
+			return
+		end
+
+		-- Set image on button from one from server (marketplace)
+		button.Icon.Image = info.Image
+
+		if info.Name ~= "Double Jump" then
+			-- Setup button for gamepass
+			Local.SetupButton(button, info)
+		else
+			-- Special case for double jump
+			Local.SetupDoubleJumpButton(button, info)
+		end
+	end
+end
+
+-- --------------------HELPERS--------------------
+
+-- Get the get store info from name
+function Local.GetStoreInfoFromName(name: string)
+	local storeInfo = nil
+	for _, info in Local.GetStoreItems().Gamepasses do
+		if info.Name == name then
+			storeInfo = info
+			break
+		end
+	end
+
+	return storeInfo
+end
+
+-- Get the get store info from id
+function Local.GetStoreInfoFromId(id: number)
+	local storeInfo = nil
+	for _, info in Local.GetStoreItems().Gamepasses do
+		if info.Id == id then
+			storeInfo = info
+			break
+		end
+	end
+
+	return storeInfo
+end
+
+-- --------------------NON DOUBLE JUMP BUTTONS--------------------
+
+-- Setup gamepass button - all but double jump
+function Local.SetupButton(button, info)
+	local state = StateController.GetState()
+	if not state then
+		return
+	end
+
+	local ownsGamepass = state.gamepasses[tostring(info.Id)] or false
+
+	button.MouseButton1Click:Connect(function()
+		if not ownsGamepass then
+			MarketPlaceService:PromptGamePassPurchase(Player, info.Id)
+		end
+	end)
+
+	Local.SetButtonVisibility(info.Name, ownsGamepass)
+end
+
+-- Setup gamepass button visibility - all but double jump
+function Local.SetButtonVisibility(name: string, isPurchased: boolean)
 	local button: TextButton = Frame:FindFirstChild(name:gsub(" ", ""))
 
 	if button then
@@ -74,63 +170,61 @@ function Local.UpdateButton(name: string, isPurchased: boolean)
 	end
 end
 
-function Local.SetupButton(info, isGamepass: boolean?)
-	if not info or not info.Name then
-		return
-	end
+-- --------------------DOUBLE JUMP BUTTON-------------------
 
-	local button: TextButton = Frame:FindFirstChild(info.Name:gsub(" ", ""))
-	if not button then
-		return
-	end
+function Local.SetupDoubleJumpButton(button, info)
+	-- Setup double jump click handler
+	Local.SetupDoubleJumpClickHandler(button, info)
 
-	local state = StateController.GetState()
-	local playerOwnsGamepass = state.gamepasses[tostring(info.Id)] or false
-	local isOwned = if isGamepass then playerOwnsGamepass else state.vip
+	-- Initialize button appearance based on current state
+	Local.UpdateDoubleJumpButton()
+end
 
-	-- button.Name = info.Id
-	button.Icon.Image = info.Image
+-- Setup double jump button click handler
+function Local.SetupDoubleJumpClickHandler(button, info)
+	button.MouseButton1Click:Connect(function()
+		local state = StateController.GetState()
+		if not state then
+			return
+		end
 
-	-- Special handling for Double Jump gamepass (ID: 1160545563)
-	if info.Name == "Double Jump" and isGamepass then
-		print("here")
-		button.MouseButton1Click:Connect(function()
-			if not isOwned then
-				MarketPlaceService:PromptGamePassPurchase(Player, info.Id)
-			else
-				-- Toggle double jump functionality
-				print("Toggling double jump")
-				DoubleJumpController.Toggle()
-			end
-		end)
+		local ownsGamepass = state.gamepasses[tostring(info.Id)] or false
 
-		print("disableDoubleJump: ", state.disableDoubleJump)
-
-		-- Initialize button appearance based on current state
-		Local.UpdateDoubleJumpButton(not state.disableDoubleJump)
-	else
-		button.MouseButton1Click:Connect(function()
-			if isGamepass and not isOwned then
-				MarketPlaceService:PromptGamePassPurchase(Player, info.Id)
-			elseif not isGamepass and not isOwned then
-				MarketPlaceService:PromptSubscriptionPurchase(Player, info.Id)
-			end
-		end)
-
-		Local.UpdateButton(info.Name, isOwned)
-	end
+		if not ownsGamepass then
+			-- Doesn't own the gamepass, prompt purchase
+			MarketPlaceService:PromptGamePassPurchase(Player, info.Id)
+		else
+			-- Owns gamepass, toggle double jump on/off
+			DoubleJumpController.Toggle()
+		end
+	end)
 end
 
 -- Update the Double Jump button appearance based on enabled/disabled state
-function Local.UpdateDoubleJumpButton(isEnabled)
+function Local.UpdateDoubleJumpButton()
+	-- Grab the current state
 	local state = StateController.GetState()
 	if not state then
 		return
 	end
 
-	local playerOwnsGamepass = state.gamepasses[tostring(1226559308)] or false
-	isEnabled = isEnabled and playerOwnsGamepass
+	-- Get double jump id
+	local storeInfo = Local.GetStoreInfoFromName("Double Jump")
+	if not storeInfo then
+		return
+	end
+	local DoubleJumpId = storeInfo.Id
 
+	-- Check if owns double jump gamepass
+	local playerOwnsGamepass = state.gamepasses[tostring(DoubleJumpId)] or false
+
+	-- Check if double jump is disabled
+	local doubleJumpDisabled = state.disableDoubleJump
+
+	-- Should button be enabled?
+	local isEnabled = playerOwnsGamepass and not doubleJumpDisabled
+
+	-- Update button appearance based on enabled/disabled state
 	local doubleJumpButton = Frame:FindFirstChild("DoubleJump")
 	if doubleJumpButton then
 		local title = doubleJumpButton:FindFirstChild("Title")

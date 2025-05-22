@@ -1,7 +1,11 @@
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 local PlayerScripts = Player:WaitForChild("PlayerScripts")
-local StateController = require(PlayerScripts:WaitForChild("Controllers"):WaitForChild("StateController"))
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local GetStoreItemInfoRF = ReplicatedStorage:WaitForChild("GetStoreItemInfoRF")
+local Controllers = PlayerScripts:WaitForChild("Controllers")
+local StateController = require(Controllers:WaitForChild("StateController"))
 
 local MaxJumps = 2
 local jumpAnimationAssetId = "rbxassetid://136637623641505" -- Replace with your actual asset id
@@ -26,7 +30,7 @@ local jumpanimation = Instance.new("Animation")
 jumpanimation.AnimationId = jumpAnimationAssetId
 local jumptrack = Animator:LoadAnimation(jumpanimation)
 
-local doubleJumpGamePassId = 1160545563 -- Replace with your actual gamepass ID
+local doubleJumpGamePassId = nil
 local hasDoubleJump = false -- Flag to check if double jump is available
 
 function OnStart()
@@ -165,10 +169,19 @@ function SetState()
 		return
 	end
 
+	local success, info = pcall(function()
+		return GetStoreItemInfoRF:InvokeServer("Double Jump")
+	end)
+
+	if not success then
+		print("Error calling GetStoreItemInfoRF:", info)
+		return
+	end
+
 	-- Update the global state reference
 	state = playerState
 
-	if state.gamepasses and state.gamepasses[tostring(doubleJumpGamePassId)] then
+	if state.gamepasses and state.gamepasses[tostring(info.Id)] then
 		hasDoubleJump = true
 	else
 		hasDoubleJump = false
