@@ -3,6 +3,7 @@ local SettingsConfig = require(script.Parent.Configs.Settings)
 export type PlayerData = {
 	stage: number,
 	deaths: number,
+	disableDoubleJump: boolean,
 	settings: { [SettingsConfig.Setting]: boolean },
 	skips: {
 		amount: number,
@@ -43,6 +44,7 @@ end
 local DEFAULT_PLAYER_DATA: PlayerData = {
 	stage = 0,
 	deaths = 0,
+	disableDoubleJump = false,
 	settings = SettingsData,
 	skips = {
 		amount = 0,

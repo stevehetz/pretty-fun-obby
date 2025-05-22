@@ -12,6 +12,9 @@ local Char = Player.Character or Player.CharacterAdded:Wait()
 local Humanoid = Char:WaitForChild("Humanoid")
 local Animator = Humanoid:WaitForChild("Animator")
 
+-- Global state reference
+local state = nil
+
 -- Reference to the jump button in the mobile controls
 local jumpButton
 
@@ -69,8 +72,8 @@ function OnStart()
 
 	-- Listen to state changes to update jump count and handle double jump animation
 	Humanoid.StateChanged:Connect(function(oldState, newState)
-		if not hasDoubleJump then
-			return -- No double jump available, exit early
+		if not hasDoubleJump or state.disableDoubleJump then
+			return -- No double jump available or disabled, exit early
 		end
 
 		if newState == Enum.HumanoidStateType.Landed then
@@ -88,16 +91,19 @@ function OnStart()
 
 	-- Use InputBegan and InputEnded for discrete jump detection across devices
 	UIS.InputBegan:Connect(function(input)
-		if not hasDoubleJump then
-			return -- No double jump available, exit early
+		if not hasDoubleJump or state.disableDoubleJump then
+			return -- No double jump available or disabled, exit early
 		end
 
 		if isJumpInput(input) then
 			-- Only allow a jump input if this is either a double jump (NumJumps > 0)
 			-- or the first jump is initiated from a grounded state.
 			if NumJumps == 0 then
-				local state = Humanoid:GetState()
-				if state ~= Enum.HumanoidStateType.Running and state ~= Enum.HumanoidStateType.Landed then
+				local humanoidState = Humanoid:GetState()
+				if
+					humanoidState ~= Enum.HumanoidStateType.Running
+					and humanoidState ~= Enum.HumanoidStateType.Landed
+				then
 					return
 				end
 			end
@@ -110,8 +116,8 @@ function OnStart()
 	end)
 
 	UIS.InputEnded:Connect(function(input)
-		if not hasDoubleJump then
-			return -- No double jump available, exit early
+		if not hasDoubleJump or state.disableDoubleJump then
+			return -- No double jump available or disabled, exit early
 		end
 
 		if isJumpInput(input) then
@@ -145,19 +151,22 @@ function isJumpInput(input)
 end
 
 function SetState()
-	local success, state = pcall(function()
+	local success, playerState = pcall(function()
 		return StateController.GetState()
 	end)
 
 	if not success then
-		print("Error calling GetState:", state)
+		print("Error calling GetState:", playerState)
 		return
 	end
 
-	if not state then
+	if not playerState then
 		print("State is nil, returning early")
 		return
 	end
+
+	-- Update the global state reference
+	state = playerState
 
 	if state.gamepasses and state.gamepasses[tostring(doubleJumpGamePassId)] then
 		hasDoubleJump = true

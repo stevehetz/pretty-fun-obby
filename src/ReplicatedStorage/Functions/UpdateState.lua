@@ -47,6 +47,9 @@ export type UpdateStateAction = {
 	type: "UpdateEquippedPets",
 	petName: string,
 	value: boolean,
+} | {
+	type: "UpdateDoubleJump",
+	value: boolean,
 }
 
 return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
@@ -57,6 +60,7 @@ return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
 	elseif action.type == "UpdateDeaths" then
 		playerData.deaths += action.amount
 	elseif action.type == "UpdateSetting" then
+		print("UpdateSetting - setting: " .. tostring(action.setting))
 		playerData.settings[action.setting] = action.value
 	elseif action.type == "EarnSkip" then
 		action.amount = action.amount or 1
@@ -96,6 +100,9 @@ return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
 			playerData.equippedPets = {}
 			return
 		end
+	elseif action.type == "UpdateDoubleJump" then
+		playerData.disableDoubleJump = action.value
+		print("Double Jump " .. (action.value and "Disabled" or "Enabled"))
 	else
 		error("Invalid action type: " .. tostring(action.type))
 	end

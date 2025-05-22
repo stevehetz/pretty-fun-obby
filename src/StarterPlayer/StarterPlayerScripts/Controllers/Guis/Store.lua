@@ -8,6 +8,7 @@ local GetStoreRF = ReplicatedStorage:WaitForChild("GetStoreRF")
 
 local GuiController = require(script.Parent.Parent.GuiController)
 local StateController = require(script.Parent.Parent.StateController)
+local DoubleJumpController = require(script.Parent.Parent.DoubleJumpController)
 
 local Gui = GuiController.Guis.Left
 local Frame = Gui.Frame
@@ -21,10 +22,14 @@ function Shared.OnStart()
 	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
 		local isSubscription = action.type == "UpdateVip"
 		local isGamepass = action.type == "UpdateGamepass"
+		local isDoubleJumpToggle = action.type == "UpdateDoubleJump"
+
 		if isSubscription then
 			-- ToDo
 		elseif isGamepass then
 			Local.UpdateButton(action.gamepassId, action.value)
+		elseif isDoubleJumpToggle then
+			Local.UpdateDoubleJumpButton(not action.value)
 		end
 	end)
 end
@@ -48,11 +53,10 @@ function Local.GenerateStore()
 	-- end
 end
 
-function Local.UpdateButton(id: string, isPurchased: boolean)
-	local button: TextButton = Frame:FindFirstChild(id)
+function Local.UpdateButton(name: string, isPurchased: boolean)
+	local button: TextButton = Frame:FindFirstChild(name:gsub(" ", ""))
 
 	if button then
-		print("Updating button: ", id, "Purchased: ", isPurchased)
 		button.Visible = not isPurchased
 	end
 end
@@ -62,7 +66,6 @@ function Local.SetupButton(info, isGamepass: boolean?)
 		return
 	end
 
-	print("Setting up button: ", info.Name)
 	local button: TextButton = Frame:FindFirstChild(info.Name:gsub(" ", ""))
 	if not button then
 		return
@@ -72,17 +75,65 @@ function Local.SetupButton(info, isGamepass: boolean?)
 	local playerOwnsGamepass = state.gamepasses[tostring(info.Id)] or false
 	local isOwned = if isGamepass then playerOwnsGamepass else state.vip
 
-	button.Name = info.Id
+	-- button.Name = info.Id
 	button.Icon.Image = info.Image
-	button.MouseButton1Click:Connect(function()
-		if isGamepass and not isOwned then
-			MarketPlaceService:PromptGamePassPurchase(Player, info.Id)
-		elseif not isGamepass and not isOwned then
-			MarketPlaceService:PromptSubscriptionPurchase(Player, info.Id)
-		end
-	end)
 
-	Local.UpdateButton(info.Id, isOwned)
+	-- Special handling for Double Jump gamepass (ID: 1160545563)
+	if info.Name == "Double Jump" and isGamepass then
+		print("here")
+		button.MouseButton1Click:Connect(function()
+			if not isOwned then
+				MarketPlaceService:PromptGamePassPurchase(Player, info.Id)
+			else
+				-- Toggle double jump functionality
+				print("Toggling double jump")
+				DoubleJumpController.Toggle()
+			end
+		end)
+
+		print("disableDoubleJump: ", state.disableDoubleJump)
+
+		-- Initialize button appearance based on current state
+		Local.UpdateDoubleJumpButton(not state.disableDoubleJump)
+	else
+		button.MouseButton1Click:Connect(function()
+			if isGamepass and not isOwned then
+				MarketPlaceService:PromptGamePassPurchase(Player, info.Id)
+			elseif not isGamepass and not isOwned then
+				MarketPlaceService:PromptSubscriptionPurchase(Player, info.Id)
+			end
+		end)
+
+		Local.UpdateButton(info.Name, isOwned)
+	end
+end
+
+-- Update the Double Jump button appearance based on enabled/disabled state
+function Local.UpdateDoubleJumpButton(isEnabled)
+	local state = StateController.GetState()
+	if not state then
+		return
+	end
+
+	local playerOwnsGamepass = state.gamepasses[tostring(1160545563)] or false
+	isEnabled = isEnabled and playerOwnsGamepass
+
+	print("Updating Double Jump button appearance", isEnabled)
+	local doubleJumpButton = Frame:FindFirstChild("DoubleJump")
+	if doubleJumpButton then
+		print("Found Double Jump button")
+		local title = doubleJumpButton:FindFirstChild("Title")
+		local status = doubleJumpButton:FindFirstChild("Status")
+		if title then
+			print("Found title")
+			print("isEnabled: ", isEnabled)
+			title.TextColor3 = isEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 255, 255)
+		end
+		if status then
+			status.TextColor3 = isEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 255, 255)
+			status.Text = isEnabled and "On" or "Off"
+		end
+	end
 end
 
 return Shared
