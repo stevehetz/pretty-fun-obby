@@ -88,7 +88,7 @@ function Local.SetupPetStore()
 		petFrame.Parent = Container
 		petFrame.Name = pet.Name
 		petFrame.Visible = true
-		petFrame.NameLabel.Text = pet.Name
+		petFrame.Template.NameLabel.Text = pet.Name
 
 		Local.SetupPetStoreStatus(pet, petFrame, equippedPets)
 		Local.SetupPetStoreViewPort(pet, petFrame)
@@ -110,7 +110,7 @@ function Local.RefreshStatus()
 end
 
 function Local.SetupPetStoreStatus(pet, petFrame, equippedPets)
-	local statusFrame = petFrame:FindFirstChild("Status")
+	local statusFrame = petFrame.Template:FindFirstChild("Status")
 	local statusText = statusFrame:FindFirstChild("StatusText")
 	local statusImage = statusFrame:FindFirstChild("StatusImage")
 
@@ -121,14 +121,14 @@ function Local.SetupPetStoreStatus(pet, petFrame, equippedPets)
 		statusText.TextColor3 = Color3.fromRGB(0, 167, 25)
 		statusFrame.UIStroke.Color = Color3.fromRGB(70, 255, 107)
 		statusFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-		petFrame.Icon.UIStroke.Color = Color3.fromRGB(70, 255, 107)
+		petFrame.Template.Icon.UIStroke.Color = Color3.fromRGB(70, 255, 107)
 	elseif pet.Price then
 		local state = StateController.GetState()
 		local playerOwnsGamepass = state.gamepasses[tostring(pet.Id)]
 		statusText.TextColor3 = Color3.fromRGB(52, 52, 52)
 		statusFrame.UIStroke.Color = Color3.fromRGB(21, 97, 159)
 		statusFrame.BackgroundColor3 = Color3.fromRGB(202, 221, 255)
-		petFrame.Icon.UIStroke.Color = Color3.fromRGB(21, 97, 159)
+		petFrame.Template.Icon.UIStroke.Color = Color3.fromRGB(21, 97, 159)
 		if playerOwnsGamepass then
 			statusImage.Visible = false
 			statusText.Text = "Owned"
@@ -141,7 +141,7 @@ function Local.SetupPetStoreStatus(pet, petFrame, equippedPets)
 		statusText.TextColor3 = Color3.fromRGB(52, 52, 52)
 		statusFrame.UIStroke.Color = Color3.fromRGB(21, 97, 159)
 		statusFrame.BackgroundColor3 = Color3.fromRGB(202, 221, 255)
-		petFrame.Icon.UIStroke.Color = Color3.fromRGB(21, 97, 159)
+		petFrame.Template.Icon.UIStroke.Color = Color3.fromRGB(21, 97, 159)
 		statusText.Text = "Free"
 	end
 end
@@ -155,7 +155,7 @@ function Local.SetupPetStoreViewPort(pet, petFrame)
 	end
 
 	local petClone = ReplicatedStorage.Pets[pet.Name]:Clone()
-	local viewportFrame: ViewportFrame = petFrame.Icon.ViewportFrame
+	local viewportFrame: ViewportFrame = petFrame.Template.Icon.ViewportFrame
 	ViewportHelper.GenerateViewport(viewportFrame, petClone, CFrame.Angles(0, 0, 0))
 end
 
@@ -170,10 +170,13 @@ function Local.SetupPetStoreClickHandler(pet, petFrame)
 	local MAX_DRAG_DISTANCE = 2 -- Maximum pixels to consider as a tap rather than a scroll
 
 	-- Track when input begins
+
 	petFrame.InputBegan:Connect(function(input)
 		if
 			input.UserInputType == Enum.UserInputType.MouseButton1
 			or input.UserInputType == Enum.UserInputType.Touch
+			-- also check for gamepad input if needed
+			or input.UserInputType == Enum.UserInputType.Gamepad1
 		then
 			-- Store the starting position and input object
 			inputStartPosition = input.Position
