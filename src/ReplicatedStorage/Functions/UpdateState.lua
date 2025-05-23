@@ -60,7 +60,6 @@ return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
 	elseif action.type == "UpdateDeaths" then
 		playerData.deaths += action.amount
 	elseif action.type == "UpdateSetting" then
-		print("UpdateSetting - setting: " .. tostring(action.setting))
 		playerData.settings[action.setting] = action.value
 	elseif action.type == "EarnSkip" then
 		action.amount = action.amount or 1
@@ -83,12 +82,9 @@ return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
 		playerData.worldFinishes[action.world] += action.amount
 	elseif action.type == "UpdateTeleporting" then
 		-- handle nil values with print
-		print("UpdateTeleporting - world: " .. tostring(action.world))
-		print("UpdateTeleporting - origin: " .. tostring(action.origin))
 		playerData.teleporting.world = action.world
 		playerData.teleporting.origin = action.origin
 	elseif action.type == "UpdateCurrentWorld" then
-		print("UpdateCurrentWorld - world: " .. tostring(action.world))
 		playerData.currentWorld = action.world
 	elseif action.type == "UpdateEquippedPets" then
 		if action.value == true then
@@ -102,7 +98,6 @@ return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
 		end
 	elseif action.type == "UpdateDoubleJump" then
 		playerData.disableDoubleJump = action.value
-		print("Double Jump " .. (action.value and "Disabled" or "Enabled"))
 	else
 		error("Invalid action type: " .. tostring(action.type))
 	end

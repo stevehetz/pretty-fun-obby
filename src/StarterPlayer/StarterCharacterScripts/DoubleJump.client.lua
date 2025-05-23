@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 local PlayerScripts = Player:WaitForChild("PlayerScripts")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local GuiService = game:GetService("GuiService")
 
 local GetStoreItemInfoRF = ReplicatedStorage:WaitForChild("GetStoreItemInfoRF")
 local Controllers = PlayerScripts:WaitForChild("Controllers")
@@ -18,6 +19,7 @@ local Animator = Humanoid:WaitForChild("Animator")
 
 -- Global state reference
 local state = nil
+local isInGuiNavigationMode = false
 
 -- Reference to the jump button in the mobile controls
 local jumpButton
@@ -74,6 +76,14 @@ function OnStart()
 		end
 	end)
 
+	-- Monitor when player enters/exits GUI navigation mode on Xbox by checking SelectedObject
+	GuiService:GetPropertyChangedSignal("SelectedObject"):Connect(function()
+		isInGuiNavigationMode = GuiService.SelectedObject ~= nil
+	end)
+
+	-- Initialize the current state
+	isInGuiNavigationMode = GuiService.SelectedObject ~= nil
+
 	-- Listen to state changes to update jump count and handle double jump animation
 	Humanoid.StateChanged:Connect(function(oldState, newState)
 		if not hasDoubleJump or state.disableDoubleJump then
@@ -95,8 +105,8 @@ function OnStart()
 
 	-- Use InputBegan and InputEnded for discrete jump detection across devices
 	UIS.InputBegan:Connect(function(input)
-		if not hasDoubleJump or state.disableDoubleJump then
-			return -- No double jump available or disabled, exit early
+		if not hasDoubleJump or state.disableDoubleJump or isInGuiNavigationMode then
+			return -- No double jump available, disabled, or in GUI navigation mode, exit early
 		end
 
 		if isJumpInput(input) then
@@ -120,8 +130,8 @@ function OnStart()
 	end)
 
 	UIS.InputEnded:Connect(function(input)
-		if not hasDoubleJump or state.disableDoubleJump then
-			return -- No double jump available or disabled, exit early
+		if not hasDoubleJump or state.disableDoubleJump or isInGuiNavigationMode then
+			return -- No double jump available, disabled, or in GUI navigation mode, exit early
 		end
 
 		if isJumpInput(input) then
