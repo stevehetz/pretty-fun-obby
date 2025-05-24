@@ -5,6 +5,8 @@ local PlayerData = require(ReplicatedStorage.PlayerData)
 export type PlayerData = PlayerData.PlayerData
 local SettingsConfig = require(ReplicatedStorage.Configs.Settings)
 
+local COIN_VALUE = 100
+
 export type UpdateStateAction = {
 	type: "UpdateStage",
 	amount: number,
@@ -50,6 +52,9 @@ export type UpdateStateAction = {
 } | {
 	type: "UpdateDoubleJump",
 	value: boolean,
+} | {
+	type: "UpdateCoinCount",
+	value: number?,
 }
 
 return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
@@ -98,6 +103,11 @@ return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
 		end
 	elseif action.type == "UpdateDoubleJump" then
 		playerData.disableDoubleJump = action.value
+	elseif action.type == "UpdateCoinCount" then
+		if playerData.coins < 0 then
+			playerData.coins = 0
+		end
+		playerData.coins += action.value or COIN_VALUE
 	else
 		error("Invalid action type: " .. tostring(action.type))
 	end

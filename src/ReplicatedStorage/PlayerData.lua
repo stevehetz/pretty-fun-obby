@@ -5,6 +5,7 @@ export type PlayerData = {
 	deaths: number,
 	disableDoubleJump: boolean,
 	settings: { [SettingsConfig.Setting]: boolean },
+	coins: number,
 	skips: {
 		amount: number,
 	},
@@ -46,6 +47,7 @@ local DEFAULT_PLAYER_DATA: PlayerData = {
 	deaths = 0,
 	disableDoubleJump = false,
 	settings = SettingsData,
+	coins = 0,
 	skips = {
 		amount = 0,
 	},

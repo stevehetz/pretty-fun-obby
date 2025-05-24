@@ -14,7 +14,7 @@ local LeaderboardController = require(script.Parent.LeaderboardController)
 local StagesConfig = require(ReplicatedStorage.Configs.Stages)
 local TestConfig = require(ReplicatedStorage.Configs.Test)
 
-local Label = GuiController.Guis.TopTwo.Frame.TimerLabel
+local Label = GuiController.Guis.TopTwo.Frame.Timer.TimerLabel
 
 local GameModeFolder = Workspace:FindFirstChild("GameMode")
 
