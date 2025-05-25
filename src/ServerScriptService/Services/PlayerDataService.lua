@@ -96,22 +96,28 @@ end
 function Shared.GetState(player: Player)
 	local profile = Profiles[player]
 	if profile then
-		Local.InitState(profile)
 		return profile.Data
 	end
 
 	return nil
 end
 
-function Local.InitState(profile: ProfileService.Profile<DataTemplate.PlayerData>)
-	local totalStages = StagesConfig.GetTotalStages()
+function Local.InitState(player: Player)
+	local profile = Profiles[player]
+	local state = profile.Data
 
-	if totalStages < 0 or profile.Data.stage > totalStages then
-		profile.Data.stage = 0
-	end
+	-- local totalStages = StagesConfig.GetTotalStages()
 
-	if TestConfig.IsDev(profile.Name) then
-		profile.Data.skips.amount = 2000
+	-- if totalStages < 0 or state.stage > totalStages then
+	-- 	state.stage = 0
+	-- end
+
+	-- Player always starts at stage 0
+	state.stage = 0
+
+	-- get player naem
+	if TestConfig.IsDev(player.Name) then
+		state.skips.amount = 2000
 	end
 end
 
@@ -168,6 +174,8 @@ function Local.CreateProfile(player: Player)
 	profile:Reconcile()
 
 	Profiles[player] = profile
+
+	Local.InitState(player)
 
 	Local.CreateLeaderstats(player)
 

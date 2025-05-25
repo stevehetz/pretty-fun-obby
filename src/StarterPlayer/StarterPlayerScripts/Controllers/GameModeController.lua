@@ -160,7 +160,9 @@ function Shared.OnStart()
 				end)
 				return
 			end
+
 			finished = true
+
 			if Shared.GameMode == "Timed" then
 				-- add 7 minutes to the elapsed time for testing purposes
 				-- elapsedTime = elapsedTime + 420

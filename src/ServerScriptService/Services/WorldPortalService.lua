@@ -61,25 +61,32 @@ function Shared.HandleWorldTeleport(player: Player, state: PlayerData.PlayerData
 
 	-- Player is just joining the game, restart them where they left off
 	if teleportingWorld == nil then
+		-- NEW FLOW - Always start player at World 1
 		print("WorldPortalService - Player is just joining the game")
-		-- Player is not in the correct world, teleport them
-		if playersCurrentPlaceId ~= currentPlaceIdFromState then
-			-- Player is not in the correct world, teleport them
-			local action = {
-				type = "UpdateTeleporting",
-				world = state.currentWorld,
-				origin = "Join",
-			}
-			local PlayerDataService = require(ServerScriptService.Services.PlayerDataService)
-			PlayerDataService.UpdateState(player, action)
 
-			-- Attempt to teleport the player
-			TeleportService:Teleport(currentPlaceIdFromState, player, nil)
-			return
-		end
+		-- Reset current world to World 1
+		state.currentWorld = "World1"
 
-	-- Player was teleported from the above routine
-	-- This is the player joining back in after being teleported
+		-- OLD FLOW - Teleport to world they left off at
+		-- print("WorldPortalService - Player is just joining the game")
+		-- -- Player is not in the correct world, teleport them
+		-- if playersCurrentPlaceId ~= currentPlaceIdFromState then
+		-- 	-- Player is not in the correct world, teleport them
+		-- 	local action = {
+		-- 		type = "UpdateTeleporting",
+		-- 		world = state.currentWorld,
+		-- 		origin = "Join",
+		-- 	}
+		-- 	local PlayerDataService = require(ServerScriptService.Services.PlayerDataService)
+		-- 	PlayerDataService.UpdateState(player, action)
+
+		-- 	-- Attempt to teleport the player
+		-- 	TeleportService:Teleport(currentPlaceIdFromState, player, nil)
+		-- 	return
+		-- end
+
+		-- Player was teleported from the above routine
+		-- This is the player joining back in after being teleported
 	elseif teleportingOrigin == "Join" then
 		print("WorldPortalService - Player was teleported from the above routine")
 
