@@ -1,0 +1,249 @@
+local MarketPlaceService = game:GetService("MarketplaceService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+
+local Player = Players.LocalPlayer
+
+local GetStoreRF = ReplicatedStorage:WaitForChild("GetStoreRF")
+
+local ViewportHelper = require(ReplicatedStorage.Libs.ViewportHelper)
+local GuiController = require(script.Parent.Parent.GuiController)
+local StateController = require(script.Parent.Parent.StateController)
+local PetsController = require(script.Parent.Parent.PetsController)
+
+local Gui = GuiController.Guis.StoreModal
+local Frame = Gui.Frame
+local Container = Frame.Container
+local Template = Container.Template
+local OpenButton = GuiController.Guis.Left.Frame.Store
+
+local Local = {}
+local Shared = {}
+
+Local.StoreItemInfoReady = false
+
+local _storeItems = {}
+
+function Local.GetStoreInfoFromServer()
+	local success, store = pcall(function()
+		return GetStoreRF:InvokeServer()
+	end)
+
+	if not success then
+		warn("Failed to get store data: ", store)
+		return
+	end
+
+	Local.StoreItemInfoReady = true
+
+	_storeItems = store
+end
+
+function Local.GetStoreItems()
+	while not Local.StoreItemInfoReady do
+		task.wait(0.1)
+	end
+	return _storeItems
+end
+
+function Shared.OnStart()
+	-- Seup the base gui modal handlers
+	GuiController.SetupGui(Gui, OpenButton)
+
+	-- Get the store data from the server
+	Local.GetStoreInfoFromServer()
+
+	-- Hide the template frame
+	Template.Visible = false
+
+	-- Add all the store item buttons
+	Local.AddStoreItemButtons()
+	print("Store items: ", Local.GetStoreItems())
+
+	-- Handle state updates
+	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
+		if action.type == "UpdateEquippedPets" then
+			Local.RefreshButtonStatuses()
+		end
+	end)
+end
+
+function Local.RefreshButtonStatuses()
+	local storeItems = Local.GetStoreItems()
+	for _, item in ipairs(storeItems.Gamepasses) do
+		local frame = Container:FindFirstChild(item.Name)
+		if frame then
+			Local.SetupItemStatus(item, frame)
+		end
+	end
+end
+
+function Local.AddStoreItemButtons()
+	local storeItems = Local.GetStoreItems()
+	print("Store items: ", storeItems)
+
+	-- Add Abilities
+	for _, item in ipairs(storeItems.Gamepasses) do
+		if item.IsAbility then
+			Local.AddItemButton(item)
+		end
+	end
+
+	-- Add Tools
+	for _, item in ipairs(storeItems.Gamepasses) do
+		if item.IsTool then
+			Local.AddItemButton(item)
+		end
+	end
+
+	-- Add Pets
+	for _, item in ipairs(storeItems.Gamepasses) do
+		if item.IsPet then
+			Local.AddItemButton(item)
+		end
+	end
+end
+
+function Local.AddItemButton(item)
+	local frame = Template:Clone()
+	frame.Parent = Container
+	frame.Name = item.Name
+	frame.Visible = true
+	frame.Template.NameLabel.Text = item.Name
+
+	if item.IsPet then
+		-- Create a viewport frame for the pet
+		Local.SetupViewPort(item, frame)
+	elseif item.Image then
+		-- create new image label instance
+		local imageLabel = Instance.new("ImageLabel")
+		imageLabel.Name = "ImageLabel"
+		imageLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+		imageLabel.Position = UDim2.new(0.5, 0, 0.5, -5)
+		imageLabel.Size = UDim2.new(0.8, 0, 0.8, 0)
+		imageLabel.BackgroundTransparency = 1
+		imageLabel.Image = item.Image or "rbxassetid://0" -- Fallback to a default image if none is provided
+		imageLabel.Parent = frame.Template.Icon
+	end
+
+	Local.SetupItemStatus(item, frame)
+	Local.SetupItemClickHandler(item, frame)
+end
+
+function Local.SetupViewPort(item, frame)
+	local clone
+	if item.IsPet then
+		local model = ReplicatedStorage.Pets[item.Name]
+		if not model then
+			warn("No model found for pet: ", item.Name)
+			return
+		end
+		clone = model:Clone()
+	end
+
+	local viewportFrame = Instance.new("ViewportFrame")
+	viewportFrame.Name = "ViewportFrame"
+	viewportFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+	viewportFrame.Position = UDim2.new(0.5, 0, 0.5, -10)
+	viewportFrame.Size = UDim2.new(0.9, 0, 0.9, 0)
+	viewportFrame.BackgroundTransparency = 1
+	viewportFrame.Parent = frame.Template.Icon
+	ViewportHelper.GenerateViewport(viewportFrame, clone)
+end
+
+function Local.SetupItemStatus(item, frame)
+	local statusFrame = frame.Template:FindFirstChild("Status")
+	local statusText = statusFrame:FindFirstChild("StatusText")
+	local statusImage = statusFrame:FindFirstChild("StatusImage")
+
+	local equippedItems = {}
+
+	if item.IsPet then
+		equippedItems = StateController.GetState().equippedPets or {}
+	end
+
+	local isEquipped = equippedItems[item.Name] or false
+	if isEquipped then
+		statusImage.Visible = false
+		statusText.Text = "Equipped"
+		statusText.TextColor3 = Color3.fromRGB(0, 167, 25)
+		statusFrame.UIStroke.Color = Color3.fromRGB(70, 255, 107)
+		statusFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		frame.Template.Icon.UIStroke.Color = Color3.fromRGB(70, 255, 107)
+	elseif item.Price then
+		local state = StateController.GetState()
+		local playerOwnsGamepass = state.gamepasses[tostring(item.Id)]
+		statusText.TextColor3 = Color3.fromRGB(52, 52, 52)
+		statusFrame.UIStroke.Color = Color3.fromRGB(21, 97, 159)
+		statusFrame.BackgroundColor3 = Color3.fromRGB(202, 221, 255)
+		frame.Template.Icon.UIStroke.Color = Color3.fromRGB(21, 97, 159)
+		if playerOwnsGamepass then
+			statusImage.Visible = false
+			statusText.Text = "Owned"
+		else
+			statusImage.Visible = true
+			statusText.Text = item.Price
+		end
+	else
+		statusImage.Visible = false
+		statusText.TextColor3 = Color3.fromRGB(52, 52, 52)
+		statusFrame.UIStroke.Color = Color3.fromRGB(21, 97, 159)
+		statusFrame.BackgroundColor3 = Color3.fromRGB(202, 221, 255)
+		frame.Template.Icon.UIStroke.Color = Color3.fromRGB(21, 97, 159)
+		statusText.Text = "Free"
+	end
+end
+
+function Local.SetupItemClickHandler(item, frame)
+	-- Variables to track touch/click position
+	local inputStartPosition = nil
+	local inputObject = nil
+	local MAX_DRAG_DISTANCE = 2 -- Maximum pixels to consider as a tap rather than a scroll
+
+	-- Track when input begins
+	frame.InputBegan:Connect(function(input)
+		if
+			input.UserInputType == Enum.UserInputType.MouseButton1
+			or input.UserInputType == Enum.UserInputType.Touch
+			-- also check for gamepad input if needed
+			or input.UserInputType == Enum.UserInputType.Gamepad1
+		then
+			-- Store the starting position and input object
+			inputStartPosition = input.Position
+			inputObject = input
+		end
+	end)
+
+	-- Track when input ends
+	frame.InputEnded:Connect(function(input)
+		-- Only process if this is the same input object we started with
+		if input == inputObject and inputStartPosition then
+			-- Calculate how far the input moved
+			local dragDistance = (input.Position - inputStartPosition).Magnitude
+
+			-- Only consider it a tap/click if it didn't move much
+			if dragDistance <= MAX_DRAG_DISTANCE then
+				local state = StateController.GetState()
+
+				-- Is free or player already owns the pet
+				local playerOwnsGamepass = state.gamepasses[tostring(item.Id)]
+				if not item.Id or playerOwnsGamepass then
+					if item.IsPet then
+						PetsController.ToggleEquippedPet(item)
+					end
+					return
+				end
+
+				-- Is not free and player doesn't own the pet
+				-- Prompt the purchase
+				MarketPlaceService:PromptGamePassPurchase(Player, item.Id)
+			end
+
+			-- Reset tracking variables
+			inputStartPosition = nil
+			inputObject = nil
+		end
+	end)
+end
+
+return Shared

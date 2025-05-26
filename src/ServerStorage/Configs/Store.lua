@@ -17,6 +17,7 @@ local _store = {
 	Gamepasses = {
 		{
 			Id = 1160545563, -- Double Jump
+			IsAbility = true,
 			-- Id = 1227650504, -- Double Jump (Test)
 		},
 		{
@@ -27,10 +28,10 @@ local _store = {
 			Id = 1157906298, -- Speed Coil
 			IsTool = true,
 		},
-		{
-			Id = 1198006484, --  Fox
-			IsPet = true,
-		},
+		-- {
+		-- 	Id = 1198006484, --  Fox
+		-- 	IsPet = true,
+		-- },
 		{
 			Id = 1197084528, -- Dominus Crystal
 			IsPet = true,
@@ -43,18 +44,18 @@ local _store = {
 			Id = 1198272735, -- Ice Dragon
 			IsPet = true,
 		},
-		{
-			Id = 1196970764, -- Cerberus
-			IsPet = true,
-		},
-		{
-			Id = 1198896690, -- Galactic Overlord
-			IsPet = true,
-		},
-		{
-			Id = 1197718750, -- Sun Flare
-			IsPet = true,
-		},
+		-- {
+		-- 	Id = 1196970764, -- Cerberus
+		-- 	IsPet = true,
+		-- },
+		-- {
+		-- 	Id = 1198896690, -- Galactic Overlord
+		-- 	IsPet = true,
+		-- },
+		-- {
+		-- 	Id = 1197718750, -- Sun Flare
+		-- 	IsPet = true,
+		-- },
 	},
 
 	Products = {

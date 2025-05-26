@@ -21,12 +21,12 @@ local Local = {}
 local Shared = {}
 
 local FREE_PETS = {
-	{
-		Name = "Dog",
-	},
-	{
-		Name = "Cat",
-	},
+	-- {
+	-- 	Name = "Dog",
+	-- },
+	-- {
+	-- 	Name = "Cat",
+	-- },
 }
 
 function Shared.OnStart()
@@ -215,7 +215,7 @@ function Local.SetupPetStoreClickHandler(pet, petFrame)
 end
 
 function Local.AddOpenButtonImage()
-	local PET = "Ice Dragon"
+	local PET = "Cerberus"
 	local petModel = ReplicatedStorage.Pets[PET]
 	if not petModel then
 		warn("Pet model not found in ReplicatedStorage: " .. PET)
