@@ -11,6 +11,7 @@ local GuiController = require(script.Parent.Parent.GuiController)
 local StateController = require(script.Parent.Parent.StateController)
 local PetsController = require(script.Parent.Parent.PetsController)
 local DoubleJumpController = require(script.Parent.Parent.DoubleJumpController)
+local ToolsController = require(script.Parent.Parent.ToolsController)
 
 local Gui = GuiController.Guis.StoreModal
 local Frame = Gui.Frame
@@ -47,6 +48,19 @@ function Local.GetStoreItems()
 	return _storeItems
 end
 
+-- Get the get store info from id
+function Local.GetStoreInfoFromId(id: number)
+	local storeInfo = nil
+	for _, info in Local.GetStoreItems().Gamepasses do
+		if info.Id == id then
+			storeInfo = info
+			break
+		end
+	end
+
+	return storeInfo
+end
+
 function Shared.OnStart()
 	-- Seup the base gui modal handlers
 	GuiController.SetupGui(Gui, OpenButton)
@@ -60,6 +74,11 @@ function Shared.OnStart()
 	-- Add all the store item buttons
 	Local.AddStoreItemButtons()
 
+	-- Listen for tool equip/unequip events
+	ToolsController.ToolToggled.Event:Connect(function(toolName)
+		Local.RefreshButtonStatuses()
+	end)
+
 	-- Handle state updates
 	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
 		if action.type == "UpdateEquippedPets" then
@@ -67,6 +86,7 @@ function Shared.OnStart()
 		end
 
 		if action.type == "UpdateGamepass" then
+			Local.EnableAbilityIfPurchased(action.gamepassId)
 			Local.RefreshButtonStatuses()
 		end
 
@@ -74,6 +94,18 @@ function Shared.OnStart()
 			Local.RefreshButtonStatuses()
 		end
 	end)
+end
+
+function Local.EnableAbilityIfPurchased(gamepassId)
+	local storeInfo = Local.GetStoreInfoFromId(gamepassId)
+	if not storeInfo then
+		warn("No store info found for gamepass ID: ", gamepassId)
+		return
+	end
+
+	if storeInfo.Name == "Double Jump" then
+		DoubleJumpController.Toggle()
+	end
 end
 
 function Local.RefreshButtonStatuses()
@@ -172,8 +204,7 @@ function Local.SetupItemStatus(item, frame)
 	end
 
 	if item.IsTool then
-		local playerOwnsGamepass = state.gamepasses[tostring(item.Id)]
-		equippedItems[item.Name] = playerOwnsGamepass
+		equippedItems[item.Name] = ToolsController.IsToolEquipped(item.Name)
 	end
 
 	if item.IsPet then
@@ -246,12 +277,17 @@ function Local.SetupItemClickHandler(item, frame)
 				-- Is free or player already owns the pet
 				local playerOwnsGamepass = state.gamepasses[tostring(item.Id)]
 				if not item.Id or playerOwnsGamepass then
-					if item.IsPet then
-						PetsController.ToggleEquippedPet(item)
-					end
 					if item.Name == "Double Jump" then
 						-- Toggle double jump ability
 						DoubleJumpController.Toggle()
+					end
+					if item.IsTool then
+						-- Equip the tool
+						ToolsController.ToggleEquip(item.Name)
+						Local.RefreshButtonStatuses()
+					end
+					if item.IsPet then
+						PetsController.ToggleEquippedPet(item)
 					end
 					return
 				end

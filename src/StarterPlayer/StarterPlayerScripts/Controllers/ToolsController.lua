@@ -26,6 +26,8 @@ local COIL_EFFECTS = {
 local Local = {}
 local Shared = {}
 
+Shared.ToolToggled = Instance.new("BindableEvent")
+
 -- Store original values when character loads
 local originalValues = {
 	WalkSpeed = nil,
@@ -39,6 +41,32 @@ function Shared.OnStart()
 	end)
 
 	Local.SetupCharacter(Player)
+end
+
+function Shared.IsToolEquipped(toolName: string): boolean
+	local character = Player.Character or Player.CharacterAdded:Wait()
+	return character:FindFirstChild(toolName) ~= nil
+end
+
+function Shared.ToggleEquip(toolName: string)
+	local character = Player.Character or Player.CharacterAdded:Wait()
+	-- Check if tools is already equipped
+	local isEquipped = character:FindFirstChild(toolName)
+	if isEquipped then
+		-- If tool is already equipped, unequip it
+		character.Humanoid:UnequipTools()
+		return
+	else
+		local backpack = Player.Backpack or Player:WaitForChild("Backpack")
+		local tool = backpack:FindFirstChild(toolName)
+
+		if not tool then
+			warn("Tool not found in backpack: ", toolName)
+			return
+		end
+		tool.Parent = character
+		character.Humanoid:EquipTool(tool)
+	end
 end
 
 function Local.SetupCharacter(player: Player)
@@ -74,10 +102,12 @@ end
 
 function Local.SetupCoil(tool: Tool)
 	tool.Equipped:Connect(function()
+		Shared.ToolToggled:Fire(tool.Name)
 		Local.CoilEffect(tool.Name, true)
 	end)
 
 	tool.Unequipped:Connect(function()
+		Shared.ToolToggled:Fire(tool.Name)
 		Local.CoilEffect(tool.Name, false)
 	end)
 end
