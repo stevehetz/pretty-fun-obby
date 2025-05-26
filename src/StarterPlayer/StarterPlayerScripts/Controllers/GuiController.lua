@@ -37,7 +37,7 @@ Shared.Guis = {
 	Skips = PlayerGui:WaitForChild("Skips"),
 	Rebirth = PlayerGui:WaitForChild("Rebirth"),
 	Pets = PlayerGui:WaitForChild("Pets"),
-	StoreModal = PlayerGui:WaitForChild("StoreModal"),
+	Shop = PlayerGui:WaitForChild("Shop"),
 }
 
 function Shared.OnStart()

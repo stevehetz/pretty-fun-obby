@@ -13,11 +13,11 @@ local PetsController = require(script.Parent.Parent.PetsController)
 local DoubleJumpController = require(script.Parent.Parent.DoubleJumpController)
 local ToolsController = require(script.Parent.Parent.ToolsController)
 
-local Gui = GuiController.Guis.StoreModal
+local Gui = GuiController.Guis.Shop
 local Frame = Gui.Frame
 local Container = Frame.Container
 local Template = Container.Template
-local OpenButton = GuiController.Guis.Left.Frame.Store
+local OpenButton = GuiController.Guis.Left.Frame.Shop
 
 local Local = {}
 local Shared = {}
