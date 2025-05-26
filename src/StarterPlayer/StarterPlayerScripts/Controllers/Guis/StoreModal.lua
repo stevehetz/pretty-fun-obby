@@ -249,14 +249,15 @@ function Local.SetupItemClickHandler(item, frame)
 	local inputObject = nil
 	local MAX_DRAG_DISTANCE = 2 -- Maximum pixels to consider as a tap rather than a scroll
 
+	frame.Activated:Connect(function(input)
+		if input.UserInputType ~= Enum.UserInputType.Touch then
+			Local.HandleItemSelect(item)
+		end
+	end)
+
 	-- Track when input begins
 	frame.InputBegan:Connect(function(input)
-		if
-			input.UserInputType == Enum.UserInputType.MouseButton1
-			or input.UserInputType == Enum.UserInputType.Touch
-			-- also check for gamepad input if needed
-			or input.UserInputType == Enum.UserInputType.Gamepad1
-		then
+		if input.UserInputType == Enum.UserInputType.Touch then
 			-- Store the starting position and input object
 			inputStartPosition = input.Position
 			inputObject = input
@@ -266,35 +267,13 @@ function Local.SetupItemClickHandler(item, frame)
 	-- Track when input ends
 	frame.InputEnded:Connect(function(input)
 		-- Only process if this is the same input object we started with
-		if input == inputObject and inputStartPosition then
+		if input == inputObject and input.UserInputType == Enum.UserInputType.Touch and inputStartPosition then
 			-- Calculate how far the input moved
 			local dragDistance = (input.Position - inputStartPosition).Magnitude
 
 			-- Only consider it a tap/click if it didn't move much
 			if dragDistance <= MAX_DRAG_DISTANCE then
-				local state = StateController.GetState()
-
-				-- Is free or player already owns the pet
-				local playerOwnsGamepass = state.gamepasses[tostring(item.Id)]
-				if not item.Id or playerOwnsGamepass then
-					if item.Name == "Double Jump" then
-						-- Toggle double jump ability
-						DoubleJumpController.Toggle()
-					end
-					if item.IsTool then
-						-- Equip the tool
-						ToolsController.ToggleEquip(item.Name)
-						Local.RefreshButtonStatuses()
-					end
-					if item.IsPet then
-						PetsController.ToggleEquippedPet(item)
-					end
-					return
-				end
-
-				-- Is not free and player doesn't own the pet
-				-- Prompt the purchase
-				MarketPlaceService:PromptGamePassPurchase(Player, item.Id)
+				Local.HandleItemSelect(item)
 			end
 
 			-- Reset tracking variables
@@ -302,6 +281,32 @@ function Local.SetupItemClickHandler(item, frame)
 			inputObject = nil
 		end
 	end)
+end
+
+function Local.HandleItemSelect(item)
+	local state = StateController.GetState()
+
+	-- Is free or player already owns the pet
+	local playerOwnsGamepass = state.gamepasses[tostring(item.Id)]
+	if not item.Id or playerOwnsGamepass then
+		if item.Name == "Double Jump" then
+			-- Toggle double jump ability
+			DoubleJumpController.Toggle()
+		end
+		if item.IsTool then
+			-- Equip the tool
+			ToolsController.ToggleEquip(item.Name)
+			Local.RefreshButtonStatuses()
+		end
+		if item.IsPet then
+			PetsController.ToggleEquippedPet(item)
+		end
+		return
+	end
+
+	-- Is not free and player doesn't own the pet
+	-- Prompt the purchase
+	MarketPlaceService:PromptGamePassPurchase(Player, item.Id)
 end
 
 return Shared
