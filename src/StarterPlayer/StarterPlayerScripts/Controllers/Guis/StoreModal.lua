@@ -10,6 +10,7 @@ local ViewportHelper = require(ReplicatedStorage.Libs.ViewportHelper)
 local GuiController = require(script.Parent.Parent.GuiController)
 local StateController = require(script.Parent.Parent.StateController)
 local PetsController = require(script.Parent.Parent.PetsController)
+local DoubleJumpController = require(script.Parent.Parent.DoubleJumpController)
 
 local Gui = GuiController.Guis.StoreModal
 local Frame = Gui.Frame
@@ -58,11 +59,18 @@ function Shared.OnStart()
 
 	-- Add all the store item buttons
 	Local.AddStoreItemButtons()
-	print("Store items: ", Local.GetStoreItems())
 
 	-- Handle state updates
 	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
 		if action.type == "UpdateEquippedPets" then
+			Local.RefreshButtonStatuses()
+		end
+
+		if action.type == "UpdateGamepass" then
+			Local.RefreshButtonStatuses()
+		end
+
+		if action.type == "UpdateDoubleJump" then
 			Local.RefreshButtonStatuses()
 		end
 	end)
@@ -80,7 +88,6 @@ end
 
 function Local.AddStoreItemButtons()
 	local storeItems = Local.GetStoreItems()
-	print("Store items: ", storeItems)
 
 	-- Add Abilities
 	for _, item in ipairs(storeItems.Gamepasses) do
@@ -157,9 +164,20 @@ function Local.SetupItemStatus(item, frame)
 	local statusImage = statusFrame:FindFirstChild("StatusImage")
 
 	local equippedItems = {}
+	local state = StateController.GetState()
+
+	if item.Name == "Double Jump" then
+		local playerOwnsGamepass = state.gamepasses[tostring(item.Id)]
+		equippedItems[item.Name] = playerOwnsGamepass and not state.disableDoubleJump
+	end
+
+	if item.IsTool then
+		local playerOwnsGamepass = state.gamepasses[tostring(item.Id)]
+		equippedItems[item.Name] = playerOwnsGamepass
+	end
 
 	if item.IsPet then
-		equippedItems = StateController.GetState().equippedPets or {}
+		equippedItems = state.equippedPets or {}
 	end
 
 	local isEquipped = equippedItems[item.Name] or false
@@ -230,6 +248,10 @@ function Local.SetupItemClickHandler(item, frame)
 				if not item.Id or playerOwnsGamepass then
 					if item.IsPet then
 						PetsController.ToggleEquippedPet(item)
+					end
+					if item.Name == "Double Jump" then
+						-- Toggle double jump ability
+						DoubleJumpController.Toggle()
 					end
 					return
 				end
