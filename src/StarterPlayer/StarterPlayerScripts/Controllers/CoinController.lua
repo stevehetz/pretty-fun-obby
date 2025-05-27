@@ -3,12 +3,16 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StateController = require(script.Parent.StateController)
 local GuiController = require(script.Parent.GuiController)
+local MarketplaceService = game:GetService("MarketplaceService")
+
+local GetStoreItemInfoRF = ReplicatedStorage:WaitForChild("GetStoreItemInfoRF")
 
 local Player = Players.LocalPlayer
 local Remotes = ReplicatedStorage.Remotes.PlayerData
 
 local Gui = GuiController.Guis.TopTwo.Frame.Coins
 local CoinsLabel = Gui.CoinsLabel
+local PurchaseButton = Gui.PurchaseButton
 
 local CoinModel = ReplicatedStorage.Assets.Coin
 local CollectedCoins = {}
@@ -19,6 +23,7 @@ local Shared = {}
 function Shared.OnStart()
 	Local.UpdateCoinsGui()
 	Local.SetupCoinsTouched()
+	Local.SetupPurchaseCoinButton()
 
 	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
 		if action.type == "UpdateCoinCount" then
@@ -96,5 +101,28 @@ Local.ResetCollectedCoins = function()
 			CollectedCoins[index] = nil
 		end
 	end
+end
+
+function Local.SetupPurchaseCoinButton()
+	PurchaseButton.Activated:Connect(function()
+		Shared.PurchaseCoins(1000)
+	end)
+end
+
+function Shared.PurchaseCoins(amount: number)
+	if amount ~= 1000 then
+		warn("That amount is not supported for purchase:", amount)
+		return
+	end
+
+	local storeItemName = tostring(amount) .. " Coins"
+	local storeItemInfo = GetStoreItemInfoRF:InvokeServer(storeItemName)
+
+	if not storeItemInfo then
+		warn("No store item info found for:", storeItemName)
+		return
+	end
+
+	MarketplaceService:PromptProductPurchase(Player, storeItemInfo.Id)
 end
 return Shared

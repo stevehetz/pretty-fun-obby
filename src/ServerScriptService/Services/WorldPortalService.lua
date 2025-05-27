@@ -152,6 +152,11 @@ function Shared.SetupPortals()
 						return
 					end
 
+					-- Check if door is for the current world
+					if worldName == WorldsConfig.GetCurrentWorldName() then
+						return
+					end
+
 					local parent = descendant.Parent
 					local access = parent:GetAttribute("Access")
 					local isDev = TestConfig.IsDev(player.Name)

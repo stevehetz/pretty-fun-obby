@@ -9,6 +9,9 @@ export type StoreItemInfo = {
 	Description: string,
 	Price: number,
 	Image: string,
+	IsGamepass: boolean?,
+	IsProduct: boolean?,
+	IsSubscription: boolean?,
 	IsTool: boolean?,
 	IsPet: boolean?,
 }
@@ -56,6 +59,9 @@ local _store = {
 		-- 	Id = 1197718750, -- Sun Flare
 		-- 	IsPet = true,
 		-- },
+		{
+			Id = 1234640489, -- Premium World Pass
+		},
 	},
 
 	Products = {
@@ -64,6 +70,9 @@ local _store = {
 		},
 		{
 			Id = 3275590834, -- Teleport to World 2
+		},
+		{
+			Id = 3293766409, -- 1000 Coins
 		},
 	},
 
@@ -103,6 +112,7 @@ function Local.LoadStoreInfo()
 		Local.RetryUntilSuccess(function()
 			for _, product in _store.Gamepasses do
 				local info = MarketplaceService:GetProductInfo(product.Id, Enum.InfoType.GamePass)
+				product.IsGamepass = true
 				product.Name = info.Name
 				product.Description = info.Description
 				product.Price = info.PriceInRobux
@@ -115,6 +125,7 @@ function Local.LoadStoreInfo()
 		Local.RetryUntilSuccess(function()
 			for _, product in _store.Products do
 				local info = MarketplaceService:GetProductInfo(product.Id, Enum.InfoType.Product)
+				product.IsProduct = true
 				product.Name = info.Name
 				product.Description = info.Description
 				product.Price = info.PriceInRobux
@@ -129,6 +140,7 @@ function Local.LoadStoreInfo()
 			Local.RetryUntilSuccess(function()
 				for _, subscription in _store.Subscriptions do
 					local info = MarketplaceService:GetSubscriptionProductInfoAsync(subscription.Id)
+					subscription.IsSubscription = true
 					subscription.Name = info.Name
 					subscription.Description = info.Description
 					subscription.Price = info.Price

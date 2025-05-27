@@ -121,6 +121,13 @@ end
 function Local.AddStoreItemButtons()
 	local storeItems = Local.GetStoreItems()
 
+	-- Add Products
+	for _, item in ipairs(storeItems.Products) do
+		if item.Name == "1000 Coins" then
+			Local.AddItemButton(item)
+		end
+	end
+
 	-- Add Abilities
 	for _, item in ipairs(storeItems.Gamepasses) do
 		if item.IsAbility then
@@ -304,9 +311,18 @@ function Local.HandleItemSelect(item)
 		return
 	end
 
-	-- Is not free and player doesn't own the pet
+	-- Is not free and player doesn't own
 	-- Prompt the purchase
-	MarketPlaceService:PromptGamePassPurchase(Player, item.Id)
+	if item.IsProduct then
+		-- For products, we can directly prompt purchase
+		MarketPlaceService:PromptProductPurchase(Player, item.Id)
+		return
+	end
+	if item.IsGamepass then
+		-- For gamepasses, we prompt the gamepass purchase
+		MarketPlaceService:PromptGamePassPurchase(Player, item.Id)
+		return
+	end
 end
 
 return Shared

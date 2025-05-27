@@ -22,9 +22,6 @@ export type PlayerData = {
 	worldFinishes: {
 		[string]: number,
 	},
-	ownedPets: {
-		[string]: boolean,
-	},
 	equippedPets: {
 		[string]: boolean,
 	},
@@ -60,7 +57,6 @@ local DEFAULT_PLAYER_DATA: PlayerData = {
 	},
 	currentWorld = Worlds[1],
 	worldFinishes = WorldFinishes,
-	ownedPets = {},
 	equippedPets = {},
 }
 

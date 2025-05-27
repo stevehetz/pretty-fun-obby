@@ -156,6 +156,9 @@ function Local.PurchaseProduct(receiptInfo: ReceiptInfo)
 	end
 
 	local is5Skips = productInfo.Name == "5 Skips"
+	local isTeleportWorld2 = productInfo.Name == "Teleport to World 2"
+	local is1000Coins = productInfo.Name == "1000 Coins"
+
 	if is5Skips then
 		local action: PlayerDataService.UpdateStateAction = {
 			type = "EarnSkip",
@@ -165,7 +168,6 @@ function Local.PurchaseProduct(receiptInfo: ReceiptInfo)
 		decision = Enum.ProductPurchaseDecision.PurchaseGranted
 	end
 
-	local isTeleportWorld2 = productInfo.Name == "Teleport to World 2"
 	if isTeleportWorld2 then
 		-- Get the WorldPortalService
 		local WorldPortalService = require(script.Parent.WorldPortalService)
@@ -188,7 +190,15 @@ function Local.PurchaseProduct(receiptInfo: ReceiptInfo)
 			-- Clear the pending teleport
 			WorldPortalService.pendingTeleports[player.UserId] = nil
 		end
+		decision = Enum.ProductPurchaseDecision.PurchaseGranted
+	end
 
+	if is1000Coins then
+		local action: PlayerDataService.UpdateStateAction = {
+			type = "UpdateCoinCount",
+			value = 1000,
+		}
+		PlayerDataService.UpdateState(player, action)
 		decision = Enum.ProductPurchaseDecision.PurchaseGranted
 	end
 

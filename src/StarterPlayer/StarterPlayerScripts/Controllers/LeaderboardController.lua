@@ -2,9 +2,6 @@ local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local GetTopFinishersRF = ReplicatedStorage:WaitForChild("GetTopFinishers")
-local GetTopTimesRF = ReplicatedStorage:WaitForChild("GetTopTimes")
-local GetTimeUntilRefreshRF = ReplicatedStorage:WaitForChild("GetTimeUntilRefresh")
-local GetTopTwoTimesPerWorldRF = ReplicatedStorage:WaitForChild("GetTopTwoTimesPerWorldRF")
 local leaderboardsFolder = Workspace:FindFirstChild("Leaderboards")
 
 local REFRESH_INTERVAL = 60 -- Refresh leaderboard every 60 seconds
@@ -23,40 +20,7 @@ Shared.OnStart = function()
 		return
 	end
 
-	-- Initial fetch - do sequentially to ensure each completes before moving to the next
-	local finishesData = Shared.RefreshFinishesLeaderboard()
-	task.wait(0.5) -- Small delay between refreshes
-
-	-- local timesData = Shared.RefreshTimesLeaderboard()
-	-- task.wait(0.5) -- Small delay between refreshes
-
-	-- local topTwoData = Shared.RefreshTopTwoTimesPerWorld()
-	-- Shared.UpdateTimeUntilRefresh()
-
-	-- Set up periodic refresh for leaderboards
-	task.spawn(function()
-		while true do
-			task.wait(REFRESH_INTERVAL)
-
-			-- Refresh leaderboards sequentially to ensure each completes before moving to the next
-			local finishesData = Shared.RefreshFinishesLeaderboard()
-			task.wait(0.5) -- Small delay between refreshes
-
-			local timesData = Shared.RefreshTimesLeaderboard()
-			task.wait(0.5) -- Small delay between refreshes
-
-			local topTwoData = Shared.RefreshTopTwoTimesPerWorld()
-		end
-	end)
-
-	-- Set up periodic refresh for time until refresh (every minute)
-	task.spawn(function()
-		Shared.UpdateTimeUntilRefresh()
-		while true do
-			task.wait(10) -- Update every minute
-			Shared.UpdateTimeUntilRefresh()
-		end
-	end)
+	Shared.RefreshFinishesLeaderboard()
 end
 
 function Shared.RefreshFinishesLeaderboard()
@@ -76,26 +40,6 @@ function Shared.RefreshFinishesLeaderboard()
 	else
 		warn("Failed to refresh leaderboard data")
 		return Shared.LeaderboardData
-	end
-end
-
-function Shared.RefreshTimesLeaderboard()
-	if not leaderboardsFolder then
-		return
-	end
-
-	local success, data = pcall(function()
-		return GetTopTimesRF:InvokeServer()
-	end)
-
-	if success and data then
-		Shared.LastRefreshTime = os.time()
-		Shared.TimesLeaderboardData = data
-		Local.UpdateAllTimesLeaderboardUI(data)
-		return data
-	else
-		warn("Failed to refresh times leaderboard data")
-		return Shared.TimesLeaderboardData
 	end
 end
 
@@ -290,70 +234,6 @@ function Local.UpdateTimesLeaderboardUI(leaderboard, data)
 		row.Parent = rowsFrame
 	end
 end
-
--- Function to update the time until refresh display
-function Shared.UpdateTimeUntilRefresh()
-	local success, timeUntilRefresh = pcall(function()
-		return GetTimeUntilRefreshRF:InvokeServer()
-	end)
-
-	if not success or not timeUntilRefresh then
-		warn("Failed to get time until refresh")
-		return
-	end
-
-	-- Format the time into days, hours, minutes
-	local days = math.floor(timeUntilRefresh / (24 * 60 * 60))
-	local hours = math.floor((timeUntilRefresh % (24 * 60 * 60)) / 3600)
-	local minutes = math.floor((timeUntilRefresh % 3600) / 60)
-
-	local formattedTime = string.format("%d days %d hr %d min", days, hours, minutes)
-
-	-- Find all refresh time labels in the leaderboards folder
-	local signs = leaderboardsFolder:GetDescendants()
-	for _, sign in ipairs(signs) do
-		if sign.Name == "Sign" and sign:IsA("Model") then
-			local display = sign:WaitForChild("Display", 5)
-			local surfaceGui = display:WaitForChild("SurfaceGui", 5)
-			local frame = surfaceGui:WaitForChild("Frame", 5)
-			local label = frame:WaitForChild("TimeRemaining", 5)
-			label.Text = formattedTime
-		end
-	end
-end
-
-function Shared.RefreshTopTwoTimesPerWorld()
-	local success, data = pcall(function()
-		return GetTopTwoTimesPerWorldRF:InvokeServer()
-	end)
-
-	if success and data then
-		Shared.LastRefreshTime = os.time()
-		Shared.TopTwoTimesPerWorldData = data
-		-- Local.UpdateAllLeaderScreens(data)
-		return data
-	else
-		warn("Failed to refresh top two times per world data")
-		return Shared.TopTwoTimesPerWorldData
-	end
-end
-
--- function Local.UpdateAllLeaderScreens(data)
--- 	-- Find all LeaderScreen objects in the WorldPortals folder
--- 	for _, worldModel in ipairs(worldPortalsFolder:GetChildren()) do
--- 		if worldModel:IsA("Model") then
--- 			local worldName = worldModel.Name
-
--- 			-- Find LeaderScreen in this world folder
--- 			for _, leaderScreen in ipairs(worldModel:GetDescendants()) do
--- 				if leaderScreen.Name == "LeaderScreen" and leaderScreen:IsA("Model") then
--- 					-- Update this LeaderScreen with data for its world
--- 					Local.UpdateLeaderScreen(leaderScreen, worldName, data[worldName] or {})
--- 				end
--- 			end
--- 		end
--- 	end
--- end
 
 function Local.UpdateLeaderScreen(leaderScreen, worldName, worldData)
 	-- Use pcall with WaitForChild to handle cases where children might not exist
