@@ -15,7 +15,7 @@ function Shared.OnStart()
 	GuiController.SetupGui(Gui, OpenButton)
 
 	UseButton.MouseButton1Click:Connect(function()
-		GuiController.ToggleGui(Gui, false)
+		GuiController.ToggleGui(Gui)
 		Remotes.Rebirth:FireServer()
 	end)
 end

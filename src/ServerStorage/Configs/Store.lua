@@ -62,6 +62,7 @@ local _store = {
 		-- },
 		{
 			Id = 1234640489, -- Premium World Pass
+			-- Id = 1236955711, -- Premium World Pass (Test)
 			IsPass = true,
 		},
 	},
@@ -166,31 +167,31 @@ function Shared.GetStore()
 	return _store
 end
 
-function Shared.GetStoreItemInfo(id: number | string): StoreItemInfo
+function Shared.GetStoreItemInfo(idOrName: number | string): StoreItemInfo
 	local Store = Shared.GetStore()
 
 	for _, gamepassInfo in Store.Gamepasses do
-		if gamepassInfo.Id == id or gamepassInfo.Name == id then
+		if gamepassInfo.Id == idOrName or gamepassInfo.Name == idOrName then
 			return gamepassInfo
 		end
 	end
 
 	for _, productInfo in Store.Products do
-		if productInfo.Id == id or productInfo.Name == id then
+		if productInfo.Id == idOrName or productInfo.Name == idOrName then
 			return productInfo
 		end
 	end
 
 	for _, subscriptionInfo in Store.Subscriptions do
-		if subscriptionInfo.Id == id or subscriptionInfo.Name == id then
+		if subscriptionInfo.Id == idOrName or subscriptionInfo.Name == idOrName then
 			return subscriptionInfo
 		end
 	end
 end
 
-function Shared.IsGamepassTool(id: number | string): boolean
+function Shared.IsGamepassTool(idOrName: number | string): boolean
 	for _, gamepassInfo in Shared.GetStore().Gamepasses do
-		if gamepassInfo.Id == id or gamepassInfo.Name == id then
+		if gamepassInfo.Id == idOrName or gamepassInfo.Name == idOrName then
 			return gamepassInfo.IsTool or false
 		end
 	end
@@ -198,9 +199,9 @@ function Shared.IsGamepassTool(id: number | string): boolean
 	return false
 end
 
-function Shared.IsGamepassPet(id: number | string): boolean
+function Shared.IsGamepassPet(idOrName: number | string): boolean
 	for _, gamepassInfo in Shared.GetStore().Gamepasses do
-		if gamepassInfo.Id == id or gamepassInfo.Name == id then
+		if gamepassInfo.Id == idOrName or gamepassInfo.Name == idOrName then
 			return gamepassInfo.IsPet or false
 		end
 	end

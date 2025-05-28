@@ -91,7 +91,7 @@ function Shared.SetupGui(gui: ScreenGui, openButton: TextButton?, exitButton: Te
 	if openButton then
 		openButton.MouseButton1Click:Connect(function()
 			SoundsConfig.PlaySound("Menu-Click")
-			Shared.ToggleGui(gui, true)
+			Shared.ToggleGui(gui)
 		end)
 	else
 		print("No open button found for " .. gui.Name)
@@ -100,13 +100,13 @@ function Shared.SetupGui(gui: ScreenGui, openButton: TextButton?, exitButton: Te
 	if exitButton then
 		exitButton.MouseButton1Click:Connect(function()
 			SoundsConfig.PlaySound("Menu-Click")
-			Shared.ToggleGui(gui, false)
+			Shared.ToggleGui(gui)
 		end)
 	end
 end
 
-function Shared.ToggleGui(gui: ScreenGui, isActive: boolean)
-	Shared.ToggleBlurEffect(isActive)
+function Shared.ToggleGui(gui: ScreenGui)
+	Shared.ToggleBlurEffect(not gui.Enabled)
 	if gui.Enabled then
 		Local.AnimateFrame(gui.Frame, false)
 		return

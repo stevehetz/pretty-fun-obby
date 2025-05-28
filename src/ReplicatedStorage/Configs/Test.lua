@@ -18,6 +18,10 @@ Shared.Players = {
 		UserId = 8398047634,
 		Name = "ra1n_test2",
 	},
+	ra1n_test3 = {
+		UserId = 8427812834,
+		Name = "ra1n_test3",
+	},
 }
 
 function Shared.IsDev(playerName: string): boolean

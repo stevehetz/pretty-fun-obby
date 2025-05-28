@@ -102,7 +102,6 @@ function Local.ProcessGamepassPurchasedFromWebsite(player: Player)
 end
 
 function Local.PurchaseGamepass(player: Player, id: number, didPurchase: boolean)
-	print("PurchaseGamepass", player.Name, id, didPurchase)
 	if not didPurchase then
 		return
 	end
@@ -117,6 +116,7 @@ function Local.PurchaseGamepass(player: Player, id: number, didPurchase: boolean
 		return
 	end
 
+	print("Player " .. player.Name .. " purchased gamepass " .. id)
 	local action: PlayerDataService.UpdateStateAction = {
 		type = "UpdateGamepass",
 		value = true,
@@ -125,7 +125,6 @@ function Local.PurchaseGamepass(player: Player, id: number, didPurchase: boolean
 	PlayerDataService.UpdateState(player, action)
 
 	if StoreConfig.IsGamepassTool(id) then
-		print("Giving tool to player", player.Name, id)
 		local gamepassInfo = StoreConfig.GetStoreItemInfo(id)
 		ToolsService.GiveTool(player, gamepassInfo.Name, gamepassInfo.Id)
 		return
@@ -156,7 +155,6 @@ function Local.PurchaseProduct(receiptInfo: ReceiptInfo)
 	end
 
 	local is5Skips = productInfo.Name == "5 Skips"
-	local isTeleportWorld2 = productInfo.Name == "Teleport to World 2"
 	local is1000Coins = productInfo.Name == "1000 Coins"
 
 	if is5Skips then
@@ -165,31 +163,6 @@ function Local.PurchaseProduct(receiptInfo: ReceiptInfo)
 			amount = 5,
 		}
 		PlayerDataService.UpdateState(player, action)
-		decision = Enum.ProductPurchaseDecision.PurchaseGranted
-	end
-
-	if isTeleportWorld2 then
-		-- Get the WorldPortalService
-		local WorldPortalService = require(script.Parent.WorldPortalService)
-
-		-- Check if there's pending teleport info for this player
-		if WorldPortalService.pendingTeleports and WorldPortalService.pendingTeleports[player.UserId] then
-			local teleportInfo = WorldPortalService.pendingTeleports[player.UserId]
-
-			-- Freeze the player so they can't move during teleport
-			local character = player.Character
-			if character and character:FindFirstChild("Humanoid") then
-				local humanoid = character.Humanoid
-				humanoid.WalkSpeed = 0
-				humanoid.JumpHeight = 0
-			end
-
-			-- Teleport the player
-			WorldPortalService.TeleportPlayer(player, teleportInfo.worldName, teleportInfo.placeId)
-
-			-- Clear the pending teleport
-			WorldPortalService.pendingTeleports[player.UserId] = nil
-		end
 		decision = Enum.ProductPurchaseDecision.PurchaseGranted
 	end
 

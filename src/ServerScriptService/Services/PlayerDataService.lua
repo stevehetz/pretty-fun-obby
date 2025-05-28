@@ -35,6 +35,8 @@ Local.TeleportEventInitialized = false
 Shared.ProfileLoaded = Instance.new("BindableEvent")
 
 function Shared.OnStart()
+	WorldPortalService.SetupPortals(Profiles)
+
 	Remotes.Start.OnServerEvent:Connect(function(player: Player)
 		-- print("PlayerDataService - Remotes.Start:OnServerEvent")
 		local data = Shared.GetState(player)
@@ -56,7 +58,7 @@ function Shared.OnStart()
 		end
 	end)
 
-	-- if no roblox studio
+	-- if not roblox studio
 	if not RunService:IsStudio() then
 		WorldPortalService.HandleWorldTeleportComplete.Event:Connect(
 			function(player: Player, state: PlayerData.PlayerData)
@@ -73,8 +75,6 @@ function Shared.OnStart()
 				-- Create a deep copy of the state to avoid cyclic references
 				local clientState = table.clone(state)
 				Remotes.SetData:FireClient(player, clientState)
-
-				WorldPortalService.SetupPortals()
 			end
 		)
 	end
@@ -180,42 +180,15 @@ function Local.CreateProfile(player: Player)
 	Local.CreateLeaderstats(player)
 
 	if RunService:IsStudio() then
-		-- print("PlayerDataService - In Roblox Studio, do not setup WorldPortalService")
-
-		-- print("PlayerDataService - CreateProfile - ProfileLoaded:Fire")
 		task.delay(1, function()
-			-- GlobalDataService.RecordFinish(player, profile.Data.finishes)
-			-- print("PlayerDataService - ProfileLoaded:Fire")
 			Shared.ProfileLoaded:Fire(player)
-			-- print("PlayerDataService - CreateProfile - Remotes.SetData:FireClient")
-
-			-- Create a deep copy of the data to avoid cyclic references
 			local clientData = table.clone(profile.Data)
 			Remotes.SetData:FireClient(player, clientData)
-
-			WorldPortalService.SetupPortals()
 		end)
-
-		-- task.delay(3, function()
-		-- 	local value = GlobalDataService.GetTopFinishers(player)
-		-- 	print("Top Finishers: ", value)
-		-- end)
 	end
-
-	-- New
 
 	-- Run this if not in roblox studio
 	if not RunService:IsStudio() then
-		-- print("PlayerDataService - In Roblox Studio, do not setup WorldPortalService")
-
-		-- Old
-		-- -- print("PlayerDataService - CreateProfile - ProfileLoaded:Fire")
-		-- Shared.ProfileLoaded:Fire(player)
-		-- -- print("PlayerDataService - CreateProfile - Remotes.SetData:FireClient")
-		-- Remotes.SetData:FireClient(player, profile.Data)
-
-		-- New
-
 		-- Pass the player and profile data to HandleWorldTeleport
 		WorldPortalService.HandleWorldTeleport(player, profile.Data)
 	end

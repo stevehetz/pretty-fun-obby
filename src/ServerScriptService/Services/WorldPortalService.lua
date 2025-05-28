@@ -133,7 +133,7 @@ function Shared.HandleWorldTeleport(player: Player, state: PlayerData.PlayerData
 	Shared.HandleWorldTeleportComplete:Fire(player, state)
 end
 
-function Shared.SetupPortals()
+function Shared.SetupPortals(profiles)
 	local WorldPortals = Workspace:FindFirstChild("WorldPortals")
 	if not WorldPortals then
 		return
@@ -171,35 +171,22 @@ function Shared.SetupPortals()
 
 					-- Set debounce for this player
 					playerDebounce[player.UserId] = true
-					print(
-						"WorldPortalService - playerDebounce[player.UserId]: "
-							.. tostring(playerDebounce[player.UserId])
-					)
-
-					print("WorldPortalService - worldName: " .. worldName)
 					local placeId = WorldsConfig.GetPlaceIdFromWorldName(worldName)
 					if not placeId then
 						playerDebounce[player.UserId] = nil -- Clear debounce if we exit early
 						return
 					end
 
-					-- If this is World 2 portal, check if purchase is required
-					if worldName == "World2" and REQUIRE_WORLD2_PURCHASE then
-						-- Get the product ID for "Teleport to World 2"
-						local productInfo = StoreConfig.GetStoreItemInfo("Teleport to World 2")
-						if productInfo then
-							print("WorldPortalService - Prompting purchase for World 2")
-
-							-- Store teleport info in the pendingTeleports table for later use when purchase completes
-							Local.pendingTeleports[player.UserId] = {
-								worldName = worldName,
-								placeId = placeId,
-							}
-
-							-- Prompt the purchase
-							MarketplaceService:PromptProductPurchase(player, productInfo.Id)
-
-							-- Reset the debounce after a delay
+					-- Can always teleport to World 1
+					if worldName ~= "World1" then
+						-- check if player owns premium world pass gamepass
+						-- Check if owns premium world pass
+						local state = profiles[player].Data
+						local worldPassInfo = StoreConfig.GetStoreItemInfo("Premium World Pass")
+						local ownsPremiumWorldPass = worldPassInfo
+							and state.gamepasses[tostring(worldPassInfo.Id)] ~= nil
+						if not ownsPremiumWorldPass then
+							MarketplaceService:PromptGamePassPurchase(player, worldPassInfo.Id)
 							task.delay(3, function()
 								if playerDebounce[player.UserId] then
 									playerDebounce[player.UserId] = nil
