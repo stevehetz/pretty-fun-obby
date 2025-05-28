@@ -128,6 +128,13 @@ function Local.AddStoreItemButtons()
 		end
 	end
 
+	-- Add World Pass
+	for _, item in ipairs(storeItems.Gamepasses) do
+		if item.IsPass then
+			Local.AddItemButton(item)
+		end
+	end
+
 	-- Add Abilities
 	for _, item in ipairs(storeItems.Gamepasses) do
 		if item.IsAbility then

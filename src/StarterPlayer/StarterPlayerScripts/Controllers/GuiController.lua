@@ -36,7 +36,6 @@ Shared.Guis = {
 	Setting = PlayerGui:WaitForChild("Settings"),
 	Skips = PlayerGui:WaitForChild("Skips"),
 	Rebirth = PlayerGui:WaitForChild("Rebirth"),
-	Pets = PlayerGui:WaitForChild("Pets"),
 	Shop = PlayerGui:WaitForChild("Shop"),
 }
 

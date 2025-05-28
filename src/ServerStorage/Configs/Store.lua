@@ -14,6 +14,7 @@ export type StoreItemInfo = {
 	IsSubscription: boolean?,
 	IsTool: boolean?,
 	IsPet: boolean?,
+	IsPass: boolean?,
 }
 
 local _store = {
@@ -61,6 +62,7 @@ local _store = {
 		-- },
 		{
 			Id = 1234640489, -- Premium World Pass
+			IsPass = true,
 		},
 	},
 

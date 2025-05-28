@@ -1,8 +1,10 @@
 local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage = game:GetService("ServerStorage")
 
 local PlayerDataService = require(script.Parent.PlayerDataService)
+local StoreConfig = require(ServerStorage.Configs.Store)
 local PlayerPets = Workspace:WaitForChild("PlayerPets")
 local PetsFolder = ReplicatedStorage:WaitForChild("Pets")
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
@@ -84,6 +86,11 @@ function Local.AddEquippedPets(player: Player, equippedPets: { [string]: boolean
 
 	for petName, isEquipped in pairs(equippedPets) do
 		if petName and isEquipped == true then
+			if not Local.IsPetInStore(petName) then
+				warn("Pet is not in store: " .. petName)
+				return
+			end
+
 			local pet = PetsFolder:WaitForChild(petName)
 			if not pet then
 				warn("Pet model not found in ReplicatedStorage: " .. petName)
@@ -94,6 +101,21 @@ function Local.AddEquippedPets(player: Player, equippedPets: { [string]: boolean
 			petClone.Parent = folder
 		end
 	end
+end
+
+function Local.IsPetInStore(petName: string): boolean
+	local store = StoreConfig.GetStore()
+	if not store then
+		return false
+	end
+
+	for _, pet in ipairs(store.Gamepasses) do
+		if pet.IsPet and pet.Name == petName then
+			return true
+		end
+	end
+
+	return false
 end
 
 return Shared
