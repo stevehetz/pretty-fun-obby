@@ -11,16 +11,14 @@ local Shared = {}
 
 -- Store the current leaderboard data
 Shared.FinishesLeaderboardData = {}
-Shared.TimesLeaderboardData = {}
-Shared.TopTwoTimesPerWorldData = {}
 Shared.LastRefreshTime = 0
 
 Shared.OnStart = function()
-	if not leaderboardsFolder then
-		return
-	end
+	-- if not leaderboardsFolder then
+	-- 	return
+	-- end
 
-	Shared.RefreshFinishesLeaderboard()
+	-- Shared.RefreshFinishesLeaderboard()
 end
 
 function Shared.RefreshFinishesLeaderboard()

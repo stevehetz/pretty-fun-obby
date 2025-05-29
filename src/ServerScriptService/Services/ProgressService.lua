@@ -53,17 +53,16 @@ function Shared.TouchCheckpoint(player: Player, checkpoint: SpawnLocation)
 	-- Process checkpoint logic
 	local newStage = tonumber(checkpoint.Parent.Name)
 	local playerStage = state.stage
-	local isNextStage = playerStage + 1 == newStage
 
-	if not isNextStage then
-		-- checkpointDebounce[debounceKey] = nil
+	-- Check if the player is already at or beyond this stage
+	if newStage <= playerStage then
 		return false
 	end
 
 	-- Update stage first before badge reward to prevent any race conditions
 	local action: PlayerDataService.UpdateStateAction = {
 		type = "UpdateStage",
-		amount = 1,
+		amount = newStage - playerStage,
 	}
 	PlayerDataService.UpdateState(player, action)
 
