@@ -25,7 +25,11 @@ function Shared.GetAllWorlds(): { WorldName }
 	local worlds = {}
 
 	for worldName, _ in pairs(PLACE_IDS) do
-		table.insert(worlds, worldName)
+		worlds[worldName] = {
+			Name = worldName,
+			DisplayName = DISPLAY_NAMES[worldName] or worldName,
+			PlaceId = PLACE_IDS[worldName],
+		}
 	end
 
 	return worlds

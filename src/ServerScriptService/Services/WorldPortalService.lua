@@ -11,9 +11,7 @@ local PlayerData = require(ReplicatedStorage.PlayerData)
 local WorldsConfig = require(ReplicatedStorage.Configs.Worlds)
 local TestConfig = require(ReplicatedStorage.Configs.Test)
 local StoreConfig = require(ServerStorage.Configs.Store)
-
--- Configuration flag to control whether World 2 requires purchase
-local REQUIRE_WORLD2_PURCHASE = false -- Set to true to re-enable purchase requirement
+local Remotes = ReplicatedStorage.Remotes
 
 local Local = {}
 local Shared = {}
@@ -23,6 +21,22 @@ Local.pendingTeleports = {}
 
 Shared.HandleWorldTeleportComplete = Instance.new("BindableEvent")
 Shared.HandleRebirth = Instance.new("BindableEvent")
+
+function Shared.OnStart()
+	Remotes.Teleport.OnServerEvent:Connect(function(player: Player, worldName: string)
+		if not player or not player:IsA("Player") then
+			return
+		end
+
+		local placeId = WorldsConfig.GetPlaceIdFromWorldName(worldName)
+		if not placeId then
+			warn("WorldPortalService - Invalid world name: " .. tostring(worldName))
+			return
+		end
+
+		Shared.TeleportPlayer(player, worldName, placeId)
+	end)
+end
 
 -- Scenarios (the below function is called for all of these)
 -- 1. Player is just joining the game, they are on world 1, no need to teleport

@@ -4,8 +4,10 @@ local Players = game:GetService("Players")
 
 local Player = Players.LocalPlayer
 
+local Remotes = ReplicatedStorage.Remotes
 local GetStoreItemInfoRF = ReplicatedStorage:WaitForChild("GetStoreItemInfoRF")
 
+local WorldsConfig = require(ReplicatedStorage.Configs.Worlds)
 local GuiController = require(script.Parent.Parent.GuiController)
 local StateController = require(script.Parent.Parent.StateController)
 
@@ -13,6 +15,7 @@ local Gui = GuiController.Guis.Worlds
 local PurchaseContainer = Gui.Frame.Main.Body.PurchaseContainer
 local PurchaseBtnTemplate = PurchaseContainer.Template
 local WorldListContainer = Gui.Frame.Main.Body.WorldListContainer
+local WorldBtnTemplate = WorldListContainer.Template
 local OpenButton = GuiController.Guis.Left.Frame.Worlds
 
 local Local = {}
@@ -51,11 +54,17 @@ function Shared.OnStart()
 	-- Get the world pass info from server
 	Local.GetWorldPassInfoFromServer()
 
-	-- Hide the store item button template
+	-- Hide the purchase item button template
 	PurchaseBtnTemplate.Visible = false
+
+	-- Hide the world button template
+	WorldBtnTemplate.Visible = false
 
 	-- Add the purchase buttons
 	Local.AddPurchaseButtons()
+
+	-- Add the world buttons
+	Local.AddWorldButtons()
 
 	-- Handle state updates
 	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
@@ -84,6 +93,26 @@ function Local.AddPurchaseButtons()
 	end
 
 	Local.AddPurchaseButton(worldPassInfo)
+end
+
+function Local.AddWorldButtons()
+	local worlds = WorldsConfig.GetAllWorlds()
+	if not worlds then
+		warn("No worlds available.")
+		return
+	end
+
+	for worldName, worldData in pairs(worlds) do
+		local button = WorldBtnTemplate:Clone()
+		button.Name = worldName
+		button.Visible = true
+		button.Text = worldData.DisplayName
+		button.Parent = WorldListContainer
+
+		worldData.IsWorldButton = true
+
+		Local.SetupItemClickHandler(worldData, button)
+	end
 end
 
 function Local.AddPurchaseButton(item)
@@ -166,6 +195,28 @@ function Local.HandleItemSelect(item)
 			MarketPlaceService:PromptGamePassPurchase(Player, item.Id)
 		end
 		return
+	end
+
+	if item.IsWorldButton then
+		local worldPassInfo = Local.GetWorldPassInfo()
+
+		if WorldsConfig.GetCurrentWorldName() == item.Name then
+			-- Already in the current world, no need to teleport
+			print("WorldsController - Already in world: " .. item.DisplayName)
+			return
+		end
+
+		local playerOwnsGamepass = state.gamepasses[tostring(worldPassInfo.Id)]
+		if not playerOwnsGamepass and item.Name ~= "World1" then
+			-- Prompt the purchase for the premium world pass
+			MarketPlaceService:PromptGamePassPurchase(Player, worldPassInfo.Id)
+			return
+		end
+
+		-- Close the dialog beofre teleporting
+		GuiController.ToggleGui(Gui)
+		-- Do the teleport
+		Remotes.Teleport:FireServer(item.Name)
 	end
 end
 
