@@ -1,9 +1,15 @@
 local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local MarketplaceService = game:GetService("MarketplaceService")
+local DebrisService = game:GetService("Debris")
+local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer
+
 local StateController = require(script.Parent.StateController)
 local GuiController = require(script.Parent.GuiController)
-local MarketplaceService = game:GetService("MarketplaceService")
+local SoundsConfig = require(ReplicatedStorage.Configs.Sounds)
 
 local GetStoreItemInfoRF = ReplicatedStorage:WaitForChild("GetStoreItemInfoRF")
 
@@ -84,8 +90,60 @@ end
 
 function Local.CollectCoin(index, coin)
 	Remotes.UpdateCoinCount:FireServer(coin)
-
+	Local.ShowWorldText()
 	coin:Destroy()
+	SoundsConfig.PlaySound("CoinCollect")
+end
+
+Local.ShowWorldText = function()
+	local char = player.Character
+	if not char then
+		return
+	end
+
+	local head = char:FindFirstChild("Head")
+	if not head then
+		return
+	end
+
+	local function floatText(head, txt, time)
+		-- 1) Billboard container
+		local bill = Instance.new("BillboardGui")
+		bill.Adornee = head
+		bill.AlwaysOnTop = true
+		bill.Size = UDim2.new(0, 200, 0, 50)
+		bill.StudsOffset = Vector3.new(0, 2, 0)
+		bill.Parent = head
+
+		-- 2) TextLabel child
+		local label = Instance.new("TextLabel")
+		label.Size = UDim2.new(1, 0, 1, 0)
+		label.BackgroundTransparency = 1
+		label.Text = txt
+		label.TextScaled = true
+		label.Font = Enum.Font.SourceSansBold
+		label.TextColor3 = Color3.new(1, 1, 1)
+		label.Parent = bill
+
+		-- auto-cleanup
+		DebrisService:AddItem(bill, time)
+
+		-- tween info
+		local ti = TweenInfo.new(time, Enum.EasingStyle.Linear)
+
+		-- 3a) float up
+		TweenService:Create(bill, ti, {
+			StudsOffset = Vector3.new(0, 8, 0),
+		}):Play()
+
+		-- 3b) fade out text
+		TweenService:Create(label, ti, {
+			TextTransparency = 1,
+		}):Play()
+	end
+
+	-- example usage: pop “+100” for 1.2 seconds
+	floatText(head, "+100", 1.2)
 end
 
 Local.ResetCollectedCoins = function()
