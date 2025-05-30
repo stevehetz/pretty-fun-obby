@@ -4,7 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GetCoinRankRF = ReplicatedStorage:WaitForChild("GetCoinRankRF")
 local leaderboardsFolder = Workspace:FindFirstChild("Leaderboards")
 
-local REFRESH_INTERVAL = 10 -- Refresh leaderboard every 60 seconds
+local REFRESH_INTERVAL = 60
 
 local Local = {}
 local Shared = {}
