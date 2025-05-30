@@ -21,12 +21,10 @@ function Shared.OnStart()
 	-- GlobalDataService.RemovePlayerFromTimeLeaderboard(TestConfig.Players.ra1n_test2)
 	-- GlobalDataService.RemovePlayerFromTimeLeaderboard(TestConfig.Players.ra1n_test1)
 	-- GlobalDataService.RemovePlayerFromTimeLeaderboard(TestConfig.Players.ra1n_test2)
-	-- Shared.PrintTopTimes()
+	-- Shared.AddTop20CoinRanks()
 	-- task.wait(3)
-	-- Shared.RecordOneFinish()
-	-- Shared.RecordOneTime()
-	-- Shared.AddTopTwentyFinishes()
-	-- Shared.AddTopTwentyTimes()
+	-- Shared.PrintCoinRank()
+	print(GlobalDataService.GetCoinRank())
 end
 
 Shared.IsDev = function()
@@ -37,33 +35,15 @@ Shared.IsDev = function()
 	return false
 end
 
-function Shared.PrintTopTimes()
-	local topTimes = GlobalDataService.GetTopTimes()
-	print("Top Times:")
-	for _, time in ipairs(topTimes) do
-		print("UserId: " .. time.userId .. ", Time: " .. time.time)
+function Shared.PrintCoinRank()
+	local topRanks = GlobalDataService.GetCoinRank()
+	print("Top Coin Ranks:")
+	for _, rank in ipairs(topRanks) do
+		print("UserId: " .. rank.userId .. ", Coins: " .. rank.coins)
 	end
 end
 
-function Shared.RecordOneFinish()
-	local player = {
-		UserId = 113111,
-	}
-	local finishCount = 14
-	GlobalDataService.RecordWorldFinish(player, finishCount)
-	print("Recorded finish for Player " .. player.UserId .. ": " .. finishCount)
-end
-
-function Shared.RecordOneTime()
-	local player = {
-		UserId = 2345340,
-	}
-	local time = 207
-	GlobalDataService.RecordTimeFinish(player, time)
-	print("Recorded time for Player " .. player.UserId .. ": " .. time .. " seconds")
-end
-
-function Shared.AddTopTwentyFinishes()
+function Shared.AddTop20CoinRanks()
 	-- Create a mock player table with UserId property
 	local function createMockPlayer(userId)
 		return {
@@ -76,47 +56,17 @@ function Shared.AddTopTwentyFinishes()
 		-- Create a mock player with a unique UserId (starting from 1000)
 		local mockPlayer = createMockPlayer(1000 + i)
 
-		-- Generate random finishes between 3-7
-		local randomFinishCount = math.random(3, 7)
+		-- Generate random coin count between 1000 and 1000000000
+		-- round to the nearest 1000 for cleaner numbers
+		local randomCoinCount = math.floor(1000 + math.random() * 999999000 / 1000) * 1000
 
 		-- Record the time finish
-		GlobalDataService.RecordWorldFinish(mockPlayer, randomFinishCount)
+		GlobalDataService.RecordCoinRank(mockPlayer, randomCoinCount)
 
 		-- Print for debugging
-		print("Added test finishes for Player " .. mockPlayer.UserId .. ": " .. randomFinishCount)
+		print("Added test coin rank for Player " .. mockPlayer.UserId .. ": " .. randomCoinCount .. " coins")
 	end
 
-	print("Added 20 test times to the leaderboard")
-	return true
-end
-
-function Shared.AddTopTwentyTimes()
-	-- Create a mock player table with UserId property
-	local function createMockPlayer(userId)
-		return {
-			UserId = userId,
-		}
-	end
-
-	-- Generate 20 random times between 3-7 minutes (180-420 seconds)
-	for i = 1, 20 do
-		-- Create a mock player with a unique UserId (starting from 1000)
-		local mockPlayer = createMockPlayer(1000 + i)
-
-		-- Generate a random time between 3-7 minutes (180-420 seconds)
-		local randomTime = 180 + math.random() * 240
-
-		-- Round to 2 decimal places for cleaner times
-		randomTime = math.floor(randomTime * 100) / 100
-
-		-- Record the time finish
-		GlobalDataService.RecordTimeFinish(mockPlayer, randomTime)
-
-		-- Print for debugging
-		print("Added test time for Player " .. mockPlayer.UserId .. ": " .. randomTime .. " seconds")
-	end
-
-	print("Added 20 test times to the leaderboard")
 	return true
 end
 

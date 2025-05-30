@@ -65,7 +65,6 @@ function Shared.OnStart()
 				print("PlayerDataService - HandleWorldTeleportComplete.Event:Connect")
 
 				-- print("PlayerDataService - HandleWorldTeleportComplete:Connect")
-				-- GlobalDataService.RecordFinish(player, profile.Data.finishes)
 
 				-- print("PlayerDataService - ProfileLoaded:Fire")
 				Shared.ProfileLoaded:Fire(player)

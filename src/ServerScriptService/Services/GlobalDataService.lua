@@ -8,34 +8,34 @@ local WorldsConfig = require(ReplicatedStorage.Configs.Worlds)
 
 -- Create appropriate DataStore prefix based on environment
 local StorePrefix = RunService:IsStudio() and "Test_" or "Prod_"
-local GlobalFinishersKey = StorePrefix .. "GlobalFinishers"
+local GlobalCoinRankKey = StorePrefix .. "GlobalCoinRank"
 local PlayerInfoKey = StorePrefix .. "PlayerInfo"
 
 local CurrentWorldName = WorldsConfig.GetCurrentWorldName()
 
-local GlobalFinishesStore = DataStoreService:GetOrderedDataStore(GlobalFinishersKey .. "_" .. CurrentWorldName)
+local GlobalCoinsStore = DataStoreService:GetOrderedDataStore(GlobalCoinRankKey .. "_" .. CurrentWorldName)
 
-local GlobalFinishesMemoryStore = MemoryStoreService:GetSortedMap(GlobalFinishersKey .. "_" .. CurrentWorldName)
+local GlobalCoinsMemoryStore = MemoryStoreService:GetSortedMap(GlobalCoinRankKey .. "_" .. CurrentWorldName)
 local PlayerInfoMemoryStore = MemoryStoreService:GetHashMap(PlayerInfoKey)
 
-local GetTopFinishersRF = Instance.new("RemoteFunction")
-GetTopFinishersRF.Name = "GetTopFinishers"
-GetTopFinishersRF.Parent = ReplicatedStorage
+local GetCoinRankRF = Instance.new("RemoteFunction")
+GetCoinRankRF.Name = "GetCoinRankRF"
+GetCoinRankRF.Parent = ReplicatedStorage
 
 local Local = {}
 local Shared = {}
 
 Shared.OnStart = function()
-	-- Get top finishes from the persistent store and cache them in MemoryStore
+	-- Get top coins from the persistent store and cache them in MemoryStore
 	task.spawn(function()
 		local success, pages = pcall(function()
-			return GlobalFinishesStore:GetSortedAsync(false, 20)
+			return GlobalCoinsStore:GetSortedAsync(false, 20)
 		end)
 
 		if success then
 			for _, entry in ipairs(pages:GetCurrentPage()) do
 				-- entry.key is userId string, entry.value is their count
-				GlobalFinishesMemoryStore:UpdateAsync(entry.key, function()
+				GlobalCoinsMemoryStore:UpdateAsync(entry.key, function()
 					return entry.value
 				end, 86400) -- Cache for 24 hours
 
@@ -49,8 +49,8 @@ Shared.OnStart = function()
 		end
 	end)
 
-	GetTopFinishersRF.OnServerInvoke = function()
-		return Shared.GetTopFinishers()
+	GetCoinRankRF.OnServerInvoke = function()
+		return Shared.GetCoinRank()
 	end
 end
 
@@ -94,9 +94,9 @@ function Local.FetchAndCachePlayerInfo(userId)
 	return playerInfo
 end
 
-function Shared.GetTopFinishers()
+function Shared.GetCoinRank()
 	local ok, list = pcall(function()
-		return GlobalFinishesMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, 20)
+		return GlobalCoinsMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, 40)
 	end)
 	if not ok then
 		return {}
@@ -105,7 +105,7 @@ function Shared.GetTopFinishers()
 	local out = {}
 	for _, entry in ipairs(list) do
 		local uid = tonumber(entry.key)
-		local finishes = entry.value
+		local coins = entry.value
 
 		-- Get player info (from cache if available)
 		local playerInfo = Local.FetchAndCachePlayerInfo(uid)
@@ -114,13 +114,15 @@ function Shared.GetTopFinishers()
 			userId = uid,
 			username = playerInfo.username,
 			avatarUrl = playerInfo.avatarUrl,
-			finishes = finishes,
+			coins = coins,
 		})
 	end
 
-	-- Ensure results are sorted by finishes in descending order
+	print(out)
+
+	-- Ensure results are sorted by coins in descending order
 	table.sort(out, function(a, b)
-		return a.finishes > b.finishes
+		return a.coins > b.coins
 	end)
 
 	-- Assign ranks based on sorted order
@@ -137,39 +139,37 @@ function Shared.GetTopFinishers()
 	return topEntries
 end
 
-function Shared.RecordWorldFinish(player, totalFinishes)
+function Shared.RecordCoinRank(player, totalCoins)
 	local key = tostring(player.UserId)
 
 	-- 1) Fetch the top 21 entries from the persistent store
 	local ok, pages = pcall(function()
-		return GlobalFinishesStore:GetSortedAsync(false, 20)
+		return GlobalCoinsStore:GetSortedAsync(false, 20)
 	end)
 	if not ok then
 		warn("Failed to fetch top entries for prune check:", pages)
 		return
 	end
 
-	-- print("new finish for " .. key .. ":", totalFinishes)
-
-	-- -- print top 20 finishes for debugging
+	-- -- print top 20 coins for debugging
 	-- for index, entry in ipairs(pages:GetCurrentPage()) do
 	-- 	print(index .. ":", entry.key, entry.value)
 	-- end
 
 	local isPlayerAlreadyOnLeaderboard = false
-	local currentFinishes = 0
+	local currentCoins = 0
 
 	for _, entry in ipairs(pages:GetCurrentPage()) do
 		if entry.key == key then
 			isPlayerAlreadyOnLeaderboard = true
-			currentFinishes = entry.value
+			currentCoins = entry.value
 			break
 		end
 	end
 
-	-- If player is already on leaderboard and has more finishes than the new value,
+	-- If player is already on leaderboard and has more coins than the new value,
 	-- don't update the leaderboard
-	if isPlayerAlreadyOnLeaderboard and totalFinishes <= currentFinishes then
+	if isPlayerAlreadyOnLeaderboard and totalCoins <= currentCoins then
 		return
 	end
 
@@ -179,33 +179,33 @@ function Shared.RecordWorldFinish(player, totalFinishes)
 	-- 2) Determine the cutoff: if fewer than 20 entries, anyone qualifies
 	local cutoff = (countEntries < 20) and -math.huge or entries[20].value
 
-	-- 3) Only set/prune if this player's totalFinishes beats the cutoff
-	if totalFinishes > cutoff then
+	-- 3) Only set/prune if this player's totalCoins beats the cutoff
+	if totalCoins > cutoff then
 		-- a) Write into the persistent OrderedDataStore
 		local sOk, sErr = pcall(function()
-			GlobalFinishesStore:SetAsync(key, totalFinishes)
+			GlobalCoinsStore:SetAsync(key, totalCoins)
 		end)
 		if not sOk then
-			warn("Failed to set global finish for", key, sErr)
+			warn("Failed to set global coin rank for", key, sErr)
 		end
 
 		-- First remove the key from MemoryStore to clear any cached value
 		pcall(function()
-			GlobalFinishesMemoryStore:RemoveAsync(key)
+			GlobalCoinsMemoryStore:RemoveAsync(key)
 		end)
 
 		-- Then add the new value
-		GlobalFinishesMemoryStore:UpdateAsync(key, function()
-			return totalFinishes
+		GlobalCoinsMemoryStore:UpdateAsync(key, function()
+			return totalCoins
 		end, 86400) -- Cache for 24 hours
 
 		-- b) Prune the now 21st entry if it exists from the persistent store and MemoryStore
 		if not isPlayerAlreadyOnLeaderboard and countEntries >= 20 and entries[20] then
 			pcall(function()
-				GlobalFinishesStore:RemoveAsync(entries[20].key)
+				GlobalCoinsStore:RemoveAsync(entries[20].key)
 			end)
 
-			GlobalFinishesMemoryStore:RemoveAsync(entries[20].key)
+			GlobalCoinsMemoryStore:RemoveAsync(entries[20].key)
 		end
 
 		-- 5) Pre-cache this player's info since they're on the leaderboard now

@@ -89,7 +89,7 @@ function Local.SetupCoinTouched(index, coin)
 end
 
 function Local.CollectCoin(index, coin)
-	Remotes.UpdateCoinCount:FireServer(coin)
+	Remotes.CoinCollected:FireServer(coin)
 	Local.ShowWorldText()
 	coin:Destroy()
 	SoundsConfig.PlaySound("CoinCollect")

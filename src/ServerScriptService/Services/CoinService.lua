@@ -2,13 +2,14 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local PlayerData = require(ReplicatedStorage.PlayerData)
 local PlayerDataService = require(script.Parent.PlayerDataService)
+local GlobalDataService = require(script.Parent.GlobalDataService)
 local Remotes = ReplicatedStorage.Remotes
 
 local Local = {}
 local Shared = {}
 
 function Shared.OnStart()
-	Remotes.PlayerData.UpdateCoinCount.OnServerEvent:Connect(Shared.OnUpdateCoinCount)
+	Remotes.CoinCollected.OnServerEvent:Connect(Shared.OnUpdateCoinCount)
 end
 
 function Shared.OnUpdateCoinCount(player: Player)
@@ -22,6 +23,8 @@ function Shared.OnUpdateCoinCount(player: Player)
 	}
 
 	PlayerDataService.UpdateState(player, action)
+
+	GlobalDataService.RecordCoinRank(player, state.coins)
 end
 
 return Shared
