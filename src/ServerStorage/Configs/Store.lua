@@ -61,8 +61,8 @@ local _store = {
 		-- 	IsPet = true,
 		-- },
 		{
-			Id = 1234640489, -- Premium World Pass
-			-- Id = 1236955711, -- Premium World Pass (Test)
+			Id = 1234640489, -- Teleport Pass
+			-- Id = 1238769315, -- Teleport Pass (Test)
 			IsPass = true,
 		},
 	},

@@ -21,30 +21,30 @@ local OpenButton = GuiController.Guis.Left.Frame.Worlds
 local Local = {}
 local Shared = {}
 
-Local.WorldPassInfoReady = false
+Local.TeleportPassInfoReady = false
 
-local _worldPassInfo = {}
+local _teleportPassInfo = {}
 
-function Local.GetWorldPassInfo()
-	while not Local.WorldPassInfoReady do
+function Local.GetTeleportPassInfo()
+	while not Local.TeleportPassInfoReady do
 		task.wait(0.1)
 	end
-	return _worldPassInfo
+	return _teleportPassInfo
 end
 
-function Local.GetWorldPassInfoFromServer()
-	local success, worldPassInfo = pcall(function()
-		return GetStoreItemInfoRF:InvokeServer("Premium World Pass")
+function Local.GetTeleportPassInfoFromServer()
+	local success, teleportPassInfo = pcall(function()
+		return GetStoreItemInfoRF:InvokeServer("Teleport Pass")
 	end)
 
 	if not success then
-		warn("Failed to get world pass data: ", worldPassInfo)
+		warn("Failed to get world pass data: ", teleportPassInfo)
 		return
 	end
 
-	Local.WorldPassInfoReady = true
+	Local.TeleportPassInfoReady = true
 
-	_worldPassInfo = worldPassInfo
+	_teleportPassInfo = teleportPassInfo
 end
 
 function Shared.OnStart()
@@ -52,7 +52,7 @@ function Shared.OnStart()
 	GuiController.SetupGui(Gui, OpenButton)
 
 	-- Get the world pass info from server
-	Local.GetWorldPassInfoFromServer()
+	Local.GetTeleportPassInfoFromServer()
 
 	-- Hide the purchase item button template
 	PurchaseBtnTemplate.Visible = false
@@ -75,24 +75,24 @@ function Shared.OnStart()
 end
 
 function Local.RefreshButtonStatuses()
-	local worldPassInfo = Local.GetWorldPassInfo()
-	if not worldPassInfo then
+	local teleportPassInfo = Local.GetTeleportPassInfo()
+	if not teleportPassInfo then
 		warn("No world pass info available.")
 		return
 	end
 
-	local worldPassButton = PurchaseContainer:FindFirstChild("PremiumWorldPass")
-	Local.SetupPurchaseBtnStatus(worldPassInfo, worldPassButton)
+	local teleportPassButton = PurchaseContainer:FindFirstChild("TeleportPass")
+	Local.SetupPurchaseBtnStatus(teleportPassInfo, teleportPassButton)
 end
 
 function Local.AddPurchaseButtons()
-	local worldPassInfo = Local.GetWorldPassInfo()
-	if not worldPassInfo then
+	local teleportPassInfo = Local.GetTeleportPassInfo()
+	if not teleportPassInfo then
 		warn("No world pass info available.")
 		return
 	end
 
-	Local.AddPurchaseButton(worldPassInfo)
+	Local.AddPurchaseButton(teleportPassInfo)
 end
 
 function Local.AddWorldButtons()
@@ -188,17 +188,17 @@ end
 function Local.HandleItemSelect(item)
 	local state = StateController.GetState()
 
-	if item.Name == "Premium World Pass" then
+	if item.Name == "Teleport Pass" then
 		local playerOwnsGamepass = state.gamepasses[tostring(item.Id)]
 		if not playerOwnsGamepass then
-			-- Prompt the purchase for the premium world pass
+			-- Prompt the purchase for the teleport pass
 			MarketPlaceService:PromptGamePassPurchase(Player, item.Id)
 		end
 		return
 	end
 
 	if item.IsWorldButton then
-		local worldPassInfo = Local.GetWorldPassInfo()
+		local teleportPassInfo = Local.GetTeleportPassInfo()
 
 		if WorldsConfig.GetCurrentWorldName() == item.Name then
 			-- Already in the current world, no need to teleport
@@ -206,10 +206,10 @@ function Local.HandleItemSelect(item)
 			return
 		end
 
-		local playerOwnsGamepass = state.gamepasses[tostring(worldPassInfo.Id)]
+		local playerOwnsGamepass = state.gamepasses[tostring(teleportPassInfo.Id)]
 		if not playerOwnsGamepass and item.Name ~= "World1" then
-			-- Prompt the purchase for the premium world pass
-			MarketPlaceService:PromptGamePassPurchase(Player, worldPassInfo.Id)
+			-- Prompt the purchase for the teleport pass
+			MarketPlaceService:PromptGamePassPurchase(Player, teleportPassInfo.Id)
 			return
 		end
 

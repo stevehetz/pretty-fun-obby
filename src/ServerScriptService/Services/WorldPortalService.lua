@@ -193,14 +193,14 @@ function Shared.SetupPortals(profiles)
 
 					-- Can always teleport to World 1
 					if worldName ~= "World1" then
-						-- check if player owns premium world pass gamepass
-						-- Check if owns premium world pass
+						-- check if player owns teleport pass gamepass
+						-- Check if owns teleport pass
 						local state = profiles[player].Data
-						local worldPassInfo = StoreConfig.GetStoreItemInfo("Premium World Pass")
-						local ownsPremiumWorldPass = worldPassInfo
-							and state.gamepasses[tostring(worldPassInfo.Id)] ~= nil
-						if not ownsPremiumWorldPass then
-							MarketplaceService:PromptGamePassPurchase(player, worldPassInfo.Id)
+						local teleportPassInfo = StoreConfig.GetStoreItemInfo("Teleport Pass")
+						local ownsTeleportPass = teleportPassInfo
+							and state.gamepasses[tostring(teleportPassInfo.Id)] ~= nil
+						if not ownsTeleportPass then
+							MarketplaceService:PromptGamePassPurchase(player, teleportPassInfo.Id)
 							task.delay(3, function()
 								if playerDebounce[player.UserId] then
 									playerDebounce[player.UserId] = nil
