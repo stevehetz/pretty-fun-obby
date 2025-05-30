@@ -62,7 +62,7 @@ local _store = {
 		-- },
 		{
 			Id = 1234640489, -- Teleport Pass
-			-- Id = 1238769315, -- Teleport Pass (Test)
+			-- Id = 1237996525, -- Teleport Pass (Test)
 			IsPass = true,
 		},
 	},

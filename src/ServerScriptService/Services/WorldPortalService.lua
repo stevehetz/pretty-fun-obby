@@ -196,10 +196,12 @@ function Shared.SetupPortals(profiles)
 						-- check if player owns teleport pass gamepass
 						-- Check if owns teleport pass
 						local state = profiles[player].Data
+
+						local ownsOneTimePass = state.oneTimePass
 						local teleportPassInfo = StoreConfig.GetStoreItemInfo("Teleport Pass")
 						local ownsTeleportPass = teleportPassInfo
 							and state.gamepasses[tostring(teleportPassInfo.Id)] ~= nil
-						if not ownsTeleportPass then
+						if not ownsOneTimePass and not ownsTeleportPass then
 							MarketplaceService:PromptGamePassPurchase(player, teleportPassInfo.Id)
 							task.delay(3, function()
 								if playerDebounce[player.UserId] then
@@ -265,16 +267,32 @@ function Shared.SetupPortals(profiles)
 end
 
 function Shared.TeleportPlayer(player: Player, worldName: string, placeId: number)
-	local action = {
+	local PlayerDataService = require(ServerScriptService.Services.PlayerDataService)
+
+	if worldName ~= "World1" then
+		-- Set one time pass to false incase this was used
+		local oneTimePassAction = {
+			type = "UpdateOneTimePass",
+			value = false,
+		}
+
+		PlayerDataService.UpdateState(player, oneTimePassAction)
+	end
+
+	local updateTeleportingAction = {
 		type = "UpdateTeleporting",
 		world = worldName,
 		origin = "Portal",
 	}
-	print("WorldPortalService - TeleportPlayer - action: ", action.type, action.world, action.origin)
+	print(
+		"WorldPortalService - TeleportPlayer - action: ",
+		updateTeleportingAction.type,
+		updateTeleportingAction.world,
+		updateTeleportingAction.origin
+	)
 
 	-- Use the UpdateState function from PlayerDataService to ensure the state is updated in the profile
-	local PlayerDataService = require(ServerScriptService.Services.PlayerDataService)
-	PlayerDataService.UpdateState(player, action)
+	PlayerDataService.UpdateState(player, updateTeleportingAction)
 
 	task.spawn(function()
 		-- Attempt to teleport the player

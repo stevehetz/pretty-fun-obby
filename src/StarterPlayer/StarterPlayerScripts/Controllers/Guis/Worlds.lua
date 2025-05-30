@@ -21,6 +21,16 @@ local OpenButton = GuiController.Guis.Left.Frame.Worlds
 local Local = {}
 local Shared = {}
 
+Local.CoinsImage = "rbxassetid://72795389100428"
+
+Local.OneTimeTeleportPass = {
+	Name = "OneTimeTeleportPass",
+	DisplayName = "One Time Pass",
+	Image = "rbxassetid://139760016792213",
+	Currency = "Coins",
+	Price = 1000,
+}
+
 Local.TeleportPassInfoReady = false
 
 local _teleportPassInfo = {}
@@ -71,6 +81,11 @@ function Shared.OnStart()
 		if action.type == "UpdateGamepass" then
 			Local.RefreshButtonStatuses()
 		end
+
+		if action.type == "UpdateOneTimePass" then
+			print("One-time pass updated, refreshing button statuses.")
+			Local.RefreshButtonStatuses()
+		end
 	end)
 end
 
@@ -83,6 +98,9 @@ function Local.RefreshButtonStatuses()
 
 	local teleportPassButton = PurchaseContainer:FindFirstChild("TeleportPass")
 	Local.SetupPurchaseBtnStatus(teleportPassInfo, teleportPassButton)
+
+	local oneTimePassButton = PurchaseContainer:FindFirstChild(Local.OneTimeTeleportPass.Name)
+	Local.SetupPurchaseBtnStatus(Local.OneTimeTeleportPass, oneTimePassButton)
 end
 
 function Local.AddPurchaseButtons()
@@ -93,6 +111,7 @@ function Local.AddPurchaseButtons()
 	end
 
 	Local.AddPurchaseButton(teleportPassInfo)
+	Local.AddPurchaseButton(Local.OneTimeTeleportPass)
 end
 
 function Local.AddWorldButtons()
@@ -111,6 +130,11 @@ function Local.AddWorldButtons()
 
 		worldData.IsWorldButton = true
 
+		if WorldsConfig.GetCurrentWorldName() == worldName then
+			button.BackgroundColor3 = Color3.fromRGB(154, 168, 194)
+			button.UIStroke.Color = Color3.fromRGB(86, 130, 159)
+		end
+
 		Local.SetupItemClickHandler(worldData, button)
 	end
 end
@@ -119,8 +143,11 @@ function Local.AddPurchaseButton(item)
 	local button = PurchaseBtnTemplate:Clone()
 	button.Name = item.Name:gsub(" ", "")
 	button.Visible = true
-	button.NameLabel.Text = item.Name
+	button.NameLabel.Text = item.DisplayName or item.Name
 	button.Parent = PurchaseContainer
+	if item.Image then
+		button.Icon.ImageLabel.Image = item.Image
+	end
 	Local.SetupPurchaseBtnStatus(item, button)
 	Local.SetupItemClickHandler(item, button)
 end
@@ -130,18 +157,29 @@ function Local.SetupPurchaseBtnStatus(item, button)
 	local statusText = statusFrame:FindFirstChild("StatusText")
 	local statusImage = statusFrame:FindFirstChild("StatusImage")
 
-	local state = StateController.GetState()
-	local playerOwnsGamepass = state.gamepasses[tostring(item.Id)]
 	statusText.TextColor3 = Color3.fromRGB(52, 52, 52)
 	statusFrame.UIStroke.Color = Color3.fromRGB(21, 97, 159)
 	statusFrame.BackgroundColor3 = Color3.fromRGB(202, 221, 255)
 	button.Icon.UIStroke.Color = Color3.fromRGB(21, 97, 159)
-	if playerOwnsGamepass then
+
+	local ownsItem = false
+	if item.IsGamepass then
+		local state = StateController.GetState()
+		ownsItem = state.gamepasses[tostring(item.Id)]
+	end
+
+	if item.Name == Local.OneTimeTeleportPass.Name then
+		local state = StateController.GetState()
+		ownsItem = state.oneTimePass
+	end
+
+	if ownsItem then
 		statusImage.Visible = false
 		statusText.Text = "Owned"
 	else
-		statusImage.Visible = true
+		statusImage.Image = item.Currency == "Coins" and Local.CoinsImage or item.Image
 		statusText.Text = item.Price
+		statusImage.Visible = true
 	end
 end
 
@@ -198,25 +236,42 @@ function Local.HandleItemSelect(item)
 	end
 
 	if item.IsWorldButton then
-		local teleportPassInfo = Local.GetTeleportPassInfo()
-
 		if WorldsConfig.GetCurrentWorldName() == item.Name then
 			-- Already in the current world, no need to teleport
 			print("WorldsController - Already in world: " .. item.DisplayName)
 			return
 		end
 
+		local isWorld1 = item.Name == "World1"
+		local playerOwnsOneTimePass = state.oneTimePass
+		local teleportPassInfo = Local.GetTeleportPassInfo()
 		local playerOwnsGamepass = state.gamepasses[tostring(teleportPassInfo.Id)]
-		if not playerOwnsGamepass and item.Name ~= "World1" then
-			-- Prompt the purchase for the teleport pass
-			MarketPlaceService:PromptGamePassPurchase(Player, teleportPassInfo.Id)
+
+		if isWorld1 or playerOwnsOneTimePass or playerOwnsGamepass then
+			-- Player can teleport to the world
+			GuiController.ToggleGui(Gui)
+			Remotes.Teleport:FireServer(item.Name)
 			return
 		end
 
-		-- Close the dialog beofre teleporting
-		GuiController.ToggleGui(Gui)
-		-- Do the teleport
-		Remotes.Teleport:FireServer(item.Name)
+		-- Prompt the purchase for the teleport pass
+		MarketPlaceService:PromptGamePassPurchase(Player, teleportPassInfo.Id)
+	end
+
+	if item.Name == Local.OneTimeTeleportPass.Name then
+		-- Check if player owns Teleport Pass
+		local teleportPassInfo = Local.GetTeleportPassInfo()
+		local ownsTeleportPass = state.gamepasses[tostring(teleportPassInfo.Id)]
+
+		if ownsTeleportPass then
+			print("Player owns teleport pass, do not purchase one-time pass.")
+			return
+		end
+
+		local playerOwnsOneTimePass = state.oneTimePass
+		if not playerOwnsOneTimePass then
+			Remotes.PlayerData.OneTimePass:FireServer(Local.OneTimeTeleportPass.Price)
+		end
 	end
 end
 

@@ -55,6 +55,9 @@ export type UpdateStateAction = {
 } | {
 	type: "UpdateCoinCount",
 	value: number?,
+} | {
+	type: "UpdateOneTimePass",
+	value: boolean,
 }
 
 return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
@@ -108,6 +111,8 @@ return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
 			playerData.coins = 0
 		end
 		playerData.coins += action.value or COIN_VALUE
+	elseif action.type == "UpdateOneTimePass" then
+		playerData.oneTimePass = action.value
 	else
 		error("Invalid action type: " .. tostring(action.type))
 	end

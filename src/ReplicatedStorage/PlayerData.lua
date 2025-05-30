@@ -25,6 +25,7 @@ export type PlayerData = {
 	equippedPets: {
 		[string]: boolean,
 	},
+	oneTimePass: boolean?,
 }
 
 local Worlds = { "World1", "World2", "World3" }
@@ -58,6 +59,7 @@ local DEFAULT_PLAYER_DATA: PlayerData = {
 	currentWorld = Worlds[1],
 	worldFinishes = WorldFinishes,
 	equippedPets = {},
+	oneTimePass = false,
 }
 
 local Shared = {}
