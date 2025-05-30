@@ -23,7 +23,6 @@ function Shared.OnUpdateCoinCount(player: Player)
 	}
 
 	PlayerDataService.UpdateState(player, action)
-
 	GlobalDataService.RecordCoinRank(player, state.coins)
 end
 

@@ -115,10 +115,10 @@ function Local.InitState(player: Player)
 	state.stage = 0
 
 	-- state.oneTimePass = false -- Reset one-time pass
-	-- state.coins = 2000
 
 	-- get player naem
 	if TestConfig.IsDev(player.Name) then
+		state.coins = 0
 		state.skips.amount = 2000
 	end
 end

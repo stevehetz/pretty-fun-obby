@@ -6,6 +6,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local PlayerDataService = require(script.Parent.PlayerDataService)
 local ToolsService = require(script.Parent.ToolsService)
 local PetService = require(script.Parent.PetService)
+local GlobalDataService = require(script.Parent.GlobalDataService)
 local StoreConfig = require(ServerStorage.Configs.Store)
 local BadgesConfig = require(ReplicatedStorage.Configs.Badges)
 local Remotes = ReplicatedStorage.Remotes
@@ -56,12 +57,12 @@ function Shared.OnStart()
 	MarketplaceService.PromptGamePassPurchaseFinished:Connect(Local.PurchaseGamepass)
 	MarketplaceService.ProcessReceipt = Local.PurchaseProduct
 
-	Players.UserSubscriptionStatusChanged:Connect(Local.ProcessSubscription)
+	-- Players.UserSubscriptionStatusChanged:Connect(Local.ProcessSubscription)
 
 	PlayerDataService.ProfileLoaded.Event:Connect(function(player: Player)
 		task.spawn(function()
 			Local.ProcessGamepassPurchasedFromWebsite(player)
-			Local.ProcessSubscription(player, StoreConfig.GetStore().Subscriptions[1].Id)
+			-- Local.ProcessSubscription(player, StoreConfig.GetStore().Subscriptions[1].Id)
 		end)
 	end)
 end
@@ -172,6 +173,7 @@ function Local.PurchaseProduct(receiptInfo: ReceiptInfo)
 			value = 1000,
 		}
 		PlayerDataService.UpdateState(player, action)
+		GlobalDataService.RecordCoinRank(player, state.coins)
 		decision = Enum.ProductPurchaseDecision.PurchaseGranted
 	end
 
@@ -180,36 +182,36 @@ function Local.PurchaseProduct(receiptInfo: ReceiptInfo)
 	return decision
 end
 
-function Local.ProcessSubscription(player: Player, id: string)
-	local state = PlayerDataService.GetState(player)
-	if not state then
-		return
-	end
+-- function Local.ProcessSubscription(player: Player, id: string)
+-- 	local state = PlayerDataService.GetState(player)
+-- 	if not state then
+-- 		return
+-- 	end
 
-	local isSubscribed = Local.IsPlayerSubscribed(player, id)
+-- 	local isSubscribed = Local.IsPlayerSubscribed(player, id)
 
-	local isDataSynced = isSubscribed == state.vip
+-- 	local isDataSynced = isSubscribed == state.vip
 
-	if not isDataSynced then
-		local action: PlayerDataService.UpdateStateAction = {
-			type = "UpdateVip",
-			value = isSubscribed,
-		}
-		PlayerDataService.UpdateState(player, action)
-	end
-	Remotes.UpdateVip:FireAllClients(player, isSubscribed)
+-- 	if not isDataSynced then
+-- 		local action: PlayerDataService.UpdateStateAction = {
+-- 			type = "UpdateVip",
+-- 			value = isSubscribed,
+-- 		}
+-- 		PlayerDataService.UpdateState(player, action)
+-- 	end
+-- 	Remotes.UpdateVip:FireAllClients(player, isSubscribed)
 
-	if isSubscribed then
-		BadgesConfig.RewardBadge(player, "Supporter")
-	end
-end
+-- 	if isSubscribed then
+-- 		BadgesConfig.RewardBadge(player, "Supporter")
+-- 	end
+-- end
 
-function Local.IsPlayerSubscribed(player: Player, id: string): boolean
-	local doesOwnSubscription = Local.RetryUntilSuccess(function()
-		return MarketplaceService:GetUserSubscriptionStatusAsync(player, id).IsSubscribed
-	end, "Failed to check subscription status:")()
+-- function Local.IsPlayerSubscribed(player: Player, id: string): boolean
+-- 	local doesOwnSubscription = Local.RetryUntilSuccess(function()
+-- 		return MarketplaceService:GetUserSubscriptionStatusAsync(player, id).IsSubscribed
+-- 	end, "Failed to check subscription status:")()
 
-	return doesOwnSubscription
-end
+-- 	return doesOwnSubscription
+-- end
 
 return Shared

@@ -4,7 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GetCoinRankRF = ReplicatedStorage:WaitForChild("GetCoinRankRF")
 local leaderboardsFolder = Workspace:FindFirstChild("Leaderboards")
 
-local REFRESH_INTERVAL = 60 -- Refresh leaderboard every 60 seconds
+local REFRESH_INTERVAL = 10 -- Refresh leaderboard every 60 seconds
 
 local Local = {}
 local Shared = {}
@@ -13,8 +13,19 @@ local Shared = {}
 Shared.CoinRankLeaderboardData = {}
 Shared.LastRefreshTime = 0
 
+-- Function to start periodic refresh
+function Local.StartPeriodicRefresh()
+	task.spawn(function()
+		while true do
+			task.wait(REFRESH_INTERVAL)
+			Shared.RefreshCoinRankLeaderboard()
+		end
+	end)
+end
+
 Shared.OnStart = function()
 	Shared.RefreshCoinRankLeaderboard()
+	Local.StartPeriodicRefresh()
 end
 
 function Shared.RefreshCoinRankLeaderboard()

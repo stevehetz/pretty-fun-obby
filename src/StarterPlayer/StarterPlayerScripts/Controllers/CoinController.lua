@@ -14,7 +14,7 @@ local SoundsConfig = require(ReplicatedStorage.Configs.Sounds)
 local GetStoreItemInfoRF = ReplicatedStorage:WaitForChild("GetStoreItemInfoRF")
 
 local Player = Players.LocalPlayer
-local Remotes = ReplicatedStorage.Remotes.PlayerData
+local Remotes = ReplicatedStorage.Remotes
 
 local Gui = GuiController.Guis.TopTwo.Frame.Coins
 local CoinsLabel = Gui.CoinsLabel

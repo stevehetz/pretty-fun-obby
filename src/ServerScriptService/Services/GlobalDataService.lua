@@ -160,8 +160,6 @@ function Shared.GetCoinRank()
 		})
 	end
 
-	print(out)
-
 	-- Ensure results are sorted by coins in descending order
 	table.sort(out, function(a, b)
 		return a.coins > b.coins
