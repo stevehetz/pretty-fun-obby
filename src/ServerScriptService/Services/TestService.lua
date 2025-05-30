@@ -24,7 +24,15 @@ function Shared.OnStart()
 	-- Shared.AddTop20CoinRanks()
 	-- task.wait(3)
 	-- Shared.PrintCoinRank()
-	print(GlobalDataService.GetCoinRank())
+	-- Shared.AddTop20CoinRanks()
+	-- print(GlobalDataService.GetCoinRank())
+	-- task.wait(3)
+	-- GlobalDataService.ClearGlobalStores()
+	-- print(GlobalDataService.GetCoinRank())
+	-- task.wait(3)
+	-- Shared.AddTop20CoinRanks()
+	-- task.wait(3)
+	-- print(GlobalDataService.GetCoinRank())
 end
 
 Shared.IsDev = function()
@@ -56,9 +64,8 @@ function Shared.AddTop20CoinRanks()
 		-- Create a mock player with a unique UserId (starting from 1000)
 		local mockPlayer = createMockPlayer(1000 + i)
 
-		-- Generate random coin count between 1000 and 1000000000
-		-- round to the nearest 1000 for cleaner numbers
-		local randomCoinCount = math.floor(1000 + math.random() * 999999000 / 1000) * 1000
+		-- Generate random coin count between 100 and 10000, with a step of 100
+		local randomCoinCount = math.random(1, 100) * 100
 
 		-- Record the time finish
 		GlobalDataService.RecordCoinRank(mockPlayer, randomCoinCount)

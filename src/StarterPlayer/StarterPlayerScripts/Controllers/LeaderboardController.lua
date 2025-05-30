@@ -14,10 +14,6 @@ Shared.CoinRankLeaderboardData = {}
 Shared.LastRefreshTime = 0
 
 Shared.OnStart = function()
-	-- if not leaderboardsFolder then
-	-- 	return
-	-- end
-
 	Shared.RefreshCoinRankLeaderboard()
 end
 

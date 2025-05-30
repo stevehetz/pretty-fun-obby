@@ -11,11 +11,8 @@ local StorePrefix = RunService:IsStudio() and "Test_" or "Prod_"
 local GlobalCoinRankKey = StorePrefix .. "GlobalCoinRank"
 local PlayerInfoKey = StorePrefix .. "PlayerInfo"
 
-local CurrentWorldName = WorldsConfig.GetCurrentWorldName()
-
-local GlobalCoinsStore = DataStoreService:GetOrderedDataStore(GlobalCoinRankKey .. "_" .. CurrentWorldName)
-
-local GlobalCoinsMemoryStore = MemoryStoreService:GetSortedMap(GlobalCoinRankKey .. "_" .. CurrentWorldName)
+local GlobalCoinRankDataStore = DataStoreService:GetOrderedDataStore(GlobalCoinRankKey)
+local GlobalCoinRankMemoryStore = MemoryStoreService:GetSortedMap(GlobalCoinRankKey)
 local PlayerInfoMemoryStore = MemoryStoreService:GetHashMap(PlayerInfoKey)
 
 local GetCoinRankRF = Instance.new("RemoteFunction")
@@ -29,13 +26,13 @@ Shared.OnStart = function()
 	-- Get top coins from the persistent store and cache them in MemoryStore
 	task.spawn(function()
 		local success, pages = pcall(function()
-			return GlobalCoinsStore:GetSortedAsync(false, 20)
+			return GlobalCoinRankDataStore:GetSortedAsync(false, 20)
 		end)
 
 		if success then
 			for _, entry in ipairs(pages:GetCurrentPage()) do
 				-- entry.key is userId string, entry.value is their count
-				GlobalCoinsMemoryStore:UpdateAsync(entry.key, function()
+				GlobalCoinRankMemoryStore:UpdateAsync(entry.key, function()
 					return entry.value
 				end, 86400) -- Cache for 24 hours
 
@@ -52,6 +49,51 @@ Shared.OnStart = function()
 	GetCoinRankRF.OnServerInvoke = function()
 		return Shared.GetCoinRank()
 	end
+end
+
+-- Function to clear all entries from both global stores
+function Shared.ClearGlobalStores()
+	-- 1. Clear the DataStores
+	-- We need to fetch all entries and remove them one by one
+	local function clearOrderedDataStore(store, memoryStore, storeName)
+		local success, pages = pcall(function()
+			return store:GetSortedAsync(false, 100) -- Get up to 100 entries
+		end)
+
+		if success then
+			local entries = pages:GetCurrentPage()
+
+			local successCount = 0
+			local failCount = 0
+
+			for _, entry in ipairs(entries) do
+				-- Remove from DataStore
+				local dsSuccess = pcall(function()
+					store:RemoveAsync(entry.key)
+				end)
+
+				-- Remove from MemoryStore
+				local msSuccess = pcall(function()
+					memoryStore:RemoveAsync(entry.key)
+				end)
+
+				if dsSuccess and msSuccess then
+					successCount = successCount + 1
+				else
+					failCount = failCount + 1
+				end
+			end
+			print(
+				"Cleared " .. successCount .. " entries from " .. storeName .. ". " .. failCount .. " entries failed."
+			)
+		else
+			warn("Failed to fetch entries for clearing " .. storeName .. ":", pages)
+		end
+	end
+
+	clearOrderedDataStore(GlobalCoinRankDataStore, GlobalCoinRankMemoryStore, "GlobalCoinRank")
+
+	return true
 end
 
 -- Helper function to fetch and cache player info
@@ -96,7 +138,7 @@ end
 
 function Shared.GetCoinRank()
 	local ok, list = pcall(function()
-		return GlobalCoinsMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, 40)
+		return GlobalCoinRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, 40)
 	end)
 	if not ok then
 		return {}
@@ -144,7 +186,7 @@ function Shared.RecordCoinRank(player, totalCoins)
 
 	-- 1) Fetch the top 21 entries from the persistent store
 	local ok, pages = pcall(function()
-		return GlobalCoinsStore:GetSortedAsync(false, 20)
+		return GlobalCoinRankDataStore:GetSortedAsync(false, 20)
 	end)
 	if not ok then
 		warn("Failed to fetch top entries for prune check:", pages)
@@ -183,7 +225,7 @@ function Shared.RecordCoinRank(player, totalCoins)
 	if totalCoins > cutoff then
 		-- a) Write into the persistent OrderedDataStore
 		local sOk, sErr = pcall(function()
-			GlobalCoinsStore:SetAsync(key, totalCoins)
+			GlobalCoinRankDataStore:SetAsync(key, totalCoins)
 		end)
 		if not sOk then
 			warn("Failed to set global coin rank for", key, sErr)
@@ -191,21 +233,21 @@ function Shared.RecordCoinRank(player, totalCoins)
 
 		-- First remove the key from MemoryStore to clear any cached value
 		pcall(function()
-			GlobalCoinsMemoryStore:RemoveAsync(key)
+			GlobalCoinRankMemoryStore:RemoveAsync(key)
 		end)
 
 		-- Then add the new value
-		GlobalCoinsMemoryStore:UpdateAsync(key, function()
+		GlobalCoinRankMemoryStore:UpdateAsync(key, function()
 			return totalCoins
 		end, 86400) -- Cache for 24 hours
 
 		-- b) Prune the now 21st entry if it exists from the persistent store and MemoryStore
 		if not isPlayerAlreadyOnLeaderboard and countEntries >= 20 and entries[20] then
 			pcall(function()
-				GlobalCoinsStore:RemoveAsync(entries[20].key)
+				GlobalCoinRankDataStore:RemoveAsync(entries[20].key)
 			end)
 
-			GlobalCoinsMemoryStore:RemoveAsync(entries[20].key)
+			GlobalCoinRankMemoryStore:RemoveAsync(entries[20].key)
 		end
 
 		-- 5) Pre-cache this player's info since they're on the leaderboard now
