@@ -118,7 +118,7 @@ function Local.InitState(player: Player)
 
 	-- get player naem
 	if TestConfig.IsDev(player.Name) then
-		state.coins = 0
+		-- state.coins = 0
 		state.skips.amount = 2000
 	end
 end

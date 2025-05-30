@@ -20,11 +20,11 @@ local Gui = GuiController.Guis.TopTwo.Frame.Coins
 local CoinsLabel = Gui.CoinsLabel
 local PurchaseButton = Gui.PurchaseButton
 
-local CoinModel = ReplicatedStorage.Assets.Coin
-local CollectedCoins = {}
-
 local Local = {}
 local Shared = {}
+
+-- Table to track which coins have been collected by this player
+Local.CollectedCoins = {}
 
 function Shared.OnStart()
 	Local.UpdateCoinsGui()
@@ -44,7 +44,7 @@ function Shared.OnStart()
 
 			if state.stage == 0 then
 				-- Reset the collected coins
-				Local.ResetCollectedCoins()
+				Local.ResetCollectedCoin()
 			end
 		end
 	end)
@@ -73,25 +73,47 @@ function Local.SetupCoinsTouched()
 end
 
 function Local.SetupCoinTouched(index, coin)
-	coin.Touched:Connect(function(hit)
-		if CollectedCoins[index] then
+	-- Create a player-specific coin instance
+	local playerCoin = coin:Clone()
+	playerCoin.Name = "PlayerCoin_" .. index
+	playerCoin.Position = coin.Position
+	playerCoin.Parent = coin.Parent
+
+	-- Make the original coin invisible to this player
+	coin.LocalTransparencyModifier = 1
+
+	-- Set up touch detection for the player's character
+	local touchConnection
+	touchConnection = playerCoin.Touched:Connect(function(hit)
+		local character = player.Character
+		if not character then
 			return
 		end
 
-		CollectedCoins[index] = {
-			CFrame = coin.CFrame,
-		}
+		-- Check if the player's character touched the coin
+		if hit:IsDescendantOf(character) then
+			-- Disconnect the touch event to prevent multiple triggers
+			touchConnection:Disconnect()
 
-		if hit:IsDescendantOf(Player.Character) then
-			Local.CollectCoin(index, coin)
+			-- Hide the coin for this player only
+			playerCoin.Transparency = 1
+			playerCoin.CanCollide = false
+
+			-- Track that this coin has been collected
+			Local.CollectedCoins[index] = {
+				coin = coin,
+				playerCoin = playerCoin,
+			}
+
+			-- Call the collect coin function
+			Local.CollectCoin()
 		end
 	end)
 end
 
-function Local.CollectCoin(index, coin)
-	Remotes.CoinCollected:FireServer(coin)
+function Local.CollectCoin()
+	Remotes.CoinCollected:FireServer()
 	Local.ShowWorldText()
-	coin:Destroy()
 	SoundsConfig.PlaySound("CoinCollect")
 end
 
@@ -146,19 +168,28 @@ Local.ShowWorldText = function()
 	floatText(head, "+100", 1.2)
 end
 
-Local.ResetCollectedCoins = function()
-	for index, coin in pairs(CollectedCoins) do
-		if coin then
-			local coinModel = CoinModel:Clone()
-			coinModel.Parent = Workspace.Coins
-			coinModel.CFrame = coin.CFrame
-			coinModel.Name = "Coin"
+Local.ResetCollectedCoin = function()
+	-- Reset all collected coins
+	for index, coinData in pairs(Local.CollectedCoins) do
+		local originalCoin = coinData.coin
+		local playerCoin = coinData.playerCoin
 
-			Local.SetupCoinTouched(index, coinModel)
+		-- If the player coin still exists, destroy it
+		if playerCoin and playerCoin:IsDescendantOf(game) then
+			playerCoin:Destroy()
+		end
 
-			CollectedCoins[index] = nil
+		-- If the original coin still exists, make it visible again
+		if originalCoin and originalCoin:IsDescendantOf(game) then
+			originalCoin.LocalTransparencyModifier = 0
+
+			-- Set up a new player coin
+			Local.SetupCoinTouched(index, originalCoin)
 		end
 	end
+
+	-- Reset the collected coins table
+	Local.CollectedCoins = {}
 end
 
 function Local.SetupPurchaseCoinButton()
