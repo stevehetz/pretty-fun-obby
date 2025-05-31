@@ -6,6 +6,7 @@ export type PlayerData = {
 	disableDoubleJump: boolean,
 	settings: { [SettingsConfig.Setting]: boolean },
 	coins: number,
+	donationTotal: number?,
 	skips: {
 		amount: number,
 	},
@@ -60,6 +61,7 @@ local DEFAULT_PLAYER_DATA: PlayerData = {
 	worldFinishes = WorldFinishes,
 	equippedPets = {},
 	oneTimePass = false,
+	donationTotal = 0,
 }
 
 local Shared = {}

@@ -49,6 +49,7 @@ GetStoreItemInfoRF.Name = "GetStoreItemInfoRF"
 GetStoreItemInfoRF.Parent = ReplicatedStorage
 
 function Shared.OnStart()
+	print("StoreService.OnStart")
 	GetStoreRF.OnServerInvoke = StoreConfig.GetStore
 	GetStoreItemInfoRF.OnServerInvoke = function(player: Player, id: number | string)
 		return StoreConfig.GetStoreItemInfo(id)
@@ -56,6 +57,8 @@ function Shared.OnStart()
 
 	MarketplaceService.PromptGamePassPurchaseFinished:Connect(Local.PurchaseGamepass)
 	MarketplaceService.ProcessReceipt = Local.PurchaseProduct
+
+	print("StoreService.OnStart - MarketplaceService.ProcessReceipt set")
 
 	-- Players.UserSubscriptionStatusChanged:Connect(Local.ProcessSubscription)
 
@@ -157,6 +160,9 @@ function Local.PurchaseProduct(receiptInfo: ReceiptInfo)
 
 	local is5Skips = productInfo.Name == "5 Skips"
 	local is1000Coins = productInfo.Name == "1000 Coins"
+	local is100Robux = productInfo.Name == "Donate 100"
+	local is1000Robux = productInfo.Name == "Donate 1000"
+	local is10000Robux = productInfo.Name == "Donate 10000"
 
 	if is5Skips then
 		local action: PlayerDataService.UpdateStateAction = {
@@ -177,7 +183,29 @@ function Local.PurchaseProduct(receiptInfo: ReceiptInfo)
 		decision = Enum.ProductPurchaseDecision.PurchaseGranted
 	end
 
-	-- BadgesConfig.RewardBadge(player, "Supporter")
+	if is100Robux or is1000Robux or is10000Robux then
+		local donationAmount = 0
+		if is100Robux then
+			donationAmount = 100
+		elseif is1000Robux then
+			donationAmount = 1000
+		elseif is10000Robux then
+			donationAmount = 10000
+		end
+
+		local action: PlayerDataService.UpdateStateAction = {
+			type = "UpdateDonationTotal",
+			amount = donationAmount,
+		}
+		PlayerDataService.UpdateState(player, action)
+
+		if donationAmount > 0 then
+			print("Player " .. player.Name .. " donated " .. donationAmount .. " Robux")
+			decision = Enum.ProductPurchaseDecision.PurchaseGranted
+		end
+	end
+
+	BadgesConfig.RewardBadge(player, "Supporter")
 
 	return decision
 end

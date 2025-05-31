@@ -77,6 +77,15 @@ local _store = {
 		{
 			Id = 3293766409, -- 1000 Coins
 		},
+		{
+			Id = 3296554956, -- Donate 100 Robux
+		},
+		{
+			Id = 3296555455, -- Donate 1000 Robux
+		},
+		{
+			Id = 3296555939, -- Donate 10000 Robux
+		},
 	},
 
 	Subscriptions = {

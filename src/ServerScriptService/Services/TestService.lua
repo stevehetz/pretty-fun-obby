@@ -33,6 +33,11 @@ function Shared.OnStart()
 	-- Shared.AddTop20CoinRanks()
 	-- task.wait(3)
 	-- print(GlobalDataService.GetCoinRank())
+
+	task.wait(1)
+	Shared.AddTop20DonationRanks()
+	task.wait(3)
+	Shared.PrintDonationRank()
 end
 
 Shared.IsDev = function()
@@ -67,11 +72,43 @@ function Shared.AddTop20CoinRanks()
 		-- Generate random coin count between 100 and 10000, with a step of 100
 		local randomCoinCount = math.random(1, 100) * 100
 
-		-- Record the time finish
 		GlobalDataService.RecordCoinRank(mockPlayer, randomCoinCount)
 
 		-- Print for debugging
 		print("Added test coin rank for Player " .. mockPlayer.UserId .. ": " .. randomCoinCount .. " coins")
+	end
+
+	return true
+end
+
+function Shared.PrintDonationRank()
+	local topRanks = GlobalDataService.GetDonationRank()
+	print("Top Donation Ranks:")
+	for _, rank in ipairs(topRanks) do
+		print("UserId: " .. rank.userId .. ", Robux: " .. rank.robux)
+	end
+end
+
+function Shared.AddTop20DonationRanks()
+	-- Create a mock player table with UserId property
+	local function createMockPlayer(userId)
+		return {
+			UserId = userId,
+		}
+	end
+
+	-- Generate 20 random times between 3-7 minutes (180-420 seconds)
+	for i = 1, 20 do
+		-- Create a mock player with a unique UserId (starting from 1000)
+		local mockPlayer = createMockPlayer(1000 + i)
+
+		-- Generate random coin count between 100 and 5000, with a step of 100
+		local randomDonationCount = math.random(1, 50) * 100
+
+		GlobalDataService.RecordDonationRank(mockPlayer, randomDonationCount)
+
+		-- Print for debugging
+		print("Added test donation rank for Player " .. mockPlayer.UserId .. ": " .. randomDonationCount .. " Robux")
 	end
 
 	return true

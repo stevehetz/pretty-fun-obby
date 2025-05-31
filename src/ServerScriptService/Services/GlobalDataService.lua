@@ -9,15 +9,22 @@ local WorldsConfig = require(ReplicatedStorage.Configs.Worlds)
 -- Create appropriate DataStore prefix based on environment
 local StorePrefix = RunService:IsStudio() and "Test_" or "Prod_"
 local GlobalCoinRankKey = StorePrefix .. "GlobalCoinRank"
+local GlobalDonationRankKey = StorePrefix .. "GlobalDonationRank"
 local PlayerInfoKey = StorePrefix .. "PlayerInfo"
 
 local GlobalCoinRankDataStore = DataStoreService:GetOrderedDataStore(GlobalCoinRankKey)
 local GlobalCoinRankMemoryStore = MemoryStoreService:GetSortedMap(GlobalCoinRankKey)
+local GlobalDonationRankDataStore = DataStoreService:GetOrderedDataStore(GlobalDonationRankKey)
+local GlobalDonationRankMemoryStore = MemoryStoreService:GetSortedMap(GlobalDonationRankKey)
 local PlayerInfoMemoryStore = MemoryStoreService:GetHashMap(PlayerInfoKey)
 
 local GetCoinRankRF = Instance.new("RemoteFunction")
 GetCoinRankRF.Name = "GetCoinRankRF"
 GetCoinRankRF.Parent = ReplicatedStorage
+
+local GetDonationRankRF = Instance.new("RemoteFunction")
+GetDonationRankRF.Name = "GetDonationRankRF"
+GetDonationRankRF.Parent = ReplicatedStorage
 
 local Local = {}
 local Shared = {}
@@ -42,12 +49,39 @@ Shared.OnStart = function()
 				end)
 			end
 		else
-			warn("Leaderboard bootstrap failed: ", pages)
+			warn("Coin leaderboard bootstrap failed: ", pages)
+		end
+	end)
+
+	-- Get top donations from the persistent store and cache them in MemoryStore
+	task.spawn(function()
+		local success, pages = pcall(function()
+			return GlobalDonationRankDataStore:GetSortedAsync(false, 20)
+		end)
+
+		if success then
+			for _, entry in ipairs(pages:GetCurrentPage()) do
+				-- entry.key is userId string, entry.value is their count
+				GlobalDonationRankMemoryStore:UpdateAsync(entry.key, function()
+					return entry.value
+				end, 86400) -- Cache for 24 hours
+
+				-- Pre-cache player info for top players
+				task.spawn(function()
+					Local.FetchAndCachePlayerInfo(entry.key)
+				end)
+			end
+		else
+			warn("Donation leaderboard bootstrap failed: ", pages)
 		end
 	end)
 
 	GetCoinRankRF.OnServerInvoke = function()
 		return Shared.GetCoinRank()
+	end
+
+	GetDonationRankRF.OnServerInvoke = function()
+		return Shared.GetDonationRank()
 	end
 end
 
@@ -92,6 +126,7 @@ function Shared.ClearGlobalStores()
 	end
 
 	clearOrderedDataStore(GlobalCoinRankDataStore, GlobalCoinRankMemoryStore, "GlobalCoinRank")
+	clearOrderedDataStore(GlobalDonationRankDataStore, GlobalDonationRankMemoryStore, "GlobalDonationRank")
 
 	return true
 end
@@ -179,6 +214,49 @@ function Shared.GetCoinRank()
 	return topEntries
 end
 
+function Shared.GetDonationRank()
+	local ok, list = pcall(function()
+		return GlobalDonationRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, 40)
+	end)
+	if not ok then
+		return {}
+	end
+
+	local out = {}
+	for _, entry in ipairs(list) do
+		local uid = tonumber(entry.key)
+		local robux = entry.value
+
+		-- Get player info (from cache if available)
+		local playerInfo = Local.FetchAndCachePlayerInfo(uid)
+
+		table.insert(out, {
+			userId = uid,
+			username = playerInfo.username,
+			avatarUrl = playerInfo.avatarUrl,
+			robux = robux,
+		})
+	end
+
+	-- Ensure results are sorted by robux in descending order
+	table.sort(out, function(a, b)
+		return a.robux > b.robux
+	end)
+
+	-- Assign ranks based on sorted order
+	for i, entry in ipairs(out) do
+		entry.rank = i
+	end
+
+	-- Only return the top 10 entries
+	local topEntries = {}
+	for i = 1, math.min(10, #out) do
+		table.insert(topEntries, out[i])
+	end
+
+	return topEntries
+end
+
 function Shared.RecordCoinRank(player, totalCoins)
 	local key = tostring(player.UserId)
 
@@ -246,6 +324,77 @@ function Shared.RecordCoinRank(player, totalCoins)
 			end)
 
 			GlobalCoinRankMemoryStore:RemoveAsync(entries[20].key)
+		end
+
+		-- 5) Pre-cache this player's info since they're on the leaderboard now
+		task.spawn(function()
+			Local.FetchAndCachePlayerInfo(player.UserId)
+		end)
+	end
+end
+
+function Shared.RecordDonationRank(player, totalRobux)
+	local key = tostring(player.UserId)
+
+	-- 1) Fetch the top 21 entries from the persistent store
+	local ok, pages = pcall(function()
+		return GlobalDonationRankDataStore:GetSortedAsync(false, 20)
+	end)
+	if not ok then
+		warn("Failed to fetch top entries for donation prune check:", pages)
+		return
+	end
+
+	local isPlayerAlreadyOnLeaderboard = false
+	local currentRobux = 0
+
+	for _, entry in ipairs(pages:GetCurrentPage()) do
+		if entry.key == key then
+			isPlayerAlreadyOnLeaderboard = true
+			currentRobux = entry.value
+			break
+		end
+	end
+
+	-- If player is already on leaderboard and has more robux than the new value,
+	-- don't update the leaderboard
+	if isPlayerAlreadyOnLeaderboard and totalRobux <= currentRobux then
+		return
+	end
+
+	local entries = pages:GetCurrentPage()
+	local countEntries = #entries
+
+	-- 2) Determine the cutoff: if fewer than 20 entries, anyone qualifies
+	local cutoff = (countEntries < 20) and -math.huge or entries[20].value
+
+	-- 3) Only set/prune if this player's totalRobux beats the cutoff
+	if totalRobux > cutoff then
+		-- a) Write into the persistent OrderedDataStore
+		local sOk, sErr = pcall(function()
+			GlobalDonationRankDataStore:SetAsync(key, totalRobux)
+		end)
+		if not sOk then
+			warn("Failed to set global donation rank for", key, sErr)
+		end
+
+		-- First remove the key from MemoryStore to clear any cached value
+		pcall(function()
+			GlobalDonationRankMemoryStore:RemoveAsync(key)
+		end)
+
+		-- Then add the new value
+		GlobalDonationRankMemoryStore:UpdateAsync(key, function()
+			return totalRobux
+		end, 86400) -- Cache for 24 hours
+
+		-- b) Prune the now 21st entry if it exists from the persistent store and MemoryStore
+		if not isPlayerAlreadyOnLeaderboard and countEntries >= 20 and entries[20] then
+			pcall(function()
+				GlobalDonationRankDataStore:RemoveAsync(entries[20].key)
+			end)
+
+			GlobalDonationRankMemoryStore:RemoveAsync(entries[20].key)
 		end
 
 		-- 5) Pre-cache this player's info since they're on the leaderboard now

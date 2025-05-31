@@ -26,18 +26,18 @@ end
 
 function Shared.OnStart()
 	OpenButton.MouseButton1Click:Connect(function()
-		local success, SkipsGamepass = pcall(function()
+		local success, SkipsProduct = pcall(function()
 			return GetStoreItemInfoRF:InvokeServer("5 Skips")
 		end)
 
 		if not success then
-			warn("Failed to get store data: ", SkipsGamepass)
+			warn("Failed to get store data: ", SkipsProduct)
 			return
 		end
 
 		local skipAmount = StateController.GetState().skips.amount
 		if skipAmount <= 0 then
-			local productId = SkipsGamepass.Id
+			local productId = SkipsProduct.Id
 			MarketplaceService:PromptProductPurchase(Players.LocalPlayer, productId)
 			return
 		end
