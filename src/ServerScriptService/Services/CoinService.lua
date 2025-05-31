@@ -12,18 +12,23 @@ function Shared.OnStart()
 	Remotes.CoinCollected.OnServerEvent:Connect(Shared.OnUpdateCoinCount)
 end
 
-function Shared.OnUpdateCoinCount(player: Player)
+function Shared.OnUpdateCoinCount(player: Player, coinValue: number)
+	coinValue = coinValue or 100
+
 	local state: PlayerData.PlayerData = PlayerDataService.GetState(player)
 	if not state then
 		return
 	end
 
+	GlobalDataService.RecordCoinRank(player, state.coins + coinValue)
+
+	task.wait(1)
+
 	local action: PlayerDataService.UpdateStateAction = {
 		type = "UpdateCoinCount",
+		value = coinValue,
 	}
-
 	PlayerDataService.UpdateState(player, action)
-	GlobalDataService.RecordCoinRank(player, state.coins)
 end
 
 return Shared

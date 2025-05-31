@@ -4,7 +4,6 @@ local Players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local MarketplaceService = game:GetService("MarketplaceService")
-local RunService = game:GetService("RunService")
 
 local PlayerData = require(ReplicatedStorage.PlayerData)
 local PlayerDataService = require(ServerScriptService.Services.PlayerDataService)
@@ -27,26 +26,23 @@ local playerDebounce = {}
 Local.DonateProducts = {}
 
 Shared.OnStart = function()
-	Local.DonateProducts.Donate100 = StoreConfig.GetStoreItemInfo("Donate 100")
-	Local.DonateProducts.Donate1000 = StoreConfig.GetStoreItemInfo("Donate 1000")
-	Local.DonateProducts.Donate10000 = StoreConfig.GetStoreItemInfo("Donate 10000")
-
 	PlayerDataService.ProfileLoaded.Event:Connect(function(player: Player)
 		local playerState = PlayerDataService.GetState(player)
 		if not playerState then
 			return
 		end
+		Local.DonateProducts.Donate100 = StoreConfig.GetStoreItemInfo("Donate 100")
+		Local.DonateProducts.Donate1000 = StoreConfig.GetStoreItemInfo("Donate 1000")
+		Local.DonateProducts.Donate10000 = StoreConfig.GetStoreItemInfo("Donate 10000")
 		Local.SetupSigns(player, playerState)
 	end)
 end
 
 Local.SetupSigns = function(player: Player, initialState: PlayerData.PlayerData)
-	local DonateFolder = Workspace:FindFirstChild("Donate")
+	local DonateFolder = Workspace:WaitForChild("Donate", 10)
 	if not DonateFolder then
 		return
 	end
-
-	print(Local.DonateProducts)
 
 	for _, donateSign in DonateFolder:GetChildren() do
 		donateSign.Touched:Connect(function(otherPart: BasePart)

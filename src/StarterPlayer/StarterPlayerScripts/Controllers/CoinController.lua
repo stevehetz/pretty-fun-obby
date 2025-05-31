@@ -23,6 +23,8 @@ local PurchaseButton = Gui.PurchaseButton
 local Local = {}
 local Shared = {}
 
+local COIN_VALUE = 100
+
 -- Table to track which coins have been collected by this player
 Local.CollectedCoins = {}
 
@@ -112,7 +114,7 @@ function Local.SetupCoinTouched(index, coin)
 end
 
 function Local.CollectCoin()
-	Remotes.CoinCollected:FireServer()
+	Remotes.CoinCollected:FireServer(COIN_VALUE)
 	Local.ShowWorldText()
 	SoundsConfig.PlaySound("CoinCollect")
 end

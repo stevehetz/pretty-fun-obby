@@ -121,7 +121,6 @@ return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
 			playerData.donationTotal = 0
 		end
 		playerData.donationTotal += action.amount
-		print("New donation total: " .. tostring(playerData.donationTotal))
 	else
 		error("Invalid action type: " .. tostring(action.type))
 	end

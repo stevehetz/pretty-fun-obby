@@ -34,10 +34,10 @@ function Shared.OnStart()
 	-- task.wait(3)
 	-- print(GlobalDataService.GetCoinRank())
 
-	task.wait(1)
-	Shared.AddTop20DonationRanks()
-	task.wait(3)
-	Shared.PrintDonationRank()
+	-- task.wait(1)
+	-- Shared.AddTop20DonationRanks()
+	-- task.wait(3)
+	-- Shared.PrintDonationRank()
 end
 
 Shared.IsDev = function()

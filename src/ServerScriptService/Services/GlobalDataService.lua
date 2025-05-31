@@ -269,26 +269,13 @@ function Shared.RecordCoinRank(player, totalCoins)
 		return
 	end
 
-	-- -- print top 20 coins for debugging
-	-- for index, entry in ipairs(pages:GetCurrentPage()) do
-	-- 	print(index .. ":", entry.key, entry.value)
-	-- end
-
 	local isPlayerAlreadyOnLeaderboard = false
-	local currentCoins = 0
 
 	for _, entry in ipairs(pages:GetCurrentPage()) do
 		if entry.key == key then
 			isPlayerAlreadyOnLeaderboard = true
-			currentCoins = entry.value
 			break
 		end
-	end
-
-	-- If player is already on leaderboard and has more coins than the new value,
-	-- don't update the leaderboard
-	if isPlayerAlreadyOnLeaderboard and totalCoins <= currentCoins then
-		return
 	end
 
 	local entries = pages:GetCurrentPage()
@@ -346,20 +333,12 @@ function Shared.RecordDonationRank(player, totalRobux)
 	end
 
 	local isPlayerAlreadyOnLeaderboard = false
-	local currentRobux = 0
 
 	for _, entry in ipairs(pages:GetCurrentPage()) do
 		if entry.key == key then
 			isPlayerAlreadyOnLeaderboard = true
-			currentRobux = entry.value
 			break
 		end
-	end
-
-	-- If player is already on leaderboard and has more robux than the new value,
-	-- don't update the leaderboard
-	if isPlayerAlreadyOnLeaderboard and totalRobux <= currentRobux then
-		return
 	end
 
 	local entries = pages:GetCurrentPage()
