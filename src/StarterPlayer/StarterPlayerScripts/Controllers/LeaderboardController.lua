@@ -100,10 +100,11 @@ function Local.UpdateCoinRankLeaderboardUI(leaderboard, data)
 		local display = leaderboard:WaitForChild("Display", 5)
 		local surfaceGui = display:WaitForChild("SurfaceGui", 5)
 		local rowsFrame = surfaceGui:WaitForChild("Rows", 5)
-		local rowTemplate = rowsFrame:WaitForChild("RowTemplate", 5)
+		local bodyFrame = rowsFrame:WaitForChild("Body", 5)
+		local rowTemplate = bodyFrame:WaitForChild("RowTemplate", 5)
 
 		return {
-			rowsFrame = rowsFrame,
+			bodyFrame = bodyFrame,
 			rowTemplate = rowTemplate,
 		}
 	end)
@@ -113,11 +114,11 @@ function Local.UpdateCoinRankLeaderboardUI(leaderboard, data)
 		return
 	end
 
-	local rowsFrame = result.rowsFrame
+	local bodyFrame = result.bodyFrame
 	local rowTemplate = result.rowTemplate
 
 	-- Clear existing rows
-	for _, child in ipairs(rowsFrame:GetChildren()) do
+	for _, child in ipairs(bodyFrame:GetChildren()) do
 		if child:IsA("Frame") and child.Name ~= "RowTemplate" and child.Name ~= "Header" then
 			child:Destroy()
 		end
@@ -170,7 +171,7 @@ function Local.UpdateCoinRankLeaderboardUI(leaderboard, data)
 		end
 
 		-- Parent after fully configuring
-		row.Parent = rowsFrame
+		row.Parent = bodyFrame
 	end
 end
 
@@ -191,10 +192,11 @@ function Local.UpdateDonationRankLeaderboardUI(leaderboard, data)
 		local display = leaderboard:WaitForChild("Display", 5)
 		local surfaceGui = display:WaitForChild("SurfaceGui", 5)
 		local rowsFrame = surfaceGui:WaitForChild("Rows", 5)
-		local rowTemplate = rowsFrame:WaitForChild("RowTemplate", 5)
+		local bodyFrame = rowsFrame:WaitForChild("Body", 5)
+		local rowTemplate = bodyFrame:WaitForChild("RowTemplate", 5)
 
 		return {
-			rowsFrame = rowsFrame,
+			bodyFrame = bodyFrame,
 			rowTemplate = rowTemplate,
 		}
 	end)
@@ -204,11 +206,11 @@ function Local.UpdateDonationRankLeaderboardUI(leaderboard, data)
 		return
 	end
 
-	local rowsFrame = result.rowsFrame
+	local bodyFrame = result.bodyFrame
 	local rowTemplate = result.rowTemplate
 
 	-- Clear existing rows
-	for _, child in ipairs(rowsFrame:GetChildren()) do
+	for _, child in ipairs(bodyFrame:GetChildren()) do
 		if child:IsA("Frame") and child.Name ~= "RowTemplate" and child.Name ~= "Header" then
 			child:Destroy()
 		end
@@ -260,7 +262,7 @@ function Local.UpdateDonationRankLeaderboardUI(leaderboard, data)
 		end
 
 		-- Parent after fully configuring
-		row.Parent = rowsFrame
+		row.Parent = bodyFrame
 	end
 end
 

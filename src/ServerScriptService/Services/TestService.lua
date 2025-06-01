@@ -21,21 +21,21 @@ function Shared.OnStart()
 	-- GlobalDataService.RemovePlayerFromTimeLeaderboard(TestConfig.Players.ra1n_test2)
 	-- GlobalDataService.RemovePlayerFromTimeLeaderboard(TestConfig.Players.ra1n_test1)
 	-- GlobalDataService.RemovePlayerFromTimeLeaderboard(TestConfig.Players.ra1n_test2)
-	-- Shared.AddTop20CoinRanks()
+	-- Shared.AddTop50CoinRanks()
 	-- task.wait(3)
 	-- Shared.PrintCoinRank()
-	-- Shared.AddTop20CoinRanks()
+	-- Shared.AddTop50CoinRanks()
 	-- print(GlobalDataService.GetCoinRank())
 	-- task.wait(3)
 	-- GlobalDataService.ClearGlobalStores()
 	-- print(GlobalDataService.GetCoinRank())
 	-- task.wait(3)
-	-- Shared.AddTop20CoinRanks()
+	-- Shared.AddTop50CoinRanks()
 	-- task.wait(3)
 	-- print(GlobalDataService.GetCoinRank())
 
 	-- task.wait(1)
-	-- Shared.AddTop20DonationRanks()
+	-- Shared.AddTop50DonationRanks()
 	-- task.wait(3)
 	-- Shared.PrintDonationRank()
 end
@@ -50,13 +50,14 @@ end
 
 function Shared.PrintCoinRank()
 	local topRanks = GlobalDataService.GetCoinRank()
-	print("Top Coin Ranks:")
-	for _, rank in ipairs(topRanks) do
-		print("UserId: " .. rank.userId .. ", Coins: " .. rank.coins)
-	end
+	print("Coin Rank: ", topRanks)
+	-- print("Top Coin Ranks:")
+	-- for _, rank in ipairs(topRanks) do
+	-- 	print("UserId: " .. rank.userId .. ", Coins: " .. rank.coins)
+	-- end
 end
 
-function Shared.AddTop20CoinRanks()
+function Shared.AddTop50CoinRanks()
 	-- Create a mock player table with UserId property
 	local function createMockPlayer(userId)
 		return {
@@ -64,8 +65,8 @@ function Shared.AddTop20CoinRanks()
 		}
 	end
 
-	-- Generate 20 random times between 3-7 minutes (180-420 seconds)
-	for i = 1, 20 do
+	-- Generate 50 random times between 3-7 minutes (180-420 seconds)
+	for i = 1, 10 do
 		-- Create a mock player with a unique UserId (starting from 1000)
 		local mockPlayer = createMockPlayer(1000 + i)
 
@@ -83,13 +84,14 @@ end
 
 function Shared.PrintDonationRank()
 	local topRanks = GlobalDataService.GetDonationRank()
-	print("Top Donation Ranks:")
-	for _, rank in ipairs(topRanks) do
-		print("UserId: " .. rank.userId .. ", Robux: " .. rank.robux)
-	end
+	print("Donation Rank: ", topRanks)
+	-- print("Top Donation Ranks:")
+	-- for _, rank in ipairs(topRanks) do
+	-- 	print("UserId: " .. rank.userId .. ", Robux: " .. rank.robux)
+	-- end
 end
 
-function Shared.AddTop20DonationRanks()
+function Shared.AddTop50DonationRanks()
 	-- Create a mock player table with UserId property
 	local function createMockPlayer(userId)
 		return {
@@ -97,8 +99,8 @@ function Shared.AddTop20DonationRanks()
 		}
 	end
 
-	-- Generate 20 random times between 3-7 minutes (180-420 seconds)
-	for i = 1, 20 do
+	-- Generate 50 random times between 3-7 minutes (180-420 seconds)
+	for i = 1, 50 do
 		-- Create a mock player with a unique UserId (starting from 1000)
 		local mockPlayer = createMockPlayer(1000 + i)
 

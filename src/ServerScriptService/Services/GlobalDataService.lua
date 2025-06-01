@@ -29,11 +29,13 @@ GetDonationRankRF.Parent = ReplicatedStorage
 local Local = {}
 local Shared = {}
 
+local MAX_ENTRIES = 50
+
 Shared.OnStart = function()
 	-- Get top coins from the persistent store and cache them in MemoryStore
 	task.spawn(function()
 		local success, pages = pcall(function()
-			return GlobalCoinRankDataStore:GetSortedAsync(false, 20)
+			return GlobalCoinRankDataStore:GetSortedAsync(false, MAX_ENTRIES)
 		end)
 
 		if success then
@@ -56,7 +58,7 @@ Shared.OnStart = function()
 	-- Get top donations from the persistent store and cache them in MemoryStore
 	task.spawn(function()
 		local success, pages = pcall(function()
-			return GlobalDonationRankDataStore:GetSortedAsync(false, 20)
+			return GlobalDonationRankDataStore:GetSortedAsync(false, MAX_ENTRIES)
 		end)
 
 		if success then
@@ -91,7 +93,7 @@ function Shared.ClearGlobalStores()
 	-- We need to fetch all entries and remove them one by one
 	local function clearOrderedDataStore(store, memoryStore, storeName)
 		local success, pages = pcall(function()
-			return store:GetSortedAsync(false, 100) -- Get up to 100 entries
+			return store:GetSortedAsync(false, MAX_ENTRIES)
 		end)
 
 		if success then
@@ -173,7 +175,7 @@ end
 
 function Shared.GetCoinRank()
 	local ok, list = pcall(function()
-		return GlobalCoinRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, 40)
+		return GlobalCoinRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, 50)
 	end)
 	if not ok then
 		return {}
@@ -205,9 +207,8 @@ function Shared.GetCoinRank()
 		entry.rank = i
 	end
 
-	-- Only return the top 10 entries
 	local topEntries = {}
-	for i = 1, math.min(10, #out) do
+	for i = 1, math.min(MAX_ENTRIES, #out) do
 		table.insert(topEntries, out[i])
 	end
 
@@ -216,7 +217,7 @@ end
 
 function Shared.GetDonationRank()
 	local ok, list = pcall(function()
-		return GlobalDonationRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, 40)
+		return GlobalDonationRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, 50)
 	end)
 	if not ok then
 		return {}
@@ -248,9 +249,8 @@ function Shared.GetDonationRank()
 		entry.rank = i
 	end
 
-	-- Only return the top 10 entries
 	local topEntries = {}
-	for i = 1, math.min(10, #out) do
+	for i = 1, math.min(MAX_ENTRIES, #out) do
 		table.insert(topEntries, out[i])
 	end
 
@@ -262,7 +262,7 @@ function Shared.RecordCoinRank(player, totalCoins)
 
 	-- 1) Fetch the top 21 entries from the persistent store
 	local ok, pages = pcall(function()
-		return GlobalCoinRankDataStore:GetSortedAsync(false, 20)
+		return GlobalCoinRankDataStore:GetSortedAsync(false, MAX_ENTRIES)
 	end)
 	if not ok then
 		warn("Failed to fetch top entries for prune check:", pages)
@@ -281,8 +281,8 @@ function Shared.RecordCoinRank(player, totalCoins)
 	local entries = pages:GetCurrentPage()
 	local countEntries = #entries
 
-	-- 2) Determine the cutoff: if fewer than 20 entries, anyone qualifies
-	local cutoff = (countEntries < 20) and -math.huge or entries[20].value
+	-- 2) Determine the cutoff: if fewer than MAX_ENTRIES entries, anyone qualifies
+	local cutoff = (countEntries < MAX_ENTRIES) and -math.huge or entries[MAX_ENTRIES].value
 
 	-- 3) Only set/prune if this player's totalCoins beats the cutoff
 	if totalCoins > cutoff then
@@ -305,12 +305,12 @@ function Shared.RecordCoinRank(player, totalCoins)
 		end, 86400) -- Cache for 24 hours
 
 		-- b) Prune the now 21st entry if it exists from the persistent store and MemoryStore
-		if not isPlayerAlreadyOnLeaderboard and countEntries >= 20 and entries[20] then
+		if not isPlayerAlreadyOnLeaderboard and countEntries >= MAX_ENTRIES and entries[MAX_ENTRIES] then
 			pcall(function()
-				GlobalCoinRankDataStore:RemoveAsync(entries[20].key)
+				GlobalCoinRankDataStore:RemoveAsync(entries[MAX_ENTRIES].key)
 			end)
 
-			GlobalCoinRankMemoryStore:RemoveAsync(entries[20].key)
+			GlobalCoinRankMemoryStore:RemoveAsync(entries[MAX_ENTRIES].key)
 		end
 
 		-- 5) Pre-cache this player's info since they're on the leaderboard now
@@ -325,7 +325,7 @@ function Shared.RecordDonationRank(player, totalRobux)
 
 	-- 1) Fetch the top 21 entries from the persistent store
 	local ok, pages = pcall(function()
-		return GlobalDonationRankDataStore:GetSortedAsync(false, 20)
+		return GlobalDonationRankDataStore:GetSortedAsync(false, MAX_ENTRIES)
 	end)
 	if not ok then
 		warn("Failed to fetch top entries for donation prune check:", pages)
@@ -344,8 +344,8 @@ function Shared.RecordDonationRank(player, totalRobux)
 	local entries = pages:GetCurrentPage()
 	local countEntries = #entries
 
-	-- 2) Determine the cutoff: if fewer than 20 entries, anyone qualifies
-	local cutoff = (countEntries < 20) and -math.huge or entries[20].value
+	-- 2) Determine the cutoff: if fewer than MAX_ENTRIES entries, anyone qualifies
+	local cutoff = (countEntries < MAX_ENTRIES) and -math.huge or entries[MAX_ENTRIES].value
 
 	-- 3) Only set/prune if this player's totalRobux beats the cutoff
 	if totalRobux > cutoff then
@@ -368,12 +368,12 @@ function Shared.RecordDonationRank(player, totalRobux)
 		end, 86400) -- Cache for 24 hours
 
 		-- b) Prune the now 21st entry if it exists from the persistent store and MemoryStore
-		if not isPlayerAlreadyOnLeaderboard and countEntries >= 20 and entries[20] then
+		if not isPlayerAlreadyOnLeaderboard and countEntries >= MAX_ENTRIES and entries[MAX_ENTRIES] then
 			pcall(function()
-				GlobalDonationRankDataStore:RemoveAsync(entries[20].key)
+				GlobalDonationRankDataStore:RemoveAsync(entries[MAX_ENTRIES].key)
 			end)
 
-			GlobalDonationRankMemoryStore:RemoveAsync(entries[20].key)
+			GlobalDonationRankMemoryStore:RemoveAsync(entries[MAX_ENTRIES].key)
 		end
 
 		-- 5) Pre-cache this player's info since they're on the leaderboard now
