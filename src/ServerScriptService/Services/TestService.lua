@@ -30,12 +30,15 @@ function Shared.OnStart()
 	-- GlobalDataService.ClearGlobalStores()
 	-- print(GlobalDataService.GetCoinRank())
 	-- task.wait(3)
-	Shared.AddTop50CoinRanks()
-	-- task.wait(3)
-	-- print(GlobalDataService.GetCoinRank())
+	-- print("Starting to add test coin ranks...")
+	-- Shared.AddTop50CoinRanks()
+	-- print("Finished adding test coin ranks")
 
-	-- task.wait(1)
-	Shared.AddTop50DonationRanks()
+	-- Add a delay between coin ranks and donation ranks to avoid rate limiting
+	-- task.wait(3)
+	-- print("Starting to add test donation ranks...")
+	-- Shared.AddTop50DonationRanks()
+	-- print("Finished adding test donation ranks")
 	-- task.wait(3)
 	-- Shared.PrintDonationRank()
 end
@@ -65,17 +68,26 @@ function Shared.AddTop50CoinRanks()
 		}
 	end
 
-	-- Generate 50 random times between 3-7 minutes (180-420 seconds)
+	-- Generate test coin ranks with a small delay between each to avoid rate limiting
 	for i = 1, 3 do
-		-- Create a mock player with a unique UserId (starting from 1000)
-		local mockPlayer = createMockPlayer(3000 + i)
+		-- Create a mock player with a unique UserId (starting from 4000)
+		local mockPlayer = createMockPlayer(5000 + i)
 
 		local randomCoinCount = math.random(1, 100000) * 100
 
-		GlobalDataService.RecordCoinRank(mockPlayer, randomCoinCount)
+		local success, err = pcall(function()
+			GlobalDataService.RecordCoinRank(mockPlayer, randomCoinCount)
+		end)
 
 		-- Print for debugging
-		print("Added test coin rank for Player " .. mockPlayer.UserId .. ": " .. randomCoinCount .. " coins")
+		if success then
+			print("Added test coin rank for Player " .. mockPlayer.UserId .. ": " .. randomCoinCount .. " coins")
+		else
+			warn("Failed to add test coin rank for Player " .. mockPlayer.UserId .. ": " .. tostring(err))
+		end
+
+		-- Add a small delay between operations to avoid rate limiting
+		task.wait(0.5)
 	end
 
 	return true
@@ -98,17 +110,28 @@ function Shared.AddTop50DonationRanks()
 		}
 	end
 
-	-- Generate 50 random times between 3-7 minutes (180-420 seconds)
+	-- Generate test donation ranks with a small delay between each to avoid rate limiting
 	for i = 1, 3 do
-		-- Create a mock player with a unique UserId (starting from 1000)
+		-- Create a mock player with a unique UserId (starting from 3000)
 		local mockPlayer = createMockPlayer(3000 + i)
 
 		local randomDonationCount = math.random(1, 100000) * 100
 
-		GlobalDataService.RecordDonationRank(mockPlayer, randomDonationCount)
+		local success, err = pcall(function()
+			GlobalDataService.RecordDonationRank(mockPlayer, randomDonationCount)
+		end)
 
 		-- Print for debugging
-		print("Added test donation rank for Player " .. mockPlayer.UserId .. ": " .. randomDonationCount .. " Robux")
+		if success then
+			print(
+				"Added test donation rank for Player " .. mockPlayer.UserId .. ": " .. randomDonationCount .. " Robux"
+			)
+		else
+			warn("Failed to add test donation rank for Player " .. mockPlayer.UserId .. ": " .. tostring(err))
+		end
+
+		-- Add a small delay between operations to avoid rate limiting
+		task.wait(0.5)
 	end
 
 	return true

@@ -29,7 +29,7 @@ GetDonationRankRF.Parent = ReplicatedStorage
 local Local = {}
 local Shared = {}
 
-local MAX_ENTRIES = 50
+local MAX_ENTRIES = 70
 
 Shared.OnStart = function()
 	-- Get top coins from the persistent store and cache them in MemoryStore
@@ -175,7 +175,7 @@ end
 
 function Shared.GetCoinRank()
 	local ok, list = pcall(function()
-		return GlobalCoinRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, 50)
+		return GlobalCoinRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, MAX_ENTRIES)
 	end)
 	if not ok then
 		return {}
@@ -219,7 +219,7 @@ end
 
 function Shared.GetDonationRank()
 	local ok, list = pcall(function()
-		return GlobalDonationRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, 50)
+		return GlobalDonationRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, MAX_ENTRIES)
 	end)
 	if not ok then
 		return {}
@@ -262,7 +262,7 @@ end
 function Shared.RecordCoinRank(player, totalCoins)
 	local key = tostring(player.UserId)
 
-	-- 1) Fetch the top 21 entries from the persistent store
+	-- 1) Fetch the top entries from the persistent store
 	local ok, pages = pcall(function()
 		return GlobalCoinRankDataStore:GetSortedAsync(false, MAX_ENTRIES)
 	end)
@@ -302,9 +302,15 @@ function Shared.RecordCoinRank(player, totalCoins)
 		end)
 
 		-- Then add the new value
-		GlobalCoinRankMemoryStore:UpdateAsync(key, function()
-			return totalCoins
-		end, 86400) -- Cache for 24 hours
+		local updateSuccess, updateError = pcall(function()
+			GlobalCoinRankMemoryStore:UpdateAsync(key, function()
+				return totalCoins
+			end, 86400) -- Cache for 24 hours
+		end)
+
+		if not updateSuccess then
+			warn("Failed to update coin rank in MemoryStore for player " .. key .. ": " .. tostring(updateError))
+		end
 
 		-- b) Prune the entry at MAX_ENTRIES if it exists in the persistent store and MemoryStore
 		if not isPlayerAlreadyOnLeaderboard and countEntries >= MAX_ENTRIES and entries[MAX_ENTRIES] then
@@ -314,6 +320,48 @@ function Shared.RecordCoinRank(player, totalCoins)
 
 			GlobalCoinRankMemoryStore:RemoveAsync(entries[MAX_ENTRIES].key)
 		end
+
+		-- c) Force refresh the MemoryStore with the latest data from DataStore
+		task.spawn(function()
+			-- Wait a short time to allow DataStore operations to complete
+			task.wait(0.5)
+
+			-- Refresh the MemoryStore with the latest data
+			local refreshOk, refreshPages = pcall(function()
+				return GlobalCoinRankDataStore:GetSortedAsync(false, MAX_ENTRIES)
+			end)
+
+			if refreshOk then
+				-- Clear existing entries in MemoryStore
+				for _, entry in ipairs(entries) do
+					pcall(function()
+						GlobalCoinRankMemoryStore:RemoveAsync(entry.key)
+					end)
+				end
+
+				-- Add the latest entries from DataStore to MemoryStore
+				for _, entry in ipairs(refreshPages:GetCurrentPage()) do
+					local updateSuccess, updateError = pcall(function()
+						GlobalCoinRankMemoryStore:UpdateAsync(entry.key, function()
+							return entry.value
+						end, 86400) -- Cache for 24 hours
+					end)
+
+					if not updateSuccess then
+						warn(
+							"Failed to update coin rank in MemoryStore for key "
+								.. entry.key
+								.. ": "
+								.. tostring(updateError)
+						)
+					end
+				end
+
+				print("MemoryStore refreshed with latest DataStore data")
+			else
+				warn("Failed to refresh MemoryStore:", refreshPages)
+			end
+		end)
 
 		-- 5) Pre-cache this player's info since they're on the leaderboard now
 		task.spawn(function()
@@ -325,7 +373,7 @@ end
 function Shared.RecordDonationRank(player, totalRobux)
 	local key = tostring(player.UserId)
 
-	-- 1) Fetch the top 21 entries from the persistent store
+	-- 1) Fetch the top entries from the persistent store
 	local ok, pages = pcall(function()
 		return GlobalDonationRankDataStore:GetSortedAsync(false, MAX_ENTRIES)
 	end)
@@ -365,11 +413,17 @@ function Shared.RecordDonationRank(player, totalRobux)
 		end)
 
 		-- Then add the new value
-		GlobalDonationRankMemoryStore:UpdateAsync(key, function()
-			return totalRobux
-		end, 86400) -- Cache for 24 hours
+		local updateSuccess, updateError = pcall(function()
+			GlobalDonationRankMemoryStore:UpdateAsync(key, function()
+				return totalRobux
+			end, 86400) -- Cache for 24 hours
+		end)
 
-		-- b) Prune the now 21st entry if it exists from the persistent store and MemoryStore
+		if not updateSuccess then
+			warn("Failed to update donation rank in MemoryStore for player " .. key .. ": " .. tostring(updateError))
+		end
+
+		-- b) Prune the entry at MAX_ENTRIES if it exists in the persistent store and MemoryStore
 		if not isPlayerAlreadyOnLeaderboard and countEntries >= MAX_ENTRIES and entries[MAX_ENTRIES] then
 			pcall(function()
 				GlobalDonationRankDataStore:RemoveAsync(entries[MAX_ENTRIES].key)
@@ -377,6 +431,48 @@ function Shared.RecordDonationRank(player, totalRobux)
 
 			GlobalDonationRankMemoryStore:RemoveAsync(entries[MAX_ENTRIES].key)
 		end
+
+		-- c) Force refresh the MemoryStore with the latest data from DataStore
+		task.spawn(function()
+			-- Wait a short time to allow DataStore operations to complete
+			task.wait(0.5)
+
+			-- Refresh the MemoryStore with the latest data
+			local refreshOk, refreshPages = pcall(function()
+				return GlobalDonationRankDataStore:GetSortedAsync(false, MAX_ENTRIES)
+			end)
+
+			if refreshOk then
+				-- Clear existing entries in MemoryStore
+				for _, entry in ipairs(entries) do
+					pcall(function()
+						GlobalDonationRankMemoryStore:RemoveAsync(entry.key)
+					end)
+				end
+
+				-- Add the latest entries from DataStore to MemoryStore
+				for _, entry in ipairs(refreshPages:GetCurrentPage()) do
+					local updateSuccess, updateError = pcall(function()
+						GlobalDonationRankMemoryStore:UpdateAsync(entry.key, function()
+							return entry.value
+						end, 86400) -- Cache for 24 hours
+					end)
+
+					if not updateSuccess then
+						warn(
+							"Failed to update donation rank in MemoryStore for key "
+								.. entry.key
+								.. ": "
+								.. tostring(updateError)
+						)
+					end
+				end
+
+				print("Donation MemoryStore refreshed with latest DataStore data")
+			else
+				warn("Failed to refresh Donation MemoryStore:", refreshPages)
+			end
+		end)
 
 		-- 5) Pre-cache this player's info since they're on the leaderboard now
 		task.spawn(function()
