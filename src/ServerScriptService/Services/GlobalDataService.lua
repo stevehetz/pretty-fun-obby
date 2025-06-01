@@ -249,7 +249,7 @@ function Shared.GetCoinRank()
 		return a.coins > b.coins
 	end)
 
-	print(out)
+	-- print(out)
 
 	-- Assign ranks based on sorted order
 	for i, entry in ipairs(out) do
@@ -293,7 +293,7 @@ function Shared.GetDonationRank()
 		return a.robux > b.robux
 	end)
 
-	print(out)
+	-- print(out)
 
 	-- Assign ranks based on sorted order
 	for i, entry in ipairs(out) do
@@ -332,8 +332,6 @@ function Shared.RecordCoinRank(player, totalCoins)
 	local entries = pages:GetCurrentPage()
 	local countEntries = #entries
 
-	print("Count entries: ", countEntries)
-
 	-- 2) Determine the cutoff: if fewer than MAX_ENTRIES entries, anyone qualifies
 	local cutoff = (countEntries < MAX_ENTRIES) and -math.huge or entries[MAX_ENTRIES].value
 
@@ -361,6 +359,26 @@ function Shared.RecordCoinRank(player, totalCoins)
 
 		if not updateSuccess then
 			warn("Failed to update coin rank in MemoryStore for player " .. key .. ": " .. tostring(updateError))
+		end
+
+		-- Prune memorystore to MAX_ENTRIES
+		local msOk, msList = pcall(function()
+			return GlobalCoinRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, MAX_ENTRIES + 10)
+		end)
+
+		if msOk and #msList > MAX_ENTRIES then
+			-- Sort by value (descending)
+			table.sort(msList, function(a, b)
+				return a.value > b.value
+			end)
+
+			-- Remove entries beyond MAX_ENTRIES
+			for i = MAX_ENTRIES + 1, #msList do
+				pcall(function()
+					GlobalCoinRankMemoryStore:RemoveAsync(msList[i].key)
+					print("Pruning memorystore entry: ", msList[i].key, " with value: ", msList[i].value)
+				end)
+			end
 		end
 
 		-- b) Prune the entry at MAX_ENTRIES if it exists in the persistent store and MemoryStore
@@ -432,6 +450,26 @@ function Shared.RecordDonationRank(player, totalRobux)
 
 		if not updateSuccess then
 			warn("Failed to update donation rank in MemoryStore for player " .. key .. ": " .. tostring(updateError))
+		end
+
+		-- Prune memorystore to MAX_ENTRIES
+		local msOk, msList = pcall(function()
+			return GlobalDonationRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, MAX_ENTRIES + 10) -- Get more than needed to ensure we have all entries
+		end)
+
+		if msOk and #msList > MAX_ENTRIES then
+			-- Sort by value (descending)
+			table.sort(msList, function(a, b)
+				return a.value > b.value
+			end)
+
+			-- Remove entries beyond MAX_ENTRIES
+			for i = MAX_ENTRIES + 1, #msList do
+				pcall(function()
+					GlobalDonationRankMemoryStore:RemoveAsync(msList[i].key)
+					print("Pruning memorystore entry: ", msList[i].key, " with value: ", msList[i].value)
+				end)
+			end
 		end
 
 		-- b) Prune the entry at MAX_ENTRIES if it exists in the persistent store and MemoryStore
