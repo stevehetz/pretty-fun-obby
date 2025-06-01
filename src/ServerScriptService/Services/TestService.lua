@@ -30,12 +30,12 @@ function Shared.OnStart()
 	-- GlobalDataService.ClearGlobalStores()
 	-- print(GlobalDataService.GetCoinRank())
 	-- task.wait(3)
-	-- Shared.AddTop50CoinRanks()
+	Shared.AddTop50CoinRanks()
 	-- task.wait(3)
 	-- print(GlobalDataService.GetCoinRank())
 
 	-- task.wait(1)
-	-- Shared.AddTop50DonationRanks()
+	Shared.AddTop50DonationRanks()
 	-- task.wait(3)
 	-- Shared.PrintDonationRank()
 end
@@ -66,12 +66,11 @@ function Shared.AddTop50CoinRanks()
 	end
 
 	-- Generate 50 random times between 3-7 minutes (180-420 seconds)
-	for i = 1, 10 do
+	for i = 1, 3 do
 		-- Create a mock player with a unique UserId (starting from 1000)
-		local mockPlayer = createMockPlayer(1000 + i)
+		local mockPlayer = createMockPlayer(3000 + i)
 
-		-- Generate random coin count between 100 and 10000, with a step of 100
-		local randomCoinCount = math.random(1, 100) * 100
+		local randomCoinCount = math.random(1, 100000) * 100
 
 		GlobalDataService.RecordCoinRank(mockPlayer, randomCoinCount)
 
@@ -100,12 +99,11 @@ function Shared.AddTop50DonationRanks()
 	end
 
 	-- Generate 50 random times between 3-7 minutes (180-420 seconds)
-	for i = 1, 50 do
+	for i = 1, 3 do
 		-- Create a mock player with a unique UserId (starting from 1000)
-		local mockPlayer = createMockPlayer(1000 + i)
+		local mockPlayer = createMockPlayer(3000 + i)
 
-		-- Generate random coin count between 100 and 5000, with a step of 100
-		local randomDonationCount = math.random(1, 50) * 100
+		local randomDonationCount = math.random(1, 100000) * 100
 
 		GlobalDataService.RecordDonationRank(mockPlayer, randomDonationCount)
 

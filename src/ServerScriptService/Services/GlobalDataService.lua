@@ -202,6 +202,8 @@ function Shared.GetCoinRank()
 		return a.coins > b.coins
 	end)
 
+	print(out)
+
 	-- Assign ranks based on sorted order
 	for i, entry in ipairs(out) do
 		entry.rank = i
@@ -304,7 +306,7 @@ function Shared.RecordCoinRank(player, totalCoins)
 			return totalCoins
 		end, 86400) -- Cache for 24 hours
 
-		-- b) Prune the now 21st entry if it exists from the persistent store and MemoryStore
+		-- b) Prune the entry at MAX_ENTRIES if it exists in the persistent store and MemoryStore
 		if not isPlayerAlreadyOnLeaderboard and countEntries >= MAX_ENTRIES and entries[MAX_ENTRIES] then
 			pcall(function()
 				GlobalCoinRankDataStore:RemoveAsync(entries[MAX_ENTRIES].key)

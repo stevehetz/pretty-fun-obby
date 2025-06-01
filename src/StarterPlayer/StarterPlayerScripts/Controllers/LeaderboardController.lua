@@ -6,10 +6,23 @@ local GetCoinRankRF = ReplicatedStorage:WaitForChild("GetCoinRankRF")
 local GetDonationRankRF = ReplicatedStorage:WaitForChild("GetDonationRankRF")
 local leaderboardsFolder = Workspace:FindFirstChild("Leaderboards")
 
-local REFRESH_INTERVAL = 60
+local REFRESH_INTERVAL = 10
 
 local Local = {}
 local Shared = {}
+
+-- Helper function to format numbers with commas
+local function formatWithCommas(number)
+	local formatted = tostring(number)
+	local k
+	while true do
+		formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", "%1,%2")
+		if k == 0 then
+			break
+		end
+	end
+	return formatted
+end
 
 -- Store the current leaderboard data
 Shared.CoinRankLeaderboardData = {}
@@ -55,7 +68,10 @@ function Shared.RefreshCoinRankLeaderboard()
 	if success and data then
 		Shared.LastRefreshTime = os.time()
 		Shared.CoinRankLeaderboardData = data
+		print("Coin Rank Leaderboard Data Refreshed")
+		print(data)
 		Local.UpdateAllCoinRankLeaderboardUI(data)
+
 		return data
 	else
 		warn("Failed to refresh coin leaderboard data")
@@ -167,7 +183,7 @@ function Local.UpdateCoinRankLeaderboardUI(leaderboard, data)
 		-- Set the coins label
 		local lblCoins = row:FindFirstChild("Coins")
 		if lblCoins then
-			lblCoins.Text = entry.coins
+			lblCoins.Text = formatWithCommas(entry.coins)
 		end
 
 		-- Parent after fully configuring
@@ -258,7 +274,7 @@ function Local.UpdateDonationRankLeaderboardUI(leaderboard, data)
 		-- Set the robux label
 		local lblRobux = row:FindFirstChild("Robux")
 		if lblRobux then
-			lblRobux.Text = entry.robux
+			lblRobux.Text = formatWithCommas(entry.robux)
 		end
 
 		-- Parent after fully configuring
