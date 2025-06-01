@@ -68,8 +68,6 @@ function Shared.RefreshCoinRankLeaderboard()
 	if success and data then
 		Shared.LastRefreshTime = os.time()
 		Shared.CoinRankLeaderboardData = data
-		print("Coin Rank Leaderboard Data Refreshed")
-		print(data)
 		Local.UpdateAllCoinRankLeaderboardUI(data)
 
 		return data

@@ -27,16 +27,14 @@ function Shared.OnStart()
 	-- Shared.AddTop50CoinRanks()
 	-- print(GlobalDataService.GetCoinRank())
 	-- task.wait(3)
-	GlobalDataService.ClearGlobalStores()
+	-- GlobalDataService.ClearGlobalStores()
 	-- print(GlobalDataService.GetCoinRank())
 	task.wait(3)
-	-- Shared.AddTop50CoinRanks()
+	Shared.AddTop50CoinRanks()
 
 	-- Add a delay between coin ranks and donation ranks to avoid rate limiting
 	-- task.wait(3)
-	-- print("Starting to add test donation ranks...")
 	-- Shared.AddTop50DonationRanks()
-	-- print("Finished adding test donation ranks")
 	-- task.wait(3)
 	-- Shared.PrintDonationRank()
 end
@@ -67,9 +65,9 @@ function Shared.AddTop50CoinRanks()
 	end
 
 	-- Generate test coin ranks with a small delay between each to avoid rate limiting
-	for i = 1, 3 do
+	for i = 1, 1 do
 		-- Create a mock player with a unique UserId (starting from 4000)
-		local mockPlayer = createMockPlayer(5000 + i)
+		local mockPlayer = createMockPlayer(6000 + i)
 
 		local randomCoinCount = math.random(1, 100000) * 100
 
@@ -109,9 +107,9 @@ function Shared.AddTop50DonationRanks()
 	end
 
 	-- Generate test donation ranks with a small delay between each to avoid rate limiting
-	for i = 1, 3 do
+	for i = 1, 1 do
 		-- Create a mock player with a unique UserId (starting from 3000)
-		local mockPlayer = createMockPlayer(3000 + i)
+		local mockPlayer = createMockPlayer(5000 + i)
 
 		local randomDonationCount = math.random(1, 100000) * 100
 

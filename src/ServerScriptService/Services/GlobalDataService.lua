@@ -29,7 +29,7 @@ GetDonationRankRF.Parent = ReplicatedStorage
 local Local = {}
 local Shared = {}
 
-local MAX_ENTRIES = 70
+local MAX_ENTRIES = 50
 local CLEANUP_INTERVAL = 86400 -- 24 hours in seconds
 
 Shared.OnStart = function()
@@ -86,209 +86,18 @@ Shared.OnStart = function()
 	GetDonationRankRF.OnServerInvoke = function()
 		return Shared.GetDonationRank()
 	end
-	-- Schedule the daily cleanup process
-	Shared.ScheduleDataCleanup()
-end
-
--- Function to run cleanup tasks in a separate process
-function Shared.ScheduleDataCleanup()
-	-- Run cleanup immediately when server starts
-	task.spawn(function()
-		-- task.wait(5)
-		-- print("Starting initial data cleanup process...")
-		-- Shared.PerformDataCleanup()
-	end)
-
-	-- Schedule cleanup to run every 24 hours
-	task.spawn(function()
-		while true do
-			task.wait(CLEANUP_INTERVAL)
-			print("Running scheduled daily data cleanup...")
-			Shared.PerformDataCleanup()
-		end
-	end)
-end
-
--- Function to perform the actual cleanup operations
-function Shared.PerformDataCleanup()
-	local startTime = os.time()
-	print("Data cleanup started at: " .. os.date("%Y-%m-%d %H:%M:%S", startTime))
-
-	-- 1. Clean up coin leaderboard - keep only top 50
-	task.spawn(function()
-		-- Now get all entries (beyond top 50) to find ones to delete
-		-- We'll use a higher page size to process more entries at once
-		print("here1")
-		local allSuccess, allPages = pcall(function()
-			-- Start from position 51 to get entries beyond top 50
-			return GlobalCoinRankDataStore:GetSortedAsync(false, MAX_ENTRIES)
-		end)
-		print("here2")
-
-		for _, entry in ipairs(allPages:GetCurrentPage()) do
-			print("Entry key: " .. entry.key .. ", value: " .. entry.value)
-		end
-
-		-- if not allSuccess then
-		-- 	warn("Failed to fetch additional coin entries during cleanup:", allPages)
-		-- 	return
-		-- end
-
-		-- local deletedCount = 0
-
-		-- -- Process all pages of results
-		-- while true do
-		-- 	local entries = allPages:GetCurrentPage()
-		-- 	if #entries == 0 then
-		-- 		break
-		-- 	end
-
-		-- 	-- Delete entries that aren't in the top 50
-		-- 	for _, entry in ipairs(entries) do
-		-- 		local deleteSuccess = pcall(function()
-		-- 			-- Remove from DataStore
-		-- 			GlobalCoinRankDataStore:RemoveAsync(entry.key)
-		-- 			-- Remove from MemoryStore too
-		-- 			GlobalCoinRankMemoryStore:RemoveAsync(entry.key)
-		-- 		end)
-		-- 		if deleteSuccess then
-		-- 			deletedCount = deletedCount + 1
-		-- 		end
-		-- 	end
-
-		-- 	-- Check if there are more pages
-		-- 	if allPages.IsFinished then
-		-- 		break
-		-- 	end
-
-		-- 	-- Get the next page
-		-- 	local nextSuccess = pcall(function()
-		-- 		allPages:AdvanceToNextPageAsync()
-		-- 	end)
-
-		-- 	if not nextSuccess then
-		-- 		warn("Failed to advance to next page of coin entries")
-		-- 		break
-		-- 	end
-		-- end
-
-		-- print("Coin leaderboard cleanup: " .. deletedCount .. " entries beyond top " .. MAX_ENTRIES .. " removed")
-	end)
-
-	-- 2. Clean up donation leaderboard - keep only top 50
-	-- task.spawn(function()
-	-- 	-- Now get all entries (beyond top 50) to find ones to delete
-	-- 	-- We'll use a higher page size to process more entries at once
-	-- 	local allSuccess, allPages = pcall(function()
-	-- 		-- Start from position 51 to get entries beyond top 50
-	-- 		return GlobalDonationRankDataStore:GetSortedAsync(false, 100, MAX_ENTRIES + 1)
-	-- 	end)
-
-	-- 	if not allSuccess then
-	-- 		warn("Failed to fetch additional donation entries during cleanup:", allPages)
-	-- 		return
-	-- 	end
-
-	-- 	local deletedCount = 0
-
-	-- 	-- Process all pages of results
-	-- 	while true do
-	-- 		local entries = allPages:GetCurrentPage()
-	-- 		if #entries == 0 then
-	-- 			break
-	-- 		end
-
-	-- 		-- Delete entries that aren't in the top 50
-	-- 		for _, entry in ipairs(entries) do
-	-- 			local deleteSuccess = pcall(function()
-	-- 				-- Remove from DataStore
-	-- 				GlobalDonationRankDataStore:RemoveAsync(entry.key)
-	-- 				-- Remove from MemoryStore too
-	-- 				GlobalDonationRankMemoryStore:RemoveAsync(entry.key)
-	-- 			end)
-
-	-- 			if deleteSuccess then
-	-- 				deletedCount = deletedCount + 1
-	-- 			end
-	-- 		end
-
-	-- 		-- Check if there are more pages
-	-- 		if allPages.IsFinished then
-	-- 			break
-	-- 		end
-
-	-- 		-- Get the next page
-	-- 		local nextSuccess = pcall(function()
-	-- 			allPages:AdvanceToNextPageAsync()
-	-- 		end)
-
-	-- 		if not nextSuccess then
-	-- 			warn("Failed to advance to next page of donation entries")
-	-- 			break
-	-- 		end
-	-- 	end
-
-	-- 	print("Donation leaderboard cleanup: " .. deletedCount .. " entries beyond top " .. MAX_ENTRIES .. " removed")
-	-- end)
-
-	-- 3. Refresh the MemoryStore cache for the top entries
-	-- task.spawn(function()
-	-- 	-- Refresh coin leaderboard cache
-	-- 	local coinSuccess, coinPages = pcall(function()
-	-- 		return GlobalCoinRankDataStore:GetSortedAsync(false, MAX_ENTRIES)
-	-- 	end)
-
-	-- 	if coinSuccess then
-	-- 		for _, entry in ipairs(coinPages:GetCurrentPage()) do
-	-- 			pcall(function()
-	-- 				GlobalCoinRankMemoryStore:UpdateAsync(entry.key, function()
-	-- 					return entry.value
-	-- 				end, 86400) -- Cache for 24 hours
-
-	-- 				-- Also refresh player info cache
-	-- 				Local.FetchAndCachePlayerInfo(entry.key)
-	-- 			end)
-	-- 		end
-	-- 	end
-
-	-- 	-- Refresh donation leaderboard cache
-	-- 	local donationSuccess, donationPages = pcall(function()
-	-- 		return GlobalDonationRankDataStore:GetSortedAsync(false, MAX_ENTRIES)
-	-- 	end)
-
-	-- 	if donationSuccess then
-	-- 		for _, entry in ipairs(donationPages:GetCurrentPage()) do
-	-- 			pcall(function()
-	-- 				GlobalDonationRankMemoryStore:UpdateAsync(entry.key, function()
-	-- 					return entry.value
-	-- 				end, 86400) -- Cache for 24 hours
-
-	-- 				-- Also refresh player info cache
-	-- 				Local.FetchAndCachePlayerInfo(entry.key)
-	-- 			end)
-	-- 		end
-	-- 	end
-	-- end)
-
-	-- Log completion
-	local endTime = os.time()
-	local duration = endTime - startTime
-	print("Data cleanup completed at: " .. os.date("%Y-%m-%d %H:%M:%S", endTime))
-	print("Cleanup duration: " .. duration .. " seconds")
 end
 
 -- Function to clear all entries from both global stores
 function Shared.ClearGlobalStores()
-	-- 1. Clear the DataStores
-	-- We need to fetch all entries and remove them one by one
-	local function clearOrderedDataStore(store, memoryStore, storeName)
+	-- Function to clear entries from a DataStore
+	local function clearDataStore(store, storeName)
 		local success, pages = pcall(function()
 			return store:GetSortedAsync(false, MAX_ENTRIES)
 		end)
 
 		if success then
 			local entries = pages:GetCurrentPage()
-
 			local successCount = 0
 			local failCount = 0
 
@@ -298,27 +107,75 @@ function Shared.ClearGlobalStores()
 					store:RemoveAsync(entry.key)
 				end)
 
-				-- Remove from MemoryStore
-				local msSuccess = pcall(function()
-					memoryStore:RemoveAsync(entry.key)
-				end)
-
-				if dsSuccess and msSuccess then
+				if dsSuccess then
 					successCount = successCount + 1
 				else
 					failCount = failCount + 1
 				end
 			end
+
 			print(
-				"Cleared " .. successCount .. " entries from " .. storeName .. ". " .. failCount .. " entries failed."
+				"Cleared "
+					.. successCount
+					.. " entries from "
+					.. storeName
+					.. " DataStore. "
+					.. failCount
+					.. " entries failed."
 			)
+
+			return entries
 		else
-			warn("Failed to fetch entries for clearing " .. storeName .. ":", pages)
+			warn("Failed to fetch entries for clearing " .. storeName .. " DataStore:", pages)
+			return {}
 		end
 	end
 
-	clearOrderedDataStore(GlobalCoinRankDataStore, GlobalCoinRankMemoryStore, "GlobalCoinRank")
-	clearOrderedDataStore(GlobalDonationRankDataStore, GlobalDonationRankMemoryStore, "GlobalDonationRank")
+	-- Function to clear entries from a MemoryStore
+	local function clearMemoryStore(memoryStore, storeName)
+		local successCount = 0
+		local failCount = 0
+
+		-- Get entries directly from MemoryStore
+		local msSuccess, msEntries = pcall(function()
+			return memoryStore:GetRangeAsync(Enum.SortDirection.Descending, MAX_ENTRIES)
+		end)
+
+		if msSuccess then
+			for _, entry in ipairs(msEntries) do
+				-- Remove from MemoryStore
+				local success = pcall(function()
+					memoryStore:RemoveAsync(entry.key)
+				end)
+
+				if success then
+					successCount = successCount + 1
+				else
+					failCount = failCount + 1
+				end
+			end
+
+			print(
+				"Cleared "
+					.. successCount
+					.. " entries from "
+					.. storeName
+					.. " MemoryStore. "
+					.. failCount
+					.. " entries failed."
+			)
+		else
+			warn("Failed to fetch entries for clearing " .. storeName .. " MemoryStore")
+		end
+	end
+
+	-- Clear DataStores first
+	clearDataStore(GlobalCoinRankDataStore, "GlobalCoinRank")
+	clearDataStore(GlobalDonationRankDataStore, "GlobalDonationRank")
+
+	-- Then clear MemoryStores separately
+	clearMemoryStore(GlobalCoinRankMemoryStore, "GlobalCoinRank")
+	clearMemoryStore(GlobalDonationRankMemoryStore, "GlobalDonationRank")
 
 	return true
 end
@@ -365,7 +222,7 @@ end
 
 function Shared.GetCoinRank()
 	local ok, list = pcall(function()
-		return GlobalCoinRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, MAX_ENTRIES)
+		return GlobalCoinRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, MAX_ENTRIES + 10)
 	end)
 	if not ok then
 		return {}
@@ -409,7 +266,7 @@ end
 
 function Shared.GetDonationRank()
 	local ok, list = pcall(function()
-		return GlobalDonationRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, MAX_ENTRIES)
+		return GlobalDonationRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, MAX_ENTRIES + 10)
 	end)
 	if not ok then
 		return {}
@@ -436,6 +293,8 @@ function Shared.GetDonationRank()
 		return a.robux > b.robux
 	end)
 
+	print(out)
+
 	-- Assign ranks based on sorted order
 	for i, entry in ipairs(out) do
 		entry.rank = i
@@ -450,12 +309,11 @@ function Shared.GetDonationRank()
 end
 
 function Shared.RecordCoinRank(player, totalCoins)
-	print("Recording coin rank for player:", player.UserId, "with total coins:", totalCoins)
 	local key = tostring(player.UserId)
 
 	-- 1) Fetch the top entries from the persistent store
 	local ok, pages = pcall(function()
-		return GlobalCoinRankDataStore:GetSortedAsync(false, MAX_ENTRIES)
+		return GlobalCoinRankDataStore:GetSortedAsync(false, MAX_ENTRIES + 10)
 	end)
 	if not ok then
 		warn("Failed to fetch top entries for prune check:", pages)
@@ -465,7 +323,6 @@ function Shared.RecordCoinRank(player, totalCoins)
 	local isPlayerAlreadyOnLeaderboard = false
 
 	for _, entry in ipairs(pages:GetCurrentPage()) do
-		print("Entry key: " .. entry.key .. ", value: " .. entry.value)
 		if entry.key == key then
 			isPlayerAlreadyOnLeaderboard = true
 			break
@@ -474,7 +331,8 @@ function Shared.RecordCoinRank(player, totalCoins)
 
 	local entries = pages:GetCurrentPage()
 	local countEntries = #entries
-	print("Entries: " .. countEntries)
+
+	print("Count entries: ", countEntries)
 
 	-- 2) Determine the cutoff: if fewer than MAX_ENTRIES entries, anyone qualifies
 	local cutoff = (countEntries < MAX_ENTRIES) and -math.huge or entries[MAX_ENTRIES].value
@@ -508,55 +366,15 @@ function Shared.RecordCoinRank(player, totalCoins)
 		-- b) Prune the entry at MAX_ENTRIES if it exists in the persistent store and MemoryStore
 		if not isPlayerAlreadyOnLeaderboard and countEntries >= MAX_ENTRIES and entries[MAX_ENTRIES] then
 			pcall(function()
+				print("Pruning entry at MAX_ENTRIES: ", entries[MAX_ENTRIES].key)
 				GlobalCoinRankDataStore:RemoveAsync(entries[MAX_ENTRIES].key)
 			end)
 
+			print("Removing from MemoryStore: ", entries[MAX_ENTRIES].key)
 			GlobalCoinRankMemoryStore:RemoveAsync(entries[MAX_ENTRIES].key)
 		end
 
-		-- c) Force refresh the MemoryStore with the latest data from DataStore
-		task.spawn(function()
-			-- Wait a short time to allow DataStore operations to complete
-			task.wait(0.5)
-
-			-- Refresh the MemoryStore with the latest data
-			local refreshOk, refreshPages = pcall(function()
-				return GlobalCoinRankDataStore:GetSortedAsync(false, MAX_ENTRIES)
-			end)
-
-			if refreshOk then
-				-- Clear existing entries in MemoryStore
-				for _, entry in ipairs(entries) do
-					pcall(function()
-						GlobalCoinRankMemoryStore:RemoveAsync(entry.key)
-					end)
-				end
-
-				-- Add the latest entries from DataStore to MemoryStore
-				for _, entry in ipairs(refreshPages:GetCurrentPage()) do
-					local updateSuccess, updateError = pcall(function()
-						GlobalCoinRankMemoryStore:UpdateAsync(entry.key, function()
-							return entry.value
-						end, 86400) -- Cache for 24 hours
-					end)
-
-					if not updateSuccess then
-						warn(
-							"Failed to update coin rank in MemoryStore for key "
-								.. entry.key
-								.. ": "
-								.. tostring(updateError)
-						)
-					end
-				end
-
-				print("MemoryStore refreshed with latest DataStore data")
-			else
-				warn("Failed to refresh MemoryStore:", refreshPages)
-			end
-		end)
-
-		-- 5) Pre-cache this player's info since they're on the leaderboard now
+		-- 4) Pre-cache this player's info since they're on the leaderboard now
 		task.spawn(function()
 			Local.FetchAndCachePlayerInfo(player.UserId)
 		end)
@@ -625,49 +443,7 @@ function Shared.RecordDonationRank(player, totalRobux)
 			GlobalDonationRankMemoryStore:RemoveAsync(entries[MAX_ENTRIES].key)
 		end
 
-		-- c) Force refresh the MemoryStore with the latest data from DataStore
-		task.spawn(function()
-			-- Wait a short time to allow DataStore operations to complete
-			task.wait(0.5)
-
-			-- Refresh the MemoryStore with the latest data
-			local refreshOk, refreshPages = pcall(function()
-				return GlobalDonationRankDataStore:GetSortedAsync(false, MAX_ENTRIES)
-			end)
-
-			if refreshOk then
-				-- Clear existing entries in MemoryStore
-				for _, entry in ipairs(entries) do
-					pcall(function()
-						GlobalDonationRankMemoryStore:RemoveAsync(entry.key)
-					end)
-				end
-
-				-- Add the latest entries from DataStore to MemoryStore
-				for _, entry in ipairs(refreshPages:GetCurrentPage()) do
-					local updateSuccess, updateError = pcall(function()
-						GlobalDonationRankMemoryStore:UpdateAsync(entry.key, function()
-							return entry.value
-						end, 86400) -- Cache for 24 hours
-					end)
-
-					if not updateSuccess then
-						warn(
-							"Failed to update donation rank in MemoryStore for key "
-								.. entry.key
-								.. ": "
-								.. tostring(updateError)
-						)
-					end
-				end
-
-				print("Donation MemoryStore refreshed with latest DataStore data")
-			else
-				warn("Failed to refresh Donation MemoryStore:", refreshPages)
-			end
-		end)
-
-		-- 5) Pre-cache this player's info since they're on the leaderboard now
+		-- 4) Pre-cache this player's info since they're on the leaderboard now
 		task.spawn(function()
 			Local.FetchAndCachePlayerInfo(player.UserId)
 		end)
