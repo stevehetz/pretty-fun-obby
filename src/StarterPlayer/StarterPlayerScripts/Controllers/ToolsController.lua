@@ -121,7 +121,7 @@ function Local.CoilEffect(coil: Coil, didEquip: boolean)
 	if coil == "Gravity Coil" then
 		humanoid.JumpHeight = if didEquip then COIL_EFFECTS.Gravity.JumpHeight else COIL_EFFECTS.Default.JumpHeight
 		Workspace.Gravity = if didEquip then COIL_EFFECTS.Gravity.Gravity else COIL_EFFECTS.Default.Gravity
-	else
+	elseif coil == "Speed Coil" then
 		humanoid.WalkSpeed = if didEquip then COIL_EFFECTS.Speed.WalkSpeed else COIL_EFFECTS.Default.WalkSpeed
 	end
 end
