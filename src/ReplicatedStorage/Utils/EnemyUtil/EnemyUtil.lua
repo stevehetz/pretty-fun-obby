@@ -26,6 +26,9 @@ export type EnemyUtilConfig = {
 local Local = {}
 local Shared = {}
 
+-- Table to track enemies who are off their platform
+local enemiesOffPlatform = {}
+
 -- Function to set collision group for all parts in a model
 local function setCollisionGroup(model, groupName)
 	for _, part in pairs(model:GetDescendants()) do
@@ -198,22 +201,17 @@ function Shared.KnockOver(config, animateEnemy)
 	end -- Prevent stacking
 	config.isKnockedOver = true
 
-	print("Knocking over enemy:", config.rig.Name)
-
 	-- Stop movement and animation
 	Local.StopRig(config, animateEnemy)
 
-	print("Enemy knocked over, stopping movement and animation.")
-
 	-- Rotate the enemy for knockdown effect
 	if config.rig:FindFirstChild("HumanoidRootPart") then
-		print("Rotating enemy rig:", config.rig.Name)
 		local root = config.rig.HumanoidRootPart
 		root.CFrame = root.CFrame * CFrame.Angles(math.rad(90), 0, 0)
 	end
 
 	-- Wait 2 seconds, then allow movement again
-	task.delay(2, function()
+	task.delay(3, function()
 		config.isKnockedOver = false
 		-- Restore upright position if changed
 		if config.rig:FindFirstChild("HumanoidRootPart") then
@@ -221,6 +219,44 @@ function Shared.KnockOver(config, animateEnemy)
 			root.CFrame = CFrame.new(root.Position)
 		end
 	end)
+end
+
+-- Function to check if an enemy is off its platform and kill it if it's been off for more than 3 seconds
+function Shared.CheckEnemyOffPlatform(config, platformBoundaries)
+	local rig = config.rig
+
+	-- Make sure the rig still exists and has a HumanoidRootPart
+	if not rig or not rig:FindFirstChild("HumanoidRootPart") or not rig:FindFirstChild("Humanoid") then
+		return
+	end
+
+	local enemyPosition = rig.HumanoidRootPart.Position
+	local isEnemyOnPlatform = BoundaryUtil.IsPositionOnPlatform(enemyPosition, platformBoundaries)
+
+	-- If enemy is off platform
+	if not isEnemyOnPlatform then
+		-- If this is the first time we're detecting this enemy off platform
+		if not enemiesOffPlatform[rig] then
+			enemiesOffPlatform[rig] = os.time()
+		else
+			-- Check how long they've been off platform
+			local timeOffPlatform = os.time() - enemiesOffPlatform[rig]
+
+			-- If they've been off platform for more than 3 seconds, kill them
+			if timeOffPlatform >= 3 then
+				-- Kill the enemy to trigger respawn
+				if rig.Humanoid then
+					rig.Humanoid.Health = 0
+
+					-- Reset the timer
+					enemiesOffPlatform[rig] = nil
+				end
+			end
+		end
+	else
+		-- If enemy is back on platform, remove them from the tracking table
+		enemiesOffPlatform[rig] = nil
+	end
 end
 
 return Shared

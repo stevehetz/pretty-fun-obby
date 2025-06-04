@@ -3,6 +3,7 @@ local PhysicsService = game:GetService("PhysicsService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local EnemyUtil = require(ReplicatedStorage.Utils.EnemyUtil.EnemyUtil)
+local BoundaryUtil = require(ReplicatedStorage.Utils.BoundaryUtil)
 
 export type EnemyManagerConfig = {
 	enemiesFolder: Folder,
@@ -100,8 +101,8 @@ function Shared.Load(config: EnemyManagerConfig)
 		end
 	end
 
-	-- Check for enemies falling off the platform
-	-- Check for fallen enemies every 5 seconds instead of yielding on every heartbeat
+	-- Check for enemies falling off the platform or being off platform for too long
+	-- Check for fallen enemies every second
 	task.spawn(function()
 		while true do
 			task.wait(1)
@@ -109,17 +110,29 @@ function Shared.Load(config: EnemyManagerConfig)
 				if enemy:IsA("Model") and enemy:FindFirstChild("HumanoidRootPart") then
 					-- Check if the enemy has fallen below the death Y-level
 					if enemy.HumanoidRootPart.Position.Y < deathYLevel then
-						-- Extract the base name (remove the unique ID suffix)
-
 						local originalCFrame = enemyOriginalCFrames[enemy.Name]
 						if originalCFrame then
 							-- Destroy the enemy
 							enemy:Destroy()
 
 							-- Recreate the enemy after 10 seconds
-							task.delay(10, function()
+							task.delay(5, function()
 								createEnemy(enemyClones[enemy.Name], originalCFrame)
 							end)
+						end
+					else
+						-- Check if enemy is off platform horizontally
+						local enemyConfig = {
+							rig = enemy,
+							platform = enemyPlatform,
+						}
+
+						-- Get platform boundaries
+						local platformBoundaries = BoundaryUtil.GetBoundaryOfRig(enemy, enemyPlatform)
+
+						-- Check if enemy is off platform and kill if necessary
+						if platformBoundaries then
+							EnemyUtil.CheckEnemyOffPlatform(enemyConfig, platformBoundaries)
 						end
 					end
 				end
