@@ -58,8 +58,8 @@ function Shared.Load(config: EnemyManagerConfig)
 					-- Destroy the enemy
 					newEnemy:Destroy()
 
-					-- Recreate the enemy after 10 seconds
-					task.delay(10, function()
+					-- Recreate the enemy
+					task.delay(2, function()
 						createEnemy(enemyClones[newEnemy.Name], originalCF)
 					end)
 				end)
@@ -115,8 +115,8 @@ function Shared.Load(config: EnemyManagerConfig)
 							-- Destroy the enemy
 							enemy:Destroy()
 
-							-- Recreate the enemy after 10 seconds
-							task.delay(5, function()
+							-- Recreate the enemy
+							task.delay(3, function()
 								createEnemy(enemyClones[enemy.Name], originalCFrame)
 							end)
 						end

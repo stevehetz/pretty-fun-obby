@@ -135,12 +135,12 @@ function Shared.GiveTrashcan(player: Player)
 						-- Knock over the enemy
 						EnemyUtil.KnockOver(config)
 
-						-- Play a hit sound
+						-- Play a hit sound only if the player has sound effects enabled
 						pcall(function()
-							-- Try to use the TrashcanHit sound, but fall back to Confirm if it doesn't exist yet
-							Sounds.PlaySound("Dink")
-							-- Sounds.PlaySound("Confirm", hrp)
-							-- Sounds.PlaySound("TrashcanHit", hrp)
+							-- Get the player who threw the trashcan
+							local throwerPlayer = player
+							-- Play the Dink sound only if sound effects are enabled for this player
+							Sounds.PlaySoundForServer("Dink", throwerPlayer)
 						end)
 					end
 				end
