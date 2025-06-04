@@ -90,13 +90,25 @@ function Local.SetupCharacter(player: Player)
 	end
 
 	for _, tool in backpack:GetChildren() do
-		Local.ApplyIconToTool(tool)
-		Local.SetupCoil(tool)
+		if tool.Name == "Gravity Coil" or tool.Name == "Speed Coil" then
+			Local.ApplyIconToTool(tool)
+			Local.SetupCoil(tool)
+		end
+
+		if tool.Name == "Trashcan" then
+			Local.SetupTrashcan(tool)
+		end
 	end
 
 	backpack.ChildAdded:Connect(function(tool)
-		Local.ApplyIconToTool(tool)
-		Local.SetupCoil(tool)
+		if tool.Name == "Gravity Coil" or tool.Name == "Speed Coil" then
+			Local.ApplyIconToTool(tool)
+			Local.SetupCoil(tool)
+		end
+
+		if tool.Name == "Trashcan" then
+			Local.SetupTrashcan(tool)
+		end
 	end)
 end
 
@@ -140,6 +152,54 @@ function Local.ApplyIconToTool(tool)
 		tool.TextureId = info.Image
 		tool.ToolTip = tool.Name
 	end
+end
+
+function Local.SetupTrashcan(tool)
+	local animsFolder = tool.Animations
+
+	tool.TextureId = "rbxassetid://124631666409554"
+
+	local player = game.Players.LocalPlayer
+	local char = player.Character or player.CharacterAdded:Wait()
+	local hum = char:WaitForChild("Humanoid")
+
+	local db = 0
+
+	local animsTable = {
+		["Equip"] = hum:LoadAnimation(animsFolder.Equip),
+		["Idle"] = hum:LoadAnimation(animsFolder.Idle),
+		["Throw"] = hum:LoadAnimation(animsFolder.Throw),
+	}
+
+	tool.Activated:Connect(function()
+		if db == 0 then
+			db = 1
+			animsTable.Idle:Stop()
+			animsTable.Throw:Play()
+
+			task.wait(0.3)
+
+			animsTable.Throw:Stop()
+			animsTable.Idle:Play()
+
+			task.wait(1)
+
+			db = 0
+		end
+	end)
+
+	tool.Equipped:Connect(function()
+		animsTable.Equip:Play()
+		animsTable.Equip.Stopped:Connect(function()
+			animsTable.Idle:Play()
+		end)
+	end)
+
+	tool.Unequipped:Connect(function()
+		animsTable.Equip:Stop()
+		animsTable.Idle:Stop()
+		animsTable.Throw:Stop()
+	end)
 end
 
 return Shared
