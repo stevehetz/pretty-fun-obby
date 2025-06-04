@@ -100,6 +100,10 @@ end
 
 function Local.FollowPlayer(config, player, platformBoundaries, animateEnemy)
 	while true do
+		if config.isKnockedOver then
+			task.wait(0.1)
+			continue
+		end
 		if
 			not player
 			or not player.Character
@@ -138,6 +142,9 @@ function Local.FollowPlayer(config, player, platformBoundaries, animateEnemy)
 end
 
 function Local.MoveRigToPlayer(config, player, platformBoundaries, animateEnemy)
+	if config.isKnockedOver then
+		return
+	end
 	local targetPosition = player.Character.HumanoidRootPart.Position
 
 	-- Check if the target position is within the platform boundaries
@@ -160,6 +167,9 @@ function Local.MoveRigToPlayer(config, player, platformBoundaries, animateEnemy)
 end
 
 function Local.StopRig(config, animateEnemy)
+	if config.isKnockedOver then
+		return
+	end
 	config.movingToPlayerId = nil
 
 	-- Return to original position if it exists
@@ -179,6 +189,38 @@ function Local.GetPlayerDistanceFromRig(config, player)
 	local humanoidPosition = config.rig.HumanoidRootPart.Position
 	local playerPosition = player.Character:FindFirstChild("HumanoidRootPart").Position
 	return (playerPosition - humanoidPosition).Magnitude
+end
+
+-- New: Knock over enemy and pause movement
+function Shared.KnockOver(config, animateEnemy)
+	if config.isKnockedOver then
+		return
+	end -- Prevent stacking
+	config.isKnockedOver = true
+
+	print("Knocking over enemy:", config.rig.Name)
+
+	-- Stop movement and animation
+	Local.StopRig(config, animateEnemy)
+
+	print("Enemy knocked over, stopping movement and animation.")
+
+	-- Rotate the enemy for knockdown effect
+	if config.rig:FindFirstChild("HumanoidRootPart") then
+		print("Rotating enemy rig:", config.rig.Name)
+		local root = config.rig.HumanoidRootPart
+		root.CFrame = root.CFrame * CFrame.Angles(math.rad(90), 0, 0)
+	end
+
+	-- Wait 2 seconds, then allow movement again
+	task.delay(2, function()
+		config.isKnockedOver = false
+		-- Restore upright position if changed
+		if config.rig:FindFirstChild("HumanoidRootPart") then
+			local root = config.rig.HumanoidRootPart
+			root.CFrame = CFrame.new(root.Position)
+		end
+	end)
 end
 
 return Shared

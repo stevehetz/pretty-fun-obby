@@ -1,6 +1,10 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CollectionService = game:GetService("CollectionService")
 
 local PlayerDataService = require(script.Parent.PlayerDataService)
+local TestService = require(script.Parent.TestService)
+local EnemyUtil = require(ReplicatedStorage.Utils.EnemyUtil.EnemyUtil)
+local Sounds = require(ReplicatedStorage.Configs.Sounds)
 
 local Local = {}
 local Shared = {}
@@ -9,12 +13,16 @@ PlayerDataService.ProfileLoaded.Event:Connect(function(player: Player)
 	-- print("ToolsService - PlayerDataService.ProfileLoaded.Event")
 	Shared.GiveTool(player, "Gravity Coil", 1157798560)
 	Shared.GiveTool(player, "Speed Coil", 1157906298)
-	Shared.GiveTrashcan(player, "Trashcan")
+	Shared.GiveTrashcan(player)
+	if TestService.IsDev() then
+	end
 
 	player.CharacterAdded:Connect(function(character)
 		Shared.GiveTool(player, "Gravity Coil", 1157798560)
 		Shared.GiveTool(player, "Speed Coil", 1157906298)
-		Shared.GiveTrashcan(player, "Trashcan")
+		if TestService.IsDev() then
+			Shared.GiveTrashcan(player)
+		end
 	end)
 end)
 
@@ -53,8 +61,6 @@ function Shared.GiveTrashcan(player: Player)
 		local player = game.Players:GetPlayerFromCharacter(tool.Parent)
 		local trashcanParts = tool.TrashcanParts
 
-		print("Trashcan activated by", player.Name)
-
 		if db == 0 then
 			db = 1
 
@@ -71,11 +77,12 @@ function Shared.GiveTrashcan(player: Player)
 			clone.Parent = game.Workspace
 			clone.Material = Enum.Material.Metal
 
-			-- clone.CustomPhysicalProperties = PhysicalProperties.new(
-			-- 	50, -- density
-			-- 	0.3, -- friction
-			-- 	0.5 -- elasticity
-			-- )
+			-- Set up custom physical properties for better physics interaction
+			clone.CustomPhysicalProperties = PhysicalProperties.new(
+				50, -- density
+				0.3, -- friction
+				0.5 -- elasticity
+			)
 
 			-- Calculate a point 4 studs in front of the HRP, and 4 studs above
 			local forwardDistance = 5
@@ -92,8 +99,55 @@ function Shared.GiveTrashcan(player: Player)
 
 			clone.AssemblyLinearVelocity = humanoid.CFrame.LookVector * 150 + Vector3.new(0, 0.8, 0)
 
-			-- Fade out and remove the thrown trashcan after 3 seconds
-			task.delay(2, function()
+			-- Set up collision detection with enemies
+			local hitEnemies = {} -- Track which enemies have been hit to prevent multiple hits
+
+			-- Connect to the Touched event to detect collisions with enemies
+			clone.Touched:Connect(function(hit)
+				-- Check if the hit part belongs to an enemy
+				local enemyModel = hit:FindFirstAncestorOfClass("Model")
+
+				if
+					enemyModel
+					and enemyModel.Parent.Name == "Enemies"
+					and enemyModel:FindFirstChild("Humanoid")
+					and not hitEnemies[enemyModel]
+				then
+					-- Mark this enemy as hit to prevent multiple hits from the same trashcan
+					hitEnemies[enemyModel] = true
+
+					-- Apply a physical impact to the enemy
+					if enemyModel:FindFirstChild("HumanoidRootPart") then
+						local hrp = enemyModel.HumanoidRootPart
+
+						-- Calculate impact direction (from trashcan to enemy)
+						local impactDir = (hrp.Position - clone.Position).Unit
+
+						-- Apply an impulse in that direction
+						hrp:ApplyImpulse(impactDir * 5000)
+
+						-- If no configuration found, create a temporary one
+						local config = {
+							rig = enemyModel,
+							isKnockedOver = false,
+						}
+
+						-- Knock over the enemy
+						EnemyUtil.KnockOver(config)
+
+						-- Play a hit sound
+						pcall(function()
+							-- Try to use the TrashcanHit sound, but fall back to Confirm if it doesn't exist yet
+							Sounds.PlaySound("Dink")
+							-- Sounds.PlaySound("Confirm", hrp)
+							-- Sounds.PlaySound("TrashcanHit", hrp)
+						end)
+					end
+				end
+			end)
+
+			-- Fade out and remove the thrown trashcan after 7 seconds
+			task.delay(7, function()
 				-- Create a tween to fade out the trashcan
 				local tweenService = game:GetService("TweenService")
 				local tweenInfo = TweenInfo.new(

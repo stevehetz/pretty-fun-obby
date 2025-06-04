@@ -39,7 +39,7 @@ function Shared.OnStart()
 	-- Shared.PrintDonationRank()
 end
 
-Shared.IsDev = function()
+function Shared.IsDev()
 	if Local.CurrentPlayer then
 		return TestConfig.IsDev(Local.CurrentPlayer.Name)
 	end
