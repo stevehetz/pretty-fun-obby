@@ -13,8 +13,8 @@ PlayerDataService.ProfileLoaded.Event:Connect(function(player: Player)
 	-- print("ToolsService - PlayerDataService.ProfileLoaded.Event")
 	Shared.GiveTool(player, "Gravity Coil", 1157798560)
 	Shared.GiveTool(player, "Speed Coil", 1157906298)
-	Shared.GiveTrashcan(player)
 	if TestService.IsDev() then
+		Shared.GiveTrashcan(player)
 	end
 
 	player.CharacterAdded:Connect(function(character)
