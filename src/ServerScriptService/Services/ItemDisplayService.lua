@@ -5,6 +5,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local PlayerData = require(ReplicatedStorage.PlayerData)
 local PlayerDataService = require(script.Parent.PlayerDataService)
 local CoinService = require(script.Parent.CoinService)
+local ToolsService = require(script.Parent.ToolsService)
 local StoreConfig = require(ServerStorage.Configs.Store)
 
 local Local = {}
@@ -86,7 +87,6 @@ function Local.SetupDisplayTouch(player: Player, state: PlayerData.PlayerData, t
 end
 
 function Local.OnDisplayTouched(player: Player, state: PlayerData.PlayerData, display: Instance)
-	print("Display touched by player:", player.Name, "on display:", display.Name)
 	-- Is a gamepass
 	local storeItemInfo = StoreConfig.GetStoreItemInfo(display.Name)
 	if storeItemInfo and storeItemInfo.IsGamepass then
@@ -102,7 +102,7 @@ function Local.OnDisplayTouched(player: Player, state: PlayerData.PlayerData, di
 	-- Is a coin store item
 	local coinStoreItemInfo = CoinService.GetCoinStoreItemInfo(display.Name)
 	if coinStoreItemInfo then
-		print(coinStoreItemInfo)
+		Local.TryPurchaseCoinStoreItem(player, display.Name)
 		return
 	end
 end
@@ -114,6 +114,21 @@ function Local.TryPurchaseGamepass(player: Player, gamepassId: number)
 
 	if not success then
 		warn("Failed to prompt gamepass purchase:", errorMessage)
+	end
+end
+
+function Local.TryPurchaseCoinStoreItem(player: Player, itemName: string)
+	local success, errorMessage = pcall(function()
+		local purchased = CoinService.Purchase(player, itemName)
+
+		if purchased then
+			ToolsService.EquipTool(player, itemName)
+		end
+	end)
+
+	if not success then
+		warn("Failed to purchase coin store item:", errorMessage)
+		return
 	end
 end
 
