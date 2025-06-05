@@ -8,6 +8,13 @@ local Remotes = ReplicatedStorage.Remotes
 local Local = {}
 local Shared = {}
 
+Local.CoinStoreItems = {
+	["Trashcan"] = {
+		name = "Trashcan",
+		value = 300,
+	},
+}
+
 function Shared.OnStart()
 	Remotes.CoinCollected.OnServerEvent:Connect(Shared.OnUpdateCoinCount)
 end
@@ -29,6 +36,14 @@ function Shared.OnUpdateCoinCount(player: Player, coinValue: number)
 		value = coinValue,
 	}
 	PlayerDataService.UpdateState(player, action)
+end
+
+function Shared.GetCoinStoreItemInfo(itemName: string)
+	if Local.CoinStoreItems[itemName] then
+		return Local.CoinStoreItems[itemName]
+	end
+
+	return nil
 end
 
 return Shared
