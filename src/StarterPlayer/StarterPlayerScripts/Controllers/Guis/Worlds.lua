@@ -177,7 +177,7 @@ function Local.SetupPurchaseBtnStatus(item, button)
 		statusImage.Visible = false
 		statusText.Text = "Owned"
 	else
-		statusImage.Image = item.Currency == "Coins" and Local.CoinsImage or item.Image
+		statusImage.Image = item.Currency == "Coins" and Local.CoinsImage or statusImage.Image
 		statusText.Text = item.Price
 		statusImage.Visible = true
 	end
