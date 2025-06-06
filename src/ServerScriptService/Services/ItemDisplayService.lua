@@ -90,9 +90,8 @@ function Local.OnDisplayTouched(player: Player, state: PlayerData.PlayerData, di
 	-- Is a gamepass
 	local storeItemInfo = StoreConfig.GetStoreItemInfo(display.Name)
 	if storeItemInfo and storeItemInfo.IsGamepass then
-		-- Already owns gamepass
+		-- If not owns gamepass, prompt purchase
 		if not state.gamepasses[tostring(storeItemInfo.Id)] then
-			-- If the player does not own the gamepass, prompt them to purchase it
 			Local.TryPurchaseGamepass(player, storeItemInfo.Id)
 		end
 
@@ -102,7 +101,7 @@ function Local.OnDisplayTouched(player: Player, state: PlayerData.PlayerData, di
 	-- Is a coin store item
 	local coinStoreItemInfo = CoinService.GetCoinStoreItemInfo(display.Name)
 	if coinStoreItemInfo then
-		Local.TryPurchaseCoinStoreItem(player, display.Name)
+		Local.TryPurchaseCoinStoreItem(player, state, display.Name)
 		return
 	end
 end
@@ -117,7 +116,12 @@ function Local.TryPurchaseGamepass(player: Player, gamepassId: number)
 	end
 end
 
-function Local.TryPurchaseCoinStoreItem(player: Player, itemName: string)
+function Local.TryPurchaseCoinStoreItem(player: Player, state, itemName: string)
+	if itemName == "Trashcan" and state.hasTrashcan then
+		warn("Player already has a trashcan.")
+		return
+	end
+
 	local success, errorMessage = pcall(function()
 		local purchased = CoinService.Purchase(player, itemName)
 

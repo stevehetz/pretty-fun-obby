@@ -81,11 +81,18 @@ function Local.PurchaseTool(player: Player, itemInfo)
 	ToolsService.GiveTool(player, itemInfo.Name)
 
 	-- Deduct coins
-	local action: PlayerDataService.UpdateStateAction = {
+	local coinCountAction: PlayerDataService.UpdateStateAction = {
 		type = "UpdateCoinCount",
 		value = -itemInfo.Value,
 	}
-	PlayerDataService.UpdateState(player, action)
+	PlayerDataService.UpdateState(player, coinCountAction)
+
+	-- Set hasTrashcan player state to true
+	local hasTrashcanAction: PlayerDataService.UpdateStateAction = {
+		type = "UpdateHasTrashcan",
+		value = true,
+	}
+	PlayerDataService.UpdateState(player, hasTrashcanAction)
 
 	return true
 end
