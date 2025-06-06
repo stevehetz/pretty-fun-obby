@@ -61,8 +61,8 @@ local _store = {
 		-- 	IsPet = true,
 		-- },
 		{
-			-- Id = 1234640489, -- Permanent World Pass
-			Id = 1246700401, -- Permanent World Pass (Test)
+			Id = 1234640489, -- Permanent World Pass
+			-- Id = 1246700401, -- Permanent World Pass (Test)
 			IsPass = true,
 		},
 	},
