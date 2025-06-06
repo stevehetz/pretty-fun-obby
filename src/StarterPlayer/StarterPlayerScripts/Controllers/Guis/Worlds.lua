@@ -141,7 +141,6 @@ end
 
 function Local.AddPurchaseButton(item)
 	local button = PurchaseBtnTemplate:Clone()
-	print(button)
 	button.Name = item.Name:gsub(" ", "")
 	button.Visible = true
 	button.NameLabel.Text = item.DisplayName or item.Name
@@ -154,10 +153,7 @@ function Local.AddPurchaseButton(item)
 end
 
 function Local.SetupPurchaseBtnStatus(item, button)
-	print(item)
-	print(button)
 	local statusFrame = button:FindFirstChild("Status")
-	print(statusFrame)
 	local statusText = statusFrame:FindFirstChild("StatusText")
 	local statusImage = statusFrame:FindFirstChild("StatusImage")
 
