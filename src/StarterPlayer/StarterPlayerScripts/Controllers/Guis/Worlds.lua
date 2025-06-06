@@ -31,30 +31,30 @@ Local.OneTimeTeleportPass = {
 	Price = 1000,
 }
 
-Local.TeleportPassInfoReady = false
+Local.PermanentWorldPassInfoReady = false
 
-local _teleportPassInfo = {}
+local _permanentWorldPassInfo = {}
 
-function Local.GetTeleportPassInfo()
-	while not Local.TeleportPassInfoReady do
+function Local.GetPermanentWorldPassInfo()
+	while not Local.PermanentWorldPassInfoReady do
 		task.wait(0.1)
 	end
-	return _teleportPassInfo
+	return _permanentWorldPassInfo
 end
 
-function Local.GetTeleportPassInfoFromServer()
-	local success, teleportPassInfo = pcall(function()
-		return GetStoreItemInfoRF:InvokeServer("Teleport Pass")
+function Local.GetPermanentWorldPassInfoFromServer()
+	local success, permanentWorldPassInfo = pcall(function()
+		return GetStoreItemInfoRF:InvokeServer("Permanent World Pass")
 	end)
 
 	if not success then
-		warn("Failed to get world pass data: ", teleportPassInfo)
+		warn("Failed to get world pass data: ", permanentWorldPassInfo)
 		return
 	end
 
-	Local.TeleportPassInfoReady = true
+	Local.PermanentWorldPassInfoReady = true
 
-	_teleportPassInfo = teleportPassInfo
+	_permanentWorldPassInfo = permanentWorldPassInfo
 end
 
 function Shared.OnStart()
@@ -62,7 +62,7 @@ function Shared.OnStart()
 	GuiController.SetupGui(Gui, OpenButton)
 
 	-- Get the world pass info from server
-	Local.GetTeleportPassInfoFromServer()
+	Local.GetPermanentWorldPassInfoFromServer()
 
 	-- Hide the purchase item button template
 	PurchaseBtnTemplate.Visible = false
@@ -90,27 +90,27 @@ function Shared.OnStart()
 end
 
 function Local.RefreshButtonStatuses()
-	local teleportPassInfo = Local.GetTeleportPassInfo()
-	if not teleportPassInfo then
+	local permanentWorldPassInfo = Local.GetPermanentWorldPassInfo()
+	if not permanentWorldPassInfo then
 		warn("No world pass info available.")
 		return
 	end
 
-	local teleportPassButton = PurchaseContainer:FindFirstChild("TeleportPass")
-	Local.SetupPurchaseBtnStatus(teleportPassInfo, teleportPassButton)
+	local permanentWorldPassButton = PurchaseContainer:FindFirstChild("PermanentWorldPass")
+	Local.SetupPurchaseBtnStatus(permanentWorldPassInfo, permanentWorldPassButton)
 
 	local oneTimePassButton = PurchaseContainer:FindFirstChild(Local.OneTimeTeleportPass.Name)
 	Local.SetupPurchaseBtnStatus(Local.OneTimeTeleportPass, oneTimePassButton)
 end
 
 function Local.AddPurchaseButtons()
-	local teleportPassInfo = Local.GetTeleportPassInfo()
-	if not teleportPassInfo then
+	local permanentWorldPassInfo = Local.GetPermanentWorldPassInfo()
+	if not permanentWorldPassInfo then
 		warn("No world pass info available.")
 		return
 	end
 
-	Local.AddPurchaseButton(teleportPassInfo)
+	Local.AddPurchaseButton(permanentWorldPassInfo)
 	Local.AddPurchaseButton(Local.OneTimeTeleportPass)
 end
 
@@ -141,6 +141,7 @@ end
 
 function Local.AddPurchaseButton(item)
 	local button = PurchaseBtnTemplate:Clone()
+	print(button)
 	button.Name = item.Name:gsub(" ", "")
 	button.Visible = true
 	button.NameLabel.Text = item.DisplayName or item.Name
@@ -153,7 +154,10 @@ function Local.AddPurchaseButton(item)
 end
 
 function Local.SetupPurchaseBtnStatus(item, button)
+	print(item)
+	print(button)
 	local statusFrame = button:FindFirstChild("Status")
+	print(statusFrame)
 	local statusText = statusFrame:FindFirstChild("StatusText")
 	local statusImage = statusFrame:FindFirstChild("StatusImage")
 
@@ -226,10 +230,10 @@ end
 function Local.HandleItemSelect(item)
 	local state = StateController.GetState()
 
-	if item.Name == "Teleport Pass" then
+	if item.Name == "Permanent World Pass" then
 		local playerOwnsGamepass = state.gamepasses[tostring(item.Id)]
 		if not playerOwnsGamepass then
-			-- Prompt the purchase for the teleport pass
+			-- Prompt the purchase for the permanent world pass
 			MarketPlaceService:PromptGamePassPurchase(Player, item.Id)
 		end
 		return
@@ -244,8 +248,8 @@ function Local.HandleItemSelect(item)
 
 		local isWorld1 = item.Name == "World1"
 		local playerOwnsOneTimePass = state.oneTimePass
-		local teleportPassInfo = Local.GetTeleportPassInfo()
-		local playerOwnsGamepass = state.gamepasses[tostring(teleportPassInfo.Id)]
+		local permanentWorldPassInfo = Local.GetPermanentWorldPassInfo()
+		local playerOwnsGamepass = state.gamepasses[tostring(permanentWorldPassInfo.Id)]
 
 		if isWorld1 or playerOwnsOneTimePass or playerOwnsGamepass then
 			-- Player can teleport to the world
@@ -254,17 +258,17 @@ function Local.HandleItemSelect(item)
 			return
 		end
 
-		-- Prompt the purchase for the teleport pass
-		MarketPlaceService:PromptGamePassPurchase(Player, teleportPassInfo.Id)
+		-- Prompt the purchase for the permanent world pass
+		MarketPlaceService:PromptGamePassPurchase(Player, permanentWorldPassInfo.Id)
 	end
 
 	if item.Name == Local.OneTimeTeleportPass.Name then
-		-- Check if player owns Teleport Pass
-		local teleportPassInfo = Local.GetTeleportPassInfo()
-		local ownsTeleportPass = state.gamepasses[tostring(teleportPassInfo.Id)]
+		-- Check if player owns Permanent World Pass
+		local permanentWorldPassInfo = Local.GetPermanentWorldPassInfo()
+		local ownsPermanentWorldPass = state.gamepasses[tostring(permanentWorldPassInfo.Id)]
 
-		if ownsTeleportPass then
-			print("Player owns teleport pass, do not purchase one-time pass.")
+		if ownsPermanentWorldPass then
+			print("Player owns permanent world pass, do not purchase one-time pass.")
 			return
 		end
 
