@@ -121,6 +121,13 @@ function Local.InitState(player: Player)
 		-- state.coins = 0
 		state.skips.amount = 2000
 	end
+
+	if TestConfig.IsTester(player.Name) then
+		if state.coins < 2000 then
+			state.coins = 2000
+		end
+		state.skips.amount = 2000
+	end
 end
 
 -- Export this function so WorldPortalService can call it

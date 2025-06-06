@@ -5,14 +5,10 @@ local LocalPlayer = Players.LocalPlayer
 local Local = {}
 local Shared = {}
 
-Shared.Players = {
+Shared.Developers = {
 	ra1n_zer0 = {
 		UserId = 6164663905,
 		Name = "ra1n_zer0",
-	},
-	ra1n_test1 = {
-		UserId = 8318796209,
-		Name = "ra1n_test1",
 	},
 	ra1n_test2 = {
 		UserId = 8398047634,
@@ -24,8 +20,37 @@ Shared.Players = {
 	},
 }
 
+Shared.Testers = {
+	ra1n_test1 = {
+		UserId = 8318796209,
+		Name = "ra1n_test1",
+	},
+	Cuacuo218 = {
+		UserId = 5527661621,
+		Name = "Cuacuo218",
+	},
+	Bruman1118 = {
+		UserId = 6192083401,
+		Name = "Bruman1118",
+	},
+	Bruman1151 = {
+		UserId = 8278362441,
+		Name = "Bruman1151",
+	},
+}
+
 function Shared.IsDev(playerName: string): boolean
-	for _, player in pairs(Shared.Players) do
+	for _, player in pairs(Shared.Developers) do
+		if player.Name == playerName then
+			return true
+		end
+	end
+
+	return false
+end
+
+function Shared.IsTester(playerName: string): boolean
+	for _, player in pairs(Shared.Testers) do
 		if player.Name == playerName then
 			return true
 		end
