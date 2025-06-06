@@ -37,6 +37,10 @@ Shared.Testers = {
 		UserId = 8278362441,
 		Name = "Bruman1151",
 	},
+	TrashCanMan669 = {
+		UserId = 8358751040,
+		Name = "TrashCanMan669",
+	},
 }
 
 function Shared.IsDev(playerName: string): boolean
