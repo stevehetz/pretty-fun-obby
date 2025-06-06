@@ -70,10 +70,17 @@ function Shared.Purchase(player: Player, itemName: string)
 end
 
 function Local.PurchaseTool(player: Player, itemInfo)
-	-- Check if item is in backpack
+	-- Check if item is in backpack or character
 	local backpack = player.Backpack or player:WaitForChild("Backpack")
+	local character = player.Character
+
 	if backpack:FindFirstChild(itemInfo.Name) then
-		warn("Player already owns item:", itemInfo.Name)
+		warn("Player already owns item in backpack:", itemInfo.Name)
+		return
+	end
+
+	if character and character:FindFirstChild(itemInfo.Name) then
+		warn("Player already has item equipped:", itemInfo.Name)
 		return
 	end
 
