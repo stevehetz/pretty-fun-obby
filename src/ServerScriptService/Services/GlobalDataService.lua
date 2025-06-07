@@ -32,6 +32,16 @@ local Shared = {}
 local MAX_ENTRIES = 50
 local CLEANUP_INTERVAL = 86400 -- 24 hours in seconds
 
+-- Add local caching to reduce MemoryStore calls
+local LocalCache = {
+	playerInfo = {}, -- Cache player info locally
+	coinRank = {}, -- Cache coin rank data
+	donationRank = {}, -- Cache donation rank data
+	lastCoinRankUpdate = 0,
+	lastDonationRankUpdate = 0,
+	updateInterval = 60, -- Update leaderboards every 60 seconds
+}
+
 Shared.OnStart = function()
 	-- Get top coins from the persistent store and cache them in MemoryStore
 	task.spawn(function()
@@ -86,6 +96,23 @@ Shared.OnStart = function()
 	GetDonationRankRF.OnServerInvoke = function()
 		return Shared.GetDonationRank()
 	end
+
+	-- Set up periodic refresh of leaderboard data to reduce on-demand requests
+	task.spawn(function()
+		while true do
+			task.wait(LocalCache.updateInterval)
+
+			-- Update coin rank cache in the background
+			if os.time() - LocalCache.lastCoinRankUpdate > LocalCache.updateInterval then
+				Shared.RefreshCoinRankCache()
+			end
+
+			-- Update donation rank cache in the background
+			if os.time() - LocalCache.lastDonationRankUpdate > LocalCache.updateInterval then
+				Shared.RefreshDonationRankCache()
+			end
+		end
+	end)
 end
 
 -- Function to clear all entries from both global stores
@@ -185,13 +212,19 @@ function Local.FetchAndCachePlayerInfo(userId)
 	userId = tostring(userId)
 	local uid = tonumber(userId)
 
-	-- Try to get cached info first
+	-- Check local cache first
+	if LocalCache.playerInfo[userId] and os.time() - LocalCache.playerInfo[userId].lastUpdated < 3600 then
+		return LocalCache.playerInfo[userId]
+	end
+
+	-- Try to get cached info from MemoryStore
 	local ok, cachedInfo = pcall(function()
 		return PlayerInfoMemoryStore:GetAsync(userId)
 	end)
 
-	-- If we have cached info and it's not expired, return it
+	-- If we have cached info from MemoryStore, update local cache and return it
 	if ok and cachedInfo then
+		LocalCache.playerInfo[userId] = cachedInfo
 		return cachedInfo
 	end
 
@@ -212,20 +245,27 @@ function Local.FetchAndCachePlayerInfo(userId)
 		lastUpdated = os.time(),
 	}
 
-	-- Cache the player info for 24 hours
-	pcall(function()
-		PlayerInfoMemoryStore:SetAsync(userId, playerInfo, 86400)
+	-- Update local cache
+	LocalCache.playerInfo[userId] = playerInfo
+
+	-- Cache the player info for 24 hours in MemoryStore (with throttling protection)
+	task.spawn(function()
+		pcall(function()
+			PlayerInfoMemoryStore:SetAsync(userId, playerInfo, 86400)
+		end)
 	end)
 
 	return playerInfo
 end
 
-function Shared.GetCoinRank()
+-- Function to refresh coin rank cache in the background
+function Shared.RefreshCoinRankCache()
 	local ok, list = pcall(function()
-		return GlobalCoinRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, MAX_ENTRIES + 10)
+		return GlobalCoinRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, MAX_ENTRIES)
 	end)
+
 	if not ok then
-		return {}
+		return
 	end
 
 	local out = {}
@@ -249,8 +289,6 @@ function Shared.GetCoinRank()
 		return a.coins > b.coins
 	end)
 
-	-- print(out)
-
 	-- Assign ranks based on sorted order
 	for i, entry in ipairs(out) do
 		entry.rank = i
@@ -261,15 +299,27 @@ function Shared.GetCoinRank()
 		table.insert(topEntries, out[i])
 	end
 
-	return topEntries
+	LocalCache.coinRank = topEntries
+	LocalCache.lastCoinRankUpdate = os.time()
 end
 
-function Shared.GetDonationRank()
+function Shared.GetCoinRank()
+	-- If cache is empty or stale, refresh it
+	if #LocalCache.coinRank == 0 or os.time() - LocalCache.lastCoinRankUpdate > LocalCache.updateInterval then
+		Shared.RefreshCoinRankCache()
+	end
+
+	return LocalCache.coinRank
+end
+
+-- Function to refresh donation rank cache in the background
+function Shared.RefreshDonationRankCache()
 	local ok, list = pcall(function()
-		return GlobalDonationRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, MAX_ENTRIES + 10)
+		return GlobalDonationRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, MAX_ENTRIES)
 	end)
+
 	if not ok then
-		return {}
+		return
 	end
 
 	local out = {}
@@ -293,8 +343,6 @@ function Shared.GetDonationRank()
 		return a.robux > b.robux
 	end)
 
-	-- print(out)
-
 	-- Assign ranks based on sorted order
 	for i, entry in ipairs(out) do
 		entry.rank = i
@@ -305,7 +353,17 @@ function Shared.GetDonationRank()
 		table.insert(topEntries, out[i])
 	end
 
-	return topEntries
+	LocalCache.donationRank = topEntries
+	LocalCache.lastDonationRankUpdate = os.time()
+end
+
+function Shared.GetDonationRank()
+	-- If cache is empty or stale, refresh it
+	if #LocalCache.donationRank == 0 or os.time() - LocalCache.lastDonationRankUpdate > LocalCache.updateInterval then
+		Shared.RefreshDonationRankCache()
+	end
+
+	return LocalCache.donationRank
 end
 
 function Shared.RecordCoinRank(player, totalCoins)
@@ -345,12 +403,7 @@ function Shared.RecordCoinRank(player, totalCoins)
 			warn("Failed to set global coin rank for", key, sErr)
 		end
 
-		-- First remove the key from MemoryStore to clear any cached value
-		pcall(function()
-			GlobalCoinRankMemoryStore:RemoveAsync(key)
-		end)
-
-		-- Then add the new value
+		-- Update the value directly without removing first
 		local updateSuccess, updateError = pcall(function()
 			GlobalCoinRankMemoryStore:UpdateAsync(key, function()
 				return totalCoins
@@ -361,23 +414,27 @@ function Shared.RecordCoinRank(player, totalCoins)
 			warn("Failed to update coin rank in MemoryStore for player " .. key .. ": " .. tostring(updateError))
 		end
 
-		-- Prune memorystore to MAX_ENTRIES
-		local msOk, msList = pcall(function()
-			return GlobalCoinRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, MAX_ENTRIES + 10)
-		end)
-
-		if msOk and #msList > MAX_ENTRIES then
-			-- Sort by value (descending)
-			table.sort(msList, function(a, b)
-				return a.value > b.value
+		-- Prune memorystore to MAX_ENTRIES, but do it less frequently
+		-- Only prune if this is a significant update (player is likely to be on leaderboard)
+		if totalCoins > cutoff * 0.8 then
+			local msOk, msList = pcall(function()
+				return GlobalCoinRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, MAX_ENTRIES + 5)
 			end)
 
-			-- Remove entries beyond MAX_ENTRIES
-			for i = MAX_ENTRIES + 1, #msList do
-				pcall(function()
-					GlobalCoinRankMemoryStore:RemoveAsync(msList[i].key)
-					print("Pruning memorystore entry: ", msList[i].key, " with value: ", msList[i].value)
+			if msOk and #msList > MAX_ENTRIES then
+				-- Sort by value (descending)
+				table.sort(msList, function(a, b)
+					return a.value > b.value
 				end)
+
+				-- Remove entries beyond MAX_ENTRIES
+				for i = MAX_ENTRIES + 1, #msList do
+					task.spawn(function()
+						pcall(function()
+							GlobalCoinRankMemoryStore:RemoveAsync(msList[i].key)
+						end)
+					end)
+				end
 			end
 		end
 
@@ -393,8 +450,11 @@ function Shared.RecordCoinRank(player, totalCoins)
 		end
 
 		-- 4) Pre-cache this player's info since they're on the leaderboard now
+		Local.FetchAndCachePlayerInfo(player.UserId)
+
+		-- Force refresh the leaderboard cache
 		task.spawn(function()
-			Local.FetchAndCachePlayerInfo(player.UserId)
+			Shared.RefreshCoinRankCache()
 		end)
 	end
 end
@@ -436,12 +496,7 @@ function Shared.RecordDonationRank(player, totalRobux)
 			warn("Failed to set global donation rank for", key, sErr)
 		end
 
-		-- First remove the key from MemoryStore to clear any cached value
-		pcall(function()
-			GlobalDonationRankMemoryStore:RemoveAsync(key)
-		end)
-
-		-- Then add the new value
+		-- Update the value directly without removing first
 		local updateSuccess, updateError = pcall(function()
 			GlobalDonationRankMemoryStore:UpdateAsync(key, function()
 				return totalRobux
@@ -452,23 +507,27 @@ function Shared.RecordDonationRank(player, totalRobux)
 			warn("Failed to update donation rank in MemoryStore for player " .. key .. ": " .. tostring(updateError))
 		end
 
-		-- Prune memorystore to MAX_ENTRIES
-		local msOk, msList = pcall(function()
-			return GlobalDonationRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, MAX_ENTRIES + 10) -- Get more than needed to ensure we have all entries
-		end)
-
-		if msOk and #msList > MAX_ENTRIES then
-			-- Sort by value (descending)
-			table.sort(msList, function(a, b)
-				return a.value > b.value
+		-- Prune memorystore to MAX_ENTRIES, but do it less frequently
+		-- Only prune if this is a significant update (player is likely to be on leaderboard)
+		if totalRobux > cutoff * 0.8 then
+			local msOk, msList = pcall(function()
+				return GlobalDonationRankMemoryStore:GetRangeAsync(Enum.SortDirection.Descending, MAX_ENTRIES + 5)
 			end)
 
-			-- Remove entries beyond MAX_ENTRIES
-			for i = MAX_ENTRIES + 1, #msList do
-				pcall(function()
-					GlobalDonationRankMemoryStore:RemoveAsync(msList[i].key)
-					print("Pruning memorystore entry: ", msList[i].key, " with value: ", msList[i].value)
+			if msOk and #msList > MAX_ENTRIES then
+				-- Sort by value (descending)
+				table.sort(msList, function(a, b)
+					return a.value > b.value
 				end)
+
+				-- Remove entries beyond MAX_ENTRIES
+				for i = MAX_ENTRIES + 1, #msList do
+					task.spawn(function()
+						pcall(function()
+							GlobalDonationRankMemoryStore:RemoveAsync(msList[i].key)
+						end)
+					end)
+				end
 			end
 		end
 
@@ -482,8 +541,11 @@ function Shared.RecordDonationRank(player, totalRobux)
 		end
 
 		-- 4) Pre-cache this player's info since they're on the leaderboard now
+		Local.FetchAndCachePlayerInfo(player.UserId)
+
+		-- Force refresh the leaderboard cache
 		task.spawn(function()
-			Local.FetchAndCachePlayerInfo(player.UserId)
+			Shared.RefreshDonationRankCache()
 		end)
 	end
 end
