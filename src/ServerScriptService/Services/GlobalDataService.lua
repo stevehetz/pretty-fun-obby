@@ -4,8 +4,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
-local WorldsConfig = require(ReplicatedStorage.Configs.Worlds)
-
 -- Create appropriate DataStore prefix based on environment
 local StorePrefix = RunService:IsStudio() and "Test_" or "Prod_"
 local PlayerInfoKey = StorePrefix .. "PlayerInfo"
@@ -15,7 +13,6 @@ local Local = {}
 local Shared = {}
 
 local MAX_ENTRIES = 50
-local CLEANUP_INTERVAL = 86400 -- 24 hours in seconds
 
 -- Define leaderboard configurations
 local LeaderboardConfig = {
