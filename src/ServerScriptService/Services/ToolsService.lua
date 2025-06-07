@@ -11,14 +11,24 @@ PlayerDataService.ProfileLoaded.Event:Connect(function(player: Player)
 	-- print("ToolsService - PlayerDataService.ProfileLoaded.Event")
 	Shared.GiveTool(player, "Gravity Coil", 1157798560)
 	Shared.GiveTool(player, "Speed Coil", 1157906298)
-	if TestService.IsDev() then
+
+	-- Check if player has purchased a trashcan
+	local state = PlayerDataService.GetState(player)
+	if state and state.hasTrashcan then
+		Shared.GiveTool(player, "Trashcan")
+	elseif TestService.IsDev() then
 		-- Shared.GiveTool(player, "Trashcan")
 	end
 
 	player.CharacterAdded:Connect(function()
 		Shared.GiveTool(player, "Gravity Coil", 1157798560)
 		Shared.GiveTool(player, "Speed Coil", 1157906298)
-		if TestService.IsDev() then
+
+		-- Check if player has purchased a trashcan
+		local state = PlayerDataService.GetState(player)
+		if state and state.hasTrashcan then
+			Shared.GiveTool(player, "Trashcan")
+		elseif TestService.IsDev() then
 			-- Shared.GiveTool(player, "Trashcan")
 		end
 	end)
