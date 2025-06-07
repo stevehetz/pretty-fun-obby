@@ -121,16 +121,15 @@ function Local.InitState(player: Player)
 
 	-- get player name
 	if TestConfig.IsDev(player.Name) then
-		-- state.coins = 0
-		state.coins = 20000
-		state.skips.amount = 2000
+		state.coins = 1000
+		state.skips.amount = 1000
 	end
 
 	if TestConfig.IsTester(player.Name) then
-		if state.coins < 2000 then
-			state.coins = 2000
+		if state.coins < 1000 then
+			state.coins = 1000
 		end
-		state.skips.amount = 2000
+		state.skips.amount = 1000
 	end
 end
 
