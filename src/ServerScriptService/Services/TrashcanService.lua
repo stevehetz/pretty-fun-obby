@@ -4,6 +4,11 @@ local tweenService = game:GetService("TweenService")
 local EnemyUtil = require(ReplicatedStorage.Utils.EnemyUtil.EnemyUtil)
 local Sounds = require(ReplicatedStorage.Configs.Sounds)
 
+-- Create a RemoteEvent for playing sounds only for specific players
+local PlaySoundEvent = Instance.new("RemoteEvent")
+PlaySoundEvent.Name = "PlayTrashcanSoundEvent"
+PlaySoundEvent.Parent = ReplicatedStorage
+
 local Local = {}
 local Shared = {}
 
@@ -93,12 +98,12 @@ function Shared.SetupTrashcan(player, trashcan)
 						-- Knock over the enemy
 						EnemyUtil.KnockOver(config)
 
-						-- Play a hit sound only if the player has sound effects enabled
+						-- Play a hit sound only for the player who threw the trashcan
 						pcall(function()
 							-- Get the player who threw the trashcan
 							local throwerPlayer = player
-							-- Play the Dink sound only if sound effects are enabled for this player
-							Sounds.PlaySoundForServer("Dink", throwerPlayer)
+							-- Fire the RemoteEvent only to the player who threw the trashcan
+							PlaySoundEvent:FireClient(throwerPlayer, "Dink")
 						end)
 					end
 				end
