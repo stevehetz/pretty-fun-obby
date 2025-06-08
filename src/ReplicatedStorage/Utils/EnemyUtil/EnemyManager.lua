@@ -55,6 +55,8 @@ function Shared.Load(config: EnemyManagerConfig)
 				newEnemy.Humanoid.Died:Connect(function()
 					local originalCF = enemyOriginalCFrames[newEnemy.Name]
 
+					-- print("Enemy died: " .. newEnemy.Name)
+
 					-- Destroy the enemy
 					newEnemy:Destroy()
 
@@ -113,6 +115,7 @@ function Shared.Load(config: EnemyManagerConfig)
 						local originalCFrame = enemyOriginalCFrames[enemy.Name]
 						if originalCFrame then
 							-- Destroy the enemy
+							-- print("Enemy fell off platform: " .. enemy.Name)
 							enemy:Destroy()
 
 							-- Recreate the enemy

@@ -20,6 +20,6 @@ for _, trampoline in ipairs(trampolines) do
 	-- Set the inner part's velocity (keep existing behavior)
 	local innerPart = trampoline:FindFirstChild("Inner")
 	if innerPart then
-		innerPart.AssemblyLinearVelocity = Vector3.new(0, 250, 0)
+		innerPart.AssemblyLinearVelocity = Vector3.new(0, 300, 0)
 	end
 end
