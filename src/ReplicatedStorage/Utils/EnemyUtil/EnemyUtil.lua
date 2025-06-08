@@ -56,7 +56,7 @@ function Shared.EnableAttack(config: EnemyUtilConfig)
 
 	local animateEnemy = animationAssetId and EnemyAnimate.Create(animationAssetId, rig)
 
-	EnemyTouchDamage.Setup(rig, damageParts, damageAmount, damageCooldown)
+	EnemyTouchDamage.Setup(rig, damageParts, damageAmount, damageCooldown, config)
 
 	while task.wait(0.2) do
 		if not rig:FindFirstChild("HumanoidRootPart") then
