@@ -64,8 +64,11 @@ function Shared.RespawnPlayer(player: Player)
 	player:RequestStreamAroundAsync(spawnLocation.Position)
 
 	local character = player.Character
+	if not character then
+		return
+	end
 	local primaryPart = character.PrimaryPart
-	if character and primaryPart then
+	if primaryPart then
 		local distanceBetween = (primaryPart.Position - spawnLocation.Position).Magnitude
 		if distanceBetween < 25 then
 			return
