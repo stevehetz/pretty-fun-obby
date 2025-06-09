@@ -109,6 +109,8 @@ function Local.InitState(player: Player)
 
 	-- Player always starts at stage 0
 	state.stage = 0
+	-- state.stage = 40
+	-- state.coins = 900
 
 	-- Reset trashcan
 	state.hasTrashcan = false
@@ -117,7 +119,7 @@ function Local.InitState(player: Player)
 
 	-- get player name
 	if TestConfig.IsDev(player.Name) then
-		state.coins = 1000
+		state.coins = 900
 		state.skips.amount = 1000
 	end
 

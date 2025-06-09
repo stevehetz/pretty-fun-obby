@@ -50,6 +50,12 @@ function Shared.OnUpdateCoinCount(player: Player, coinValue: number)
 		value = coinValue,
 	}
 	PlayerDataService.UpdateState(player, action)
+
+	if state.coins == 1000 then
+		BadgesConfig.RewardBadge(player, "1,000 Coins")
+	elseif state.coins == 10000 then
+		BadgesConfig.RewardBadge(player, "10,000 Coins")
+	end
 end
 
 function Shared.GetCoinStoreItemInfo(itemName: string)
