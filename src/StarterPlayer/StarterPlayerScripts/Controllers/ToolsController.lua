@@ -28,6 +28,8 @@ local COIL_EFFECTS = {
 local Local = {}
 local Shared = {}
 
+Local.TrashcanIsSetup = false
+
 Shared.ToolToggled = Instance.new("BindableEvent")
 
 -- Store original values when character loads
@@ -115,6 +117,10 @@ function Local.SetupCharacter(player: Player)
 		end
 
 		if tool.Name == "Trashcan" then
+			if Local.TrashcanIsSetup then
+				return
+			end
+			Local.TrashcanIsSetup = true
 			Local.SetupTrashcan(tool)
 		end
 	end)
@@ -164,6 +170,7 @@ end
 
 function Local.SetupTrashcan(tool)
 	local animsFolder = tool.Animations
+	local isEquipped = false
 
 	tool.TextureId = "rbxassetid://124631666409554"
 
@@ -197,13 +204,19 @@ function Local.SetupTrashcan(tool)
 	end)
 
 	tool.Equipped:Connect(function()
+		isEquipped = true
 		animsTable.Equip:Play()
-		animsTable.Equip.Stopped:Connect(function()
-			animsTable.Idle:Play()
-		end)
+	end)
+
+	animsTable.Equip.Stopped:Connect(function()
+		if not isEquipped then
+			return
+		end
+		animsTable.Idle:Play()
 	end)
 
 	tool.Unequipped:Connect(function()
+		isEquipped = false
 		animsTable.Equip:Stop()
 		animsTable.Idle:Stop()
 		animsTable.Throw:Stop()
