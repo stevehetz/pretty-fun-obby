@@ -1,5 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local WorldsConfig = require(ReplicatedStorage.Configs.Worlds)
+local BadgesConfig = require(ReplicatedStorage.Configs.Badges)
 local PlayerData = require(ReplicatedStorage.PlayerData)
 local PlayerDataService = require(script.Parent.PlayerDataService)
 local GlobalDataService = require(script.Parent.GlobalDataService)
@@ -18,7 +20,17 @@ Local.CoinStoreItems = {
 }
 
 function Shared.OnStart()
-	Remotes.CoinCollected.OnServerEvent:Connect(Shared.OnUpdateCoinCount)
+	Remotes.CoinCollected.OnServerEvent:Connect(function(player: Player, coinValue: number)
+		Local.RewardBadge(player)
+		Shared.OnUpdateCoinCount(player, coinValue)
+	end)
+end
+
+function Local.RewardBadge(player: Player)
+	local currentWorld = WorldsConfig.GetCurrentWorldName()
+	local worldDisplayName = WorldsConfig.GetDisplayNameFromWorldName(currentWorld)
+	local badgeName = "Completed " .. worldDisplayName
+	BadgesConfig.RewardBadge(player, badgeName)
 end
 
 function Shared.OnUpdateCoinCount(player: Player, coinValue: number)
