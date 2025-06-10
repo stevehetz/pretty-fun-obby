@@ -121,6 +121,7 @@ function Local.SetupCharacter(player: Player)
 	-- This runs when player joins game or when tool is equipped first time or requipped
 	-- We don't want setuptools to run when unequipping a tool
 	backpack.ChildAdded:Connect(function(tool)
+		print("Tool added to backpack: ", tool.Name)
 		Local.SetupTools(tool)
 	end)
 end
@@ -132,6 +133,8 @@ function Local.SetupTools(tool)
 		end
 	end
 
+	print("Setting up tool: ", tool.Name)
+
 	Local.ToolsSetup[tool.Name] = true
 
 	if tool.Name == "Gravity Coil" or tool.Name == "Speed Coil" then
@@ -140,10 +143,11 @@ function Local.SetupTools(tool)
 	end
 
 	if tool.Name == "Trashcan" then
-		if Local.TrashcanIsSetup then
-			return
-		end
 		Local.SetupTrashcan(tool)
+	end
+
+	if tool.Name == "Sword" then
+		Local.SetupSword(tool)
 	end
 end
 
@@ -245,13 +249,43 @@ function Local.SetupTrashcan(tool)
 end
 
 function Local.SetupSword(tool)
+	print("Setting up sword tool: ", tool.Name)
+	local animsFolder = tool.Animations
+	local isEquipped = false
+
 	local player = game.Players.LocalPlayer
 	local char = player.Character or player.CharacterAdded:Wait()
 	local hum = char:WaitForChild("Humanoid")
 
+	local db = 0
+
 	local animsTable = {
 		["Slash"] = hum:LoadAnimation(animsFolder.Slash),
 	}
+
+	tool.Activated:Connect(function()
+		if db == 0 then
+			db = 1
+			animsTable.Slash:Play()
+
+			task.wait(0.7)
+
+			animsTable.Slash:Stop()
+
+			task.wait(1)
+
+			db = 0
+		end
+	end)
+
+	tool.Equipped:Connect(function()
+		isEquipped = true
+	end)
+
+	tool.Unequipped:Connect(function()
+		isEquipped = false
+		animsTable.Slash:Stop()
+	end)
 end
 
 return Shared
