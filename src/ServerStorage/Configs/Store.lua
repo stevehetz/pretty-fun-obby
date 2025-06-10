@@ -65,6 +65,10 @@ local _store = {
 			-- Id = 1246700401, -- Permanent World Pass (Test)
 			IsPass = true,
 		},
+		{
+			Id = 1255668315, -- Sword
+			IsTool = true,
+		},
 	},
 
 	Products = {

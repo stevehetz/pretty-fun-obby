@@ -132,9 +132,7 @@ end
 
 function Local.SetupTools(tool)
 	if Local.ToolsSetup[tool.Name] then
-		if Local.ToolsSetup[tool.Name] then
-			return
-		end
+		return
 	end
 
 	Local.ToolsSetup[tool.Name] = true
@@ -252,7 +250,11 @@ end
 
 function Local.SetupSword(tool)
 	local animsFolder = tool.Animations
-	local isEquipped = false
+
+	tool.TextureId = "rbxassetid://72423564181069"
+	-- tool.TextureId = "rbxassetid://132297503323667"
+	-- tool.TextureId = "rbxassetid://125949931514022"
+	-- tool.TextureId = "rbxassetid://86699930350799"
 
 	local player = game.Players.LocalPlayer
 	local char = player.Character or player.CharacterAdded:Wait()
@@ -262,23 +264,25 @@ function Local.SetupSword(tool)
 
 	local animsTable = {
 		["Slash"] = hum:LoadAnimation(animsFolder.Slash),
+		["Idle"] = hum:LoadAnimation(animsFolder.Idle),
 	}
 
 	tool.Activated:Connect(function()
 		if db == 0 then
 			db = 1
+			animsTable.Idle:Stop()
 			animsTable.Slash:Play()
+
+			task.wait(0.3)
+
+			animsTable.Slash:Stop()
+			animsTable.Idle:Play()
 
 			db = 0
 		end
 	end)
 
-	tool.Equipped:Connect(function()
-		isEquipped = true
-	end)
-
 	tool.Unequipped:Connect(function()
-		isEquipped = false
 		animsTable.Slash:Stop()
 	end)
 end

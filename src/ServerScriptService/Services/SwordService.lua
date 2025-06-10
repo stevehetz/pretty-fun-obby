@@ -50,7 +50,7 @@ function Shared.SetupSword(player, sword)
 			hitEnemies[enemyModel] = true
 
 			-- Use the centralized function to knock over the enemy with 5 second recovery
-			local config = EnemyUtil.KnockOverEnemy(enemyModel, hitBox, 5000, 5)
+			local config = EnemyUtil.KnockOverEnemy(enemyModel, hitBox, 15000, 5)
 
 			-- Play a hit sound only for the player who used the sword
 			pcall(function()

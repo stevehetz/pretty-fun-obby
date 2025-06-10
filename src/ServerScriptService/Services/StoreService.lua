@@ -117,7 +117,6 @@ function Local.PurchaseGamepass(player: Player, id: number, didPurchase: boolean
 		return
 	end
 
-	print("Player " .. player.Name .. " purchased gamepass " .. id)
 	local action: PlayerDataService.UpdateStateAction = {
 		type = "UpdateGamepass",
 		value = true,
