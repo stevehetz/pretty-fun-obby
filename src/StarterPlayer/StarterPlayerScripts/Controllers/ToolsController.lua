@@ -65,6 +65,7 @@ function Shared.OnStart()
 	end)
 
 	PlaySwordSoundEvent.OnClientEvent:Connect(function(soundName)
+		print("Playing sword sound: ", soundName)
 		-- Play the sound locally
 		Sounds.PlaySound(soundName)
 	end)
@@ -126,7 +127,6 @@ function Local.SetupCharacter(player: Player)
 	-- This runs when player joins game or when tool is equipped first time or requipped
 	-- We don't want setuptools to run when unequipping a tool
 	backpack.ChildAdded:Connect(function(tool)
-		print("Tool added to backpack: ", tool.Name)
 		Local.SetupTools(tool)
 	end)
 end
@@ -137,8 +137,6 @@ function Local.SetupTools(tool)
 			return
 		end
 	end
-
-	print("Setting up tool: ", tool.Name)
 
 	Local.ToolsSetup[tool.Name] = true
 
@@ -254,7 +252,6 @@ function Local.SetupTrashcan(tool)
 end
 
 function Local.SetupSword(tool)
-	print("Setting up sword tool: ", tool.Name)
 	local animsFolder = tool.Animations
 	local isEquipped = false
 
