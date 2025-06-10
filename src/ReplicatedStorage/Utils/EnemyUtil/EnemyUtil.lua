@@ -194,36 +194,6 @@ function Local.GetPlayerDistanceFromRig(config, player)
 	return (playerPosition - humanoidPosition).Magnitude
 end
 
--- New: Knock over enemy and pause movement
-function Shared.KnockOver(config, animateEnemy)
-	if config.isKnockedOver then
-		return
-	end -- Prevent stacking
-	config.isKnockedOver = true
-
-	-- Stop movement and animation
-	Local.StopRig(config, animateEnemy)
-
-	-- Rotate the enemy for knockdown effect
-	if config.rig:FindFirstChild("HumanoidRootPart") then
-		local root = config.rig.HumanoidRootPart
-		root.CFrame = root.CFrame * CFrame.Angles(math.rad(90), 0, 0)
-	end
-
-	print("Enemy knocked over: " .. config.rig.Name)
-
-	-- Wait, then allow movement again
-	task.delay(10, function()
-		print("Enemy recovered: " .. config.rig.Name)
-		config.isKnockedOver = false
-		-- Restore upright position if changed
-		if config.rig:FindFirstChild("HumanoidRootPart") then
-			local root = config.rig.HumanoidRootPart
-			root.CFrame = CFrame.new(root.Position)
-		end
-	end)
-end
-
 -- Helper function to handle knocking over an enemy with proper config management
 function Shared.KnockOverEnemy(enemyModel, impactSource, impactForce)
 	if not enemyModel or not enemyModel:FindFirstChild("HumanoidRootPart") then
@@ -265,6 +235,36 @@ function Shared.KnockOverEnemy(enemyModel, impactSource, impactForce)
 	Shared.KnockOver(config)
 
 	return config
+end
+
+-- Knock over enemy and pause movement
+function Shared.KnockOver(config, animateEnemy)
+	if config.isKnockedOver then
+		return
+	end -- Prevent stacking
+	config.isKnockedOver = true
+
+	-- Stop movement and animation
+	Local.StopRig(config, animateEnemy)
+
+	-- Rotate the enemy for knockdown effect
+	if config.rig:FindFirstChild("HumanoidRootPart") then
+		local root = config.rig.HumanoidRootPart
+		root.CFrame = root.CFrame * CFrame.Angles(math.rad(90), 0, 0)
+	end
+
+	print("Enemy knocked over: " .. config.rig.Name)
+
+	-- -- Wait, then allow movement again
+	-- task.delay(3, function()
+	-- 	print("Enemy recovered: " .. config.rig.Name)
+	-- 	config.isKnockedOver = false
+	-- 	-- Restore upright position if changed
+	-- 	if config.rig:FindFirstChild("HumanoidRootPart") then
+	-- 		local root = config.rig.HumanoidRootPart
+	-- 		root.CFrame = CFrame.new(root.Position)
+	-- 	end
+	-- end)
 end
 
 -- Function to check if an enemy is off its platform and kill it if it's been off for more than 3 seconds
