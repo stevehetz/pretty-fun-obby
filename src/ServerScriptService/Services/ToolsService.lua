@@ -9,7 +9,13 @@ local Local = {}
 local Shared = {}
 
 PlayerDataService.ProfileLoaded.Event:Connect(function(player: Player)
-	-- print("ToolsService - PlayerDataService.ProfileLoaded.Event")
+	Local.GiveTools(player)
+	player.CharacterAdded:Connect(function()
+		Local.GiveTools(player)
+	end)
+end)
+
+function Local.GiveTools(player: Player)
 	Shared.GiveTool(player, "Gravity Coil", 1157798560)
 	Shared.GiveTool(player, "Speed Coil", 1157906298)
 	Shared.GiveTool(player, "Sword", 1255668315)
@@ -19,25 +25,12 @@ PlayerDataService.ProfileLoaded.Event:Connect(function(player: Player)
 	if state and state.hasTrashcan then
 		Shared.GiveTool(player, "Trashcan")
 	elseif TestService.IsDev() then
-		-- Shared.GiveTool(player, "Sword")
 		-- Shared.GiveTool(player, "Trashcan")
+		-- Shared.GiveTool(player, "Sword")
+	elseif TestService.IsTester then
+		Shared.GiveTool(player, "Sword")
 	end
-
-	player.CharacterAdded:Connect(function()
-		Shared.GiveTool(player, "Gravity Coil", 1157798560)
-		Shared.GiveTool(player, "Speed Coil", 1157906298)
-		Shared.GiveTool(player, "Sword", 1255668315)
-
-		-- Check if player has purchased a trashcan
-		local state = PlayerDataService.GetState(player)
-		if state and state.hasTrashcan then
-			Shared.GiveTool(player, "Trashcan")
-		elseif TestService.IsDev() then
-			-- Shared.GiveTool(player, "Trashcan")
-			-- Shared.GiveTool(player, "Sword")
-		end
-	end)
-end)
+end
 
 function Shared.GiveTool(player: Player, toolName: string, gamepassId: number?)
 	local state = PlayerDataService.GetState(player)
