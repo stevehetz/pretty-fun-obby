@@ -210,7 +210,6 @@ function Shared.KnockOverEnemy(enemyModel, impactSource, impactForce, recoveryDe
 
 	-- Get the existing config from the enemy if it exists
 	local config
-	local EnemyTouchDamage = require(ReplicatedStorage.Utils.EnemyUtil.EnemyTouchDamage)
 
 	-- Check if the enemy has a config attribute
 	if enemyModel:GetAttribute("ConfigKey") then
