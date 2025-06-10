@@ -27,7 +27,7 @@ function Local.GiveTools(player: Player)
 	elseif TestService.IsDev() then
 		-- Shared.GiveTool(player, "Trashcan")
 		-- Shared.GiveTool(player, "Sword")
-	elseif TestService.IsTester then
+	elseif TestService.IsTester() then
 		Shared.GiveTool(player, "Sword")
 	end
 end
@@ -46,6 +46,17 @@ function Shared.GiveTool(player: Player, toolName: string, gamepassId: number?)
 	-- Not a gamepass tool or player owns the gamepass
 	local backpack = player.Backpack or player:WaitForChild("Backpack")
 	if not backpack then
+		return
+	end
+
+	-- Make sure player doesn't ahve tool in backpack
+	if backpack:FindFirstChild(toolName) then
+		return
+	end
+
+	-- Make sure player is not holding the tool
+	local character = player.Character or player.CharacterAdded:Wait()
+	if character and character:FindFirstChild(toolName) then
 		return
 	end
 

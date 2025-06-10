@@ -28,6 +28,8 @@ function Shared.SetupSword(player, sword)
 		0.5 -- elasticity
 	)
 
+	hitBox.Massless = true
+
 	-- Set up collision detection with enemies
 	local hitEnemies = {} -- Track which enemies have been hit to prevent multiple hits
 
