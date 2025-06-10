@@ -48,7 +48,6 @@ function Local.ResetToolsSetup()
 	for toolName, _ in pairs(Local.ToolsSetup) do
 		Local.ToolsSetup[toolName] = false
 	end
-	print("Tools setup reset.")
 end
 
 function Shared.OnStart()
