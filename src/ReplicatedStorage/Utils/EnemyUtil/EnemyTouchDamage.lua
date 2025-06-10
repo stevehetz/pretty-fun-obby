@@ -1,6 +1,23 @@
 local Local = {}
 local Shared = {}
 
+-- Store enemy configurations by key
+local enemyConfigs = {}
+local nextConfigKey = 1
+
+-- Store a config and return its key
+function Shared.StoreConfig(config)
+	local key = nextConfigKey
+	enemyConfigs[key] = config
+	nextConfigKey = nextConfigKey + 1
+	return key
+end
+
+-- Get a config by key
+function Shared.GetConfig(key)
+	return enemyConfigs[key]
+end
+
 function Shared.Setup(rig, damageParts, damageAmount, damageCooldown, config)
 	local canDamage = true
 	for _, part in pairs(rig:GetDescendants()) do

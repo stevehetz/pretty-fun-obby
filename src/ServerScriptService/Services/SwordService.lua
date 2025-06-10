@@ -46,34 +46,17 @@ function Shared.SetupSword(player, sword)
 			and enemyModel:FindFirstChild("Humanoid")
 			and not hitEnemies[enemyModel]
 		then
-			-- Mark this enemy as hit to prevent multiple hits from the same trashcan
+			-- Mark this enemy as hit to prevent multiple hits from the same sword
 			hitEnemies[enemyModel] = true
 
-			-- Apply a physical impact to the enemy
-			if enemyModel:FindFirstChild("HumanoidRootPart") then
-				local hrp = enemyModel.HumanoidRootPart
+			-- Use the centralized function to knock over the enemy
+			local config = EnemyUtil.KnockOverEnemy(enemyModel, hitBox, 5000)
 
-				-- Calculate impact direction (from trashcan to enemy)
-				local impactDir = (hrp.Position - hitBox.Position).Unit
-
-				-- Apply an impulse in that direction
-				hrp:ApplyImpulse(impactDir * 5000)
-
-				-- If no configuration found, create a temporary one
-				local config = {
-					rig = enemyModel,
-					isKnockedOver = false,
-				}
-
-				-- Knock over the enemy
-				EnemyUtil.KnockOver(config)
-
-				-- Play a hit sound only for the player who threw the trashcan
-				pcall(function()
-					-- Fire the RemoteEvent only to the player who threw the trashcan
-					PlaySoundEvent:FireClient(player, "Dink")
-				end)
-			end
+			-- Play a hit sound only for the player who used the sword
+			pcall(function()
+				-- Fire the RemoteEvent only to the player who used the sword
+				PlaySoundEvent:FireClient(player, "Dink")
+			end)
 		end
 	end)
 

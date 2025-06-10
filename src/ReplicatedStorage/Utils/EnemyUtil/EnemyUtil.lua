@@ -210,8 +210,11 @@ function Shared.KnockOver(config, animateEnemy)
 		root.CFrame = root.CFrame * CFrame.Angles(math.rad(90), 0, 0)
 	end
 
-	-- Wait 2 seconds, then allow movement again
-	task.delay(3, function()
+	print("Enemy knocked over: " .. config.rig.Name)
+
+	-- Wait, then allow movement again
+	task.delay(10, function()
+		print("Enemy recovered: " .. config.rig.Name)
 		config.isKnockedOver = false
 		-- Restore upright position if changed
 		if config.rig:FindFirstChild("HumanoidRootPart") then
@@ -219,6 +222,49 @@ function Shared.KnockOver(config, animateEnemy)
 			root.CFrame = CFrame.new(root.Position)
 		end
 	end)
+end
+
+-- Helper function to handle knocking over an enemy with proper config management
+function Shared.KnockOverEnemy(enemyModel, impactSource, impactForce)
+	if not enemyModel or not enemyModel:FindFirstChild("HumanoidRootPart") then
+		return
+	end
+
+	local hrp = enemyModel.HumanoidRootPart
+
+	-- Calculate impact direction (from impact source to enemy)
+	local impactDir = (hrp.Position - impactSource.Position).Unit
+
+	-- Apply an impulse in that direction
+	hrp:ApplyImpulse(impactDir * impactForce)
+
+	-- Get the existing config from the enemy if it exists
+	local config
+	local EnemyTouchDamage = require(ReplicatedStorage.Utils.EnemyUtil.EnemyTouchDamage)
+
+	-- Check if the enemy has a config attribute
+	if enemyModel:GetAttribute("ConfigKey") then
+		-- Get the config from the EnemyTouchDamage module
+		local configKey = enemyModel:GetAttribute("ConfigKey")
+		config = EnemyTouchDamage.GetConfig(configKey)
+	end
+
+	-- If no configuration found, create a new one
+	if not config then
+		config = {
+			rig = enemyModel,
+			isKnockedOver = false,
+		}
+
+		-- Store a reference to this config in the EnemyTouchDamage module
+		local configKey = EnemyTouchDamage.StoreConfig(config)
+		enemyModel:SetAttribute("ConfigKey", configKey)
+	end
+
+	-- Knock over the enemy
+	Shared.KnockOver(config)
+
+	return config
 end
 
 -- Function to check if an enemy is off its platform and kill it if it's been off for more than 3 seconds

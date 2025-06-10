@@ -79,33 +79,16 @@ function Shared.SetupTrashcan(player, trashcan)
 					-- Mark this enemy as hit to prevent multiple hits from the same trashcan
 					hitEnemies[enemyModel] = true
 
-					-- Apply a physical impact to the enemy
-					if enemyModel:FindFirstChild("HumanoidRootPart") then
-						local hrp = enemyModel.HumanoidRootPart
+					-- Use the centralized function to knock over the enemy
+					local config = EnemyUtil.KnockOverEnemy(enemyModel, clone, 5000)
 
-						-- Calculate impact direction (from trashcan to enemy)
-						local impactDir = (hrp.Position - clone.Position).Unit
-
-						-- Apply an impulse in that direction
-						hrp:ApplyImpulse(impactDir * 5000)
-
-						-- If no configuration found, create a temporary one
-						local config = {
-							rig = enemyModel,
-							isKnockedOver = false,
-						}
-
-						-- Knock over the enemy
-						EnemyUtil.KnockOver(config)
-
-						-- Play a hit sound only for the player who threw the trashcan
-						pcall(function()
-							-- Get the player who threw the trashcan
-							local throwerPlayer = player
-							-- Fire the RemoteEvent only to the player who threw the trashcan
-							PlaySoundEvent:FireClient(throwerPlayer, "Dink")
-						end)
-					end
+					-- Play a hit sound only for the player who threw the trashcan
+					pcall(function()
+						-- Get the player who threw the trashcan
+						local throwerPlayer = player
+						-- Fire the RemoteEvent only to the player who threw the trashcan
+						PlaySoundEvent:FireClient(throwerPlayer, "Dink")
+					end)
 				end
 			end)
 
