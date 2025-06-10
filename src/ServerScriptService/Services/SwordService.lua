@@ -39,7 +39,6 @@ function Shared.SetupSword(player, sword)
 
 		-- Check if the hit part belongs to an enemy
 		local enemyModel = hit:FindFirstAncestorOfClass("Model")
-		print("Sword hit detected on: ", enemyModel and enemyModel.Name or "nil")
 
 		if
 			enemyModel
@@ -50,22 +49,15 @@ function Shared.SetupSword(player, sword)
 			-- Mark this enemy as hit to prevent multiple hits from the same trashcan
 			hitEnemies[enemyModel] = true
 
-			print("::::::::::::::::Enemy hit: ", enemyModel.Name)
-
 			-- Apply a physical impact to the enemy
 			if enemyModel:FindFirstChild("HumanoidRootPart") then
-				print("--------------Applying impact to enemy: ", enemyModel.Name)
 				local hrp = enemyModel.HumanoidRootPart
 
 				-- Calculate impact direction (from trashcan to enemy)
 				local impactDir = (hrp.Position - hitBox.Position).Unit
 
-				print("here1")
-
 				-- Apply an impulse in that direction
 				hrp:ApplyImpulse(impactDir * 5000)
-
-				print("here2")
 
 				-- If no configuration found, create a temporary one
 				local config = {
@@ -73,28 +65,22 @@ function Shared.SetupSword(player, sword)
 					isKnockedOver = false,
 				}
 
-				print("here3")
-
 				-- Knock over the enemy
 				EnemyUtil.KnockOver(config)
 
-				print("here4")
-
 				-- Play a hit sound only for the player who threw the trashcan
-				local success, err = pcall(function()
-					print("Playing sound for player: ", player.Name)
+				pcall(function()
 					-- Fire the RemoteEvent only to the player who threw the trashcan
 					PlaySoundEvent:FireClient(player, "Dink")
 				end)
-
-				if not success then
-					warn("Failed to play sound for player: ", player.Name, " Error: ", err)
-				end
 			end
 		end
 	end)
 
 	sword.Activated:Connect(function()
+		-- Clear the hitEnemies table so we can hit the same enemies again
+		hitEnemies = {}
+
 		hitBox.CanCollide = true
 
 		task.wait(1)

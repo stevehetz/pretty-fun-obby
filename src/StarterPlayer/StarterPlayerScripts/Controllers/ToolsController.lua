@@ -65,7 +65,6 @@ function Shared.OnStart()
 	end)
 
 	PlaySwordSoundEvent.OnClientEvent:Connect(function(soundName)
-		print("Playing sword sound: ", soundName)
 		-- Play the sound locally
 		Sounds.PlaySound(soundName)
 	end)
