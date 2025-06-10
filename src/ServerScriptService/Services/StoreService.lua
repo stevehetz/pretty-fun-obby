@@ -127,6 +127,8 @@ function Local.PurchaseGamepass(player: Player, id: number, didPurchase: boolean
 	if StoreConfig.IsGamepassTool(id) then
 		local gamepassInfo = StoreConfig.GetStoreItemInfo(id)
 		ToolsService.GiveTool(player, gamepassInfo.Name, gamepassInfo.Id)
+		-- Automatically equip the tool after giving it to the player
+		ToolsService.EquipTool(player, gamepassInfo.Name)
 		return
 	end
 
