@@ -79,8 +79,8 @@ function Shared.SetupTrashcan(player, trashcan)
 					-- Mark this enemy as hit to prevent multiple hits from the same trashcan
 					hitEnemies[enemyModel] = true
 
-					-- Use the centralized function to knock over the enemy
-					local config = EnemyUtil.KnockOverEnemy(enemyModel, clone, 5000)
+					-- Use the centralized function to knock over the enemy with 5 second recovery
+					local config = EnemyUtil.KnockOverEnemy(enemyModel, clone, 5000, 5)
 
 					-- Play a hit sound only for the player who threw the trashcan
 					pcall(function()

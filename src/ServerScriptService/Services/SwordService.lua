@@ -49,8 +49,8 @@ function Shared.SetupSword(player, sword)
 			-- Mark this enemy as hit to prevent multiple hits from the same sword
 			hitEnemies[enemyModel] = true
 
-			-- Use the centralized function to knock over the enemy
-			local config = EnemyUtil.KnockOverEnemy(enemyModel, hitBox, 5000)
+			-- Use the centralized function to knock over the enemy with 5 second recovery
+			local config = EnemyUtil.KnockOverEnemy(enemyModel, hitBox, 5000, 5)
 
 			-- Play a hit sound only for the player who used the sword
 			pcall(function()

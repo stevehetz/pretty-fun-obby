@@ -195,7 +195,7 @@ function Local.GetPlayerDistanceFromRig(config, player)
 end
 
 -- Helper function to handle knocking over an enemy with proper config management
-function Shared.KnockOverEnemy(enemyModel, impactSource, impactForce)
+function Shared.KnockOverEnemy(enemyModel, impactSource, impactForce, recoveryDelay)
 	if not enemyModel or not enemyModel:FindFirstChild("HumanoidRootPart") then
 		return
 	end
@@ -231,21 +231,29 @@ function Shared.KnockOverEnemy(enemyModel, impactSource, impactForce)
 		enemyModel:SetAttribute("ConfigKey", configKey)
 	end
 
-	-- Knock over the enemy
-	Shared.KnockOver(config)
+	-- Knock over the enemy with the specified recovery delay
+	Shared.KnockOver(config, nil, recoveryDelay)
 
 	return config
 end
 
 -- Knock over enemy and pause movement
-function Shared.KnockOver(config, animateEnemy)
+function Shared.KnockOver(config, animateEnemy, recoveryDelay)
 	if config.isKnockedOver then
 		return
 	end -- Prevent stacking
 	config.isKnockedOver = true
 
+	-- Use provided recovery delay or default to 3 seconds
+	recoveryDelay = recoveryDelay or 3
+
 	-- Stop movement and animation
 	Local.StopRig(config, animateEnemy)
+
+	-- Disable automatic standing behavior
+	if config.rig:FindFirstChild("Humanoid") then
+		config.rig.Humanoid.PlatformStand = true
+	end
 
 	-- Rotate the enemy for knockdown effect
 	if config.rig:FindFirstChild("HumanoidRootPart") then
@@ -253,12 +261,15 @@ function Shared.KnockOver(config, animateEnemy)
 		root.CFrame = root.CFrame * CFrame.Angles(math.rad(90), 0, 0)
 	end
 
-	print("Enemy knocked over: " .. config.rig.Name)
-
 	-- Wait, then allow movement again
-	task.delay(3, function()
-		print("Enemy recovered: " .. config.rig.Name)
+	task.delay(recoveryDelay, function()
 		config.isKnockedOver = false
+
+		-- Re-enable automatic standing behavior
+		if config.rig:FindFirstChild("Humanoid") then
+			config.rig.Humanoid.PlatformStand = false
+		end
+
 		-- Restore upright position if changed
 		if config.rig:FindFirstChild("HumanoidRootPart") then
 			local root = config.rig.HumanoidRootPart
