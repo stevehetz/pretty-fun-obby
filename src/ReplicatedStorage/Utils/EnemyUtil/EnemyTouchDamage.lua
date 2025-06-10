@@ -19,6 +19,12 @@ function Shared.GetConfig(key)
 end
 
 function Shared.Setup(rig, damageParts, damageAmount, damageCooldown, config)
+	-- Store the config if it's not already stored
+	if config and not rig:GetAttribute("ConfigKey") then
+		local configKey = Shared.StoreConfig(config)
+		rig:SetAttribute("ConfigKey", configKey)
+	end
+
 	local canDamage = true
 	for _, part in pairs(rig:GetDescendants()) do
 		if part:IsA("BasePart") and table.find(damageParts, part.Name) then
@@ -27,8 +33,14 @@ function Shared.Setup(rig, damageParts, damageAmount, damageCooldown, config)
 				local character = hit.Parent
 				local player = game.Players:GetPlayerFromCharacter(character)
 
+				-- Get the latest config from storage using the ConfigKey attribute
+				local currentConfig = config
+				if rig:GetAttribute("ConfigKey") then
+					currentConfig = Shared.GetConfig(rig:GetAttribute("ConfigKey"))
+				end
+
 				-- Only proceed if it's a player, we can damage, and the enemy is not knocked over
-				if player and canDamage and not (config and config.isKnockedOver) then
+				if player and canDamage and not (currentConfig and currentConfig.isKnockedOver) then
 					local humanoid = character:FindFirstChild("Humanoid")
 
 					if humanoid and humanoid.Health > 0 then
