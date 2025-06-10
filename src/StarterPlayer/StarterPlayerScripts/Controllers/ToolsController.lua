@@ -28,7 +28,12 @@ local COIL_EFFECTS = {
 local Local = {}
 local Shared = {}
 
-Local.TrashcanIsSetup = false
+Local.ToolsSetup = {
+	["Gravity Coil"] = false,
+	["Speed Coil"] = false,
+	["Trashcan"] = false,
+	["Sword"] = false,
+}
 
 Shared.ToolToggled = Instance.new("BindableEvent")
 
@@ -39,8 +44,16 @@ local originalValues = {
 	JumpHeight = nil,
 }
 
+function Local.ResetToolsSetup()
+	for toolName, _ in pairs(Local.ToolsSetup) do
+		Local.ToolsSetup[toolName] = false
+	end
+	print("Tools setup reset.")
+end
+
 function Shared.OnStart()
-	Player.CharacterAdded:Connect(function(character)
+	Player.CharacterAdded:Connect(function()
+		Local.ResetToolsSetup()
 		Local.SetupCharacter(Player)
 	end)
 
@@ -99,31 +112,40 @@ function Local.SetupCharacter(player: Player)
 		COIL_EFFECTS.Default.Gravity = originalValues.Gravity
 	end
 
-	for _, tool in backpack:GetChildren() do
-		if tool.Name == "Gravity Coil" or tool.Name == "Speed Coil" then
-			Local.ApplyIconToTool(tool)
-			Local.SetupCoil(tool)
-		end
+	-- Setup tools should run when player joins or after respawn
 
-		if tool.Name == "Trashcan" then
-			Local.SetupTrashcan(tool)
+	-- This runs when character dies and respawns
+	for _, tool in backpack:GetChildren() do
+		Local.SetupTools(tool)
+	end
+
+	-- This runs when player joins game or when tool is equipped first time or requipped
+	-- We don't want setuptools to run when unequipping a tool
+	backpack.ChildAdded:Connect(function(tool)
+		Local.SetupTools(tool)
+	end)
+end
+
+function Local.SetupTools(tool)
+	if Local.ToolsSetup[tool.Name] then
+		if Local.ToolsSetup[tool.Name] then
+			return
 		end
 	end
 
-	backpack.ChildAdded:Connect(function(tool)
-		if tool.Name == "Gravity Coil" or tool.Name == "Speed Coil" then
-			Local.ApplyIconToTool(tool)
-			Local.SetupCoil(tool)
-		end
+	Local.ToolsSetup[tool.Name] = true
 
-		if tool.Name == "Trashcan" then
-			if Local.TrashcanIsSetup then
-				return
-			end
-			Local.TrashcanIsSetup = true
-			Local.SetupTrashcan(tool)
+	if tool.Name == "Gravity Coil" or tool.Name == "Speed Coil" then
+		Local.ApplyIconToTool(tool)
+		Local.SetupCoil(tool)
+	end
+
+	if tool.Name == "Trashcan" then
+		if Local.TrashcanIsSetup then
+			return
 		end
-	end)
+		Local.SetupTrashcan(tool)
+	end
 end
 
 function Local.SetupCoil(tool: Tool)
@@ -221,6 +243,16 @@ function Local.SetupTrashcan(tool)
 		animsTable.Idle:Stop()
 		animsTable.Throw:Stop()
 	end)
+end
+
+function Local.SetupSword(tool)
+	local player = game.Players.LocalPlayer
+	local char = player.Character or player.CharacterAdded:Wait()
+	local hum = char:WaitForChild("Humanoid")
+
+	local animsTable = {
+		["Slash"] = hum:LoadAnimation(animsFolder.Slash),
+	}
 end
 
 return Shared
