@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local PlayerDataService = require(script.Parent.PlayerDataService)
 local TestService = require(script.Parent.TestService)
 local TrashcanService = require(script.Parent.TrashcanService)
+local SwordService = require(script.Parent.SwordService)
 
 local Local = {}
 local Shared = {}
@@ -11,6 +12,7 @@ PlayerDataService.ProfileLoaded.Event:Connect(function(player: Player)
 	-- print("ToolsService - PlayerDataService.ProfileLoaded.Event")
 	Shared.GiveTool(player, "Gravity Coil", 1157798560)
 	Shared.GiveTool(player, "Speed Coil", 1157906298)
+	Shared.GiveTool(player, "Sword")
 
 	-- Check if player has purchased a trashcan
 	local state = PlayerDataService.GetState(player)
@@ -23,6 +25,7 @@ PlayerDataService.ProfileLoaded.Event:Connect(function(player: Player)
 	player.CharacterAdded:Connect(function()
 		Shared.GiveTool(player, "Gravity Coil", 1157798560)
 		Shared.GiveTool(player, "Speed Coil", 1157906298)
+		Shared.GiveTool(player, "Sword")
 
 		-- Check if player has purchased a trashcan
 		local state = PlayerDataService.GetState(player)
@@ -56,6 +59,10 @@ function Shared.GiveTool(player: Player, toolName: string, gamepassId: number?)
 
 	if toolName == "Trashcan" then
 		TrashcanService.SetupTrashcan(player, trashcan)
+	end
+
+	if toolName == "Sword" then
+		SwordService.SetupSword(player, trashcan)
 	end
 end
 

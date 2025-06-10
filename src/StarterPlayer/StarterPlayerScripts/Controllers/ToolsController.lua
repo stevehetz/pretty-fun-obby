@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local GetStoreItemInfoRF = ReplicatedStorage:WaitForChild("GetStoreItemInfoRF")
 local PlayTrashcanSoundEvent = ReplicatedStorage:WaitForChild("PlayTrashcanSoundEvent")
+local PlaySwordSoundEvent = ReplicatedStorage:WaitForChild("PlaySwordSoundEvent")
 local Sounds = require(ReplicatedStorage.Configs.Sounds)
 
 local Player = Players.LocalPlayer
@@ -58,8 +59,12 @@ function Shared.OnStart()
 
 	Local.SetupCharacter(Player)
 
-	-- Listen for the PlayTrashcanSoundEvent to play sounds locally
 	PlayTrashcanSoundEvent.OnClientEvent:Connect(function(soundName)
+		-- Play the sound locally
+		Sounds.PlaySound(soundName)
+	end)
+
+	PlaySwordSoundEvent.OnClientEvent:Connect(function(soundName)
 		-- Play the sound locally
 		Sounds.PlaySound(soundName)
 	end)
@@ -267,12 +272,6 @@ function Local.SetupSword(tool)
 		if db == 0 then
 			db = 1
 			animsTable.Slash:Play()
-
-			task.wait(0.7)
-
-			animsTable.Slash:Stop()
-
-			task.wait(1)
 
 			db = 0
 		end
