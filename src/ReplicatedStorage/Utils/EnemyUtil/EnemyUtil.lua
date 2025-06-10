@@ -255,16 +255,16 @@ function Shared.KnockOver(config, animateEnemy)
 
 	print("Enemy knocked over: " .. config.rig.Name)
 
-	-- -- Wait, then allow movement again
-	-- task.delay(3, function()
-	-- 	print("Enemy recovered: " .. config.rig.Name)
-	-- 	config.isKnockedOver = false
-	-- 	-- Restore upright position if changed
-	-- 	if config.rig:FindFirstChild("HumanoidRootPart") then
-	-- 		local root = config.rig.HumanoidRootPart
-	-- 		root.CFrame = CFrame.new(root.Position)
-	-- 	end
-	-- end)
+	-- Wait, then allow movement again
+	task.delay(3, function()
+		print("Enemy recovered: " .. config.rig.Name)
+		config.isKnockedOver = false
+		-- Restore upright position if changed
+		if config.rig:FindFirstChild("HumanoidRootPart") then
+			local root = config.rig.HumanoidRootPart
+			root.CFrame = CFrame.new(root.Position)
+		end
+	end)
 end
 
 -- Function to check if an enemy is off its platform and kill it if it's been off for more than 3 seconds
