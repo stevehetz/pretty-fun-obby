@@ -121,16 +121,9 @@ end
 function Local.AddStoreItemButtons()
 	local storeItems = Local.GetStoreItems()
 
-	-- Add Products
-	for _, item in ipairs(storeItems.Products) do
-		if item.Name == "1000 Coins" then
-			Local.AddItemButton(item)
-		end
-	end
-
-	-- Add World Pass
+	-- Add Tools
 	for _, item in ipairs(storeItems.Gamepasses) do
-		if item.IsPass then
+		if item.IsTool then
 			Local.AddItemButton(item)
 		end
 	end
@@ -142,9 +135,16 @@ function Local.AddStoreItemButtons()
 		end
 	end
 
-	-- Add Tools
+	-- Add World Pass
 	for _, item in ipairs(storeItems.Gamepasses) do
-		if item.IsTool then
+		if item.IsPass then
+			Local.AddItemButton(item)
+		end
+	end
+
+	-- Add Products
+	for _, item in ipairs(storeItems.Products) do
+		if item.Name == "1000 Coins" then
 			Local.AddItemButton(item)
 		end
 	end

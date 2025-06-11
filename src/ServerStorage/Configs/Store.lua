@@ -40,14 +40,14 @@ local _store = {
 		-- 	Id = 1197084528, -- Dominus Crystal
 		-- 	IsPet = true,
 		-- },
-		{
-			Id = 1199016473, -- Dragon
-			IsPet = true,
-		},
-		{
-			Id = 1198272735, -- Ice Dragon
-			IsPet = true,
-		},
+		-- {
+		-- 	Id = 1199016473, -- Dragon
+		-- 	IsPet = true,
+		-- },
+		-- {
+		-- 	Id = 1198272735, -- Ice Dragon
+		-- 	IsPet = true,
+		-- },
 		-- {
 		-- 	Id = 1196970764, -- Cerberus
 		-- 	IsPet = true,
