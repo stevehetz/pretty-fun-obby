@@ -14,7 +14,8 @@ local Shared = {}
 Local.CoinStoreItems = {
 	["Trashcan"] = {
 		Name = "Trashcan",
-		Value = 300,
+		DisplayName = "Throwable Trashcan",
+		Value = 0,
 		IsTool = true,
 	},
 }

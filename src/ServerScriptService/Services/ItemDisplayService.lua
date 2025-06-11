@@ -49,11 +49,37 @@ function Local.SetupDisplay(player: Player, state: PlayerData.PlayerData, displa
 
 		-- Set name on name plate
 		local nameLabel = namePlate.SurfaceGui.Frame.NameLabel
-		nameLabel.Text = display.Name
+		nameLabel.Text = storeItemInfo.Name
 
 		-- Set price on name plate
 		local priceLabel = namePlate.SurfaceGui.Frame.PriceFrame.Price
-		priceLabel.Text = storeItemInfo.Price
+		if storeItemInfo.Price == 0 then
+			priceLabel.Text = "Free"
+		else
+			priceLabel.Text = storeItemInfo.Price
+		end
+	end
+
+	local coinStoreItemInfo = CoinService.GetCoinStoreItemInfo(display.Name)
+	if coinStoreItemInfo then
+		local namePlate = display.NamePlate
+
+		-- Set name on name plate
+		local nameLabel = namePlate.SurfaceGui.Frame.NameLabel
+		nameLabel.Text = coinStoreItemInfo.DisplayName or coinStoreItemInfo.Name
+
+		-- Set price on name plate
+		local priceLabel = namePlate.SurfaceGui.Frame.PriceFrame.Price
+		local coinIcon = namePlate.SurfaceGui.Frame.PriceFrame.CoinIcon
+		if coinStoreItemInfo.Value == 0 then
+			coinIcon.Visible = false
+			priceLabel.Text = "FREE"
+			priceLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+		else
+			coinIcon.Visible = true
+			priceLabel.Text = coinStoreItemInfo.Value
+			priceLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+		end
 	end
 end
 
