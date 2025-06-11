@@ -4,7 +4,6 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local PlayerDataService = require(script.Parent.PlayerDataService)
 local ProgressService = require(ServerScriptService.Services.ProgressService)
 local RespawnService = require(ServerScriptService.Services.RespawnService)
-local TestService = require(ServerScriptService.Services.TestService)
 local StagesConfig = require(ReplicatedStorage.Configs.Stages)
 local Remotes = ReplicatedStorage.Remotes
 

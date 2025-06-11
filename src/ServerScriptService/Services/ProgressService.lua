@@ -5,7 +5,6 @@ local Workspace = game:GetService("Workspace")
 
 local PlayerDataService = require(ServerScriptService.Services.PlayerDataService)
 local RebirthService = require(ServerScriptService.Services.RebirthService)
-local TestService = require(ServerScriptService.Services.TestService)
 local StagesConfig = require(ReplicatedStorage.Configs.Stages)
 local BadgesConfig = require(ReplicatedStorage.Configs.Badges)
 

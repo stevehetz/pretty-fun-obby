@@ -1,7 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local PlayerDataService = require(script.Parent.PlayerDataService)
-local TestService = require(script.Parent.TestService)
+local TestConfig = require(ReplicatedStorage.Configs.Test)
 local TrashcanService = require(script.Parent.TrashcanService)
 local SwordService = require(script.Parent.SwordService)
 
@@ -9,30 +9,38 @@ local Local = {}
 local Shared = {}
 
 PlayerDataService.ProfileLoaded.Event:Connect(function(player: Player)
-	Local.GiveTools(player)
-	print("Profile loaded for player: ", player.Name)
 	player.CharacterAdded:Connect(function()
 		print("Character added for player: ", player.Name)
 		Local.GiveTools(player)
 	end)
+
+	Local.GiveTools(player)
 end)
 
 function Local.GiveTools(player: Player)
-	print("Giving tools to player: ", player.Name)
+	-- print("Giving tools to player: ", player.Name)
+	task.wait(0.3)
 	Shared.GiveTool(player, "Gravity Coil", 1157798560)
+	task.wait(0.3)
 	Shared.GiveTool(player, "Speed Coil", 1157906298)
+	task.wait(0.3)
 	Shared.GiveTool(player, "Sword", 1255668315)
+	task.wait(0.3)
 
 	-- Check if player has purchased a trashcan
 	local state = PlayerDataService.GetState(player)
 	if state and state.hasTrashcan then
 		print("Giving trashcan to player: ", player.Name)
 		Shared.GiveTool(player, "Trashcan")
-	elseif TestService.IsDev() then
+	end
+
+	if TestConfig.IsDev(player.Name) then
 		-- Shared.GiveTool(player, "Trashcan")
 		-- Shared.GiveTool(player, "Sword")
-	elseif TestService.IsTester() then
-		print("Giving trashcan and sword to tester: ", player.Name)
+	end
+
+	if TestConfig.IsTester(player.Name) then
+		print("Giving sword to tester: ", player.Name)
 		Shared.GiveTool(player, "Sword")
 	end
 end
@@ -70,17 +78,18 @@ function Shared.GiveTool(player: Player, toolName: string, gamepassId: number?)
 		return
 	end
 
-	local trashcan = ReplicatedStorage.Tools[toolName]:Clone()
-	trashcan.Parent = backpack
+	local tool = ReplicatedStorage.Tools[toolName]:Clone()
+	tool.Parent = backpack
+	print("Tool cloned and added to backpack: ", toolName, " for player: ", player.Name)
 
 	if toolName == "Trashcan" then
 		print("Setting up trashcan for player: ", player.Name)
-		TrashcanService.SetupTrashcan(player, trashcan)
+		TrashcanService.SetupTrashcan(player, tool)
 	end
 
 	if toolName == "Sword" then
 		print("Setting up sword for player: ", player.Name)
-		SwordService.SetupSword(player, trashcan)
+		SwordService.SetupSword(player, tool)
 	end
 end
 

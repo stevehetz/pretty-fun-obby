@@ -58,7 +58,7 @@ function Shared.OnStart()
 	if not RunService:IsStudio() then
 		WorldPortalService.HandleWorldTeleportComplete.Event:Connect(
 			function(player: Player, state: PlayerData.PlayerData)
-				print("PlayerDataService - HandleWorldTeleportComplete.Event:Connect")
+				-- print("PlayerDataService - HandleWorldTeleportComplete.Event:Connect")
 
 				-- print("PlayerDataService - HandleWorldTeleportComplete:Connect")
 
@@ -118,16 +118,20 @@ function Local.InitState(player: Player)
 	-- state.oneTimePass = false -- Reset one-time pass
 
 	-- get player name
+	-- print("PlayerDataService - InitState - Player Name: " .. player.Name)
 	if TestConfig.IsDev(player.Name) then
 		state.coins = 900
 		state.skips.amount = 1000
 	end
 
 	if TestConfig.IsTester(player.Name) then
+		-- print("PlayerDataService - InitState - TestConfig.IsTester - " .. player.Name)
 		if state.coins < 1000 then
 			state.coins = 1000
 		end
 		state.skips.amount = 1000
+		state.gamepasses["1234640489"] = true
+		print("PlayerDataService - InitState - TestConfig.IsTester - Set gamepasses")
 	end
 end
 

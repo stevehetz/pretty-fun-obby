@@ -39,22 +39,6 @@ function Shared.OnStart()
 	-- Shared.PrintDonationRank()
 end
 
-function Shared.IsDev()
-	if Local.CurrentPlayer then
-		return TestConfig.IsDev(Local.CurrentPlayer.Name)
-	end
-
-	return false
-end
-
-function Shared.IsTester()
-	if Local.CurrentPlayer then
-		return TestConfig.IsTester(Local.CurrentPlayer.Name)
-	end
-
-	return false
-end
-
 function Shared.PrintCoinRank()
 	local topRanks = GlobalDataService.GetCoinRank()
 	print("Coin Rank: ", topRanks)

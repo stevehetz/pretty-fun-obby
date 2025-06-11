@@ -14,10 +14,10 @@ Shared.Developers = {
 		UserId = 8398047634,
 		Name = "ra1n_test2",
 	},
-	ra1n_test3 = {
-		UserId = 8427812834,
-		Name = "ra1n_test3",
-	},
+	-- ra1n_test3 = {
+	-- 	UserId = 8427812834,
+	-- 	Name = "ra1n_test3",
+	-- },
 }
 
 Shared.Testers = {
@@ -25,9 +25,9 @@ Shared.Testers = {
 		UserId = 8318796209,
 		Name = "ra1n_test1",
 	},
-	Cuacuo218 = {
+	Cuaco218 = {
 		UserId = 5527661621,
-		Name = "Cuacuo218",
+		Name = "Cuaco218",
 	},
 	Bruman1118 = {
 		UserId = 6192083401,
@@ -54,8 +54,10 @@ function Shared.IsDev(playerName: string): boolean
 end
 
 function Shared.IsTester(playerName: string): boolean
+	print("Shared.IsTester - Player Name: " .. playerName)
 	for _, player in pairs(Shared.Testers) do
 		if player.Name == playerName then
+			print("Shared.IsTester - Found Tester: " .. player.Name)
 			return true
 		end
 	end
