@@ -10,12 +10,15 @@ local Shared = {}
 
 PlayerDataService.ProfileLoaded.Event:Connect(function(player: Player)
 	Local.GiveTools(player)
+	print("Profile loaded for player: ", player.Name)
 	player.CharacterAdded:Connect(function()
+		print("Character added for player: ", player.Name)
 		Local.GiveTools(player)
 	end)
 end)
 
 function Local.GiveTools(player: Player)
+	print("Giving tools to player: ", player.Name)
 	Shared.GiveTool(player, "Gravity Coil", 1157798560)
 	Shared.GiveTool(player, "Speed Coil", 1157906298)
 	Shared.GiveTool(player, "Sword", 1255668315)
@@ -23,11 +26,13 @@ function Local.GiveTools(player: Player)
 	-- Check if player has purchased a trashcan
 	local state = PlayerDataService.GetState(player)
 	if state and state.hasTrashcan then
+		print("Giving trashcan to player: ", player.Name)
 		Shared.GiveTool(player, "Trashcan")
 	elseif TestService.IsDev() then
 		-- Shared.GiveTool(player, "Trashcan")
 		-- Shared.GiveTool(player, "Sword")
 	elseif TestService.IsTester() then
+		print("Giving trashcan and sword to tester: ", player.Name)
 		Shared.GiveTool(player, "Sword")
 	end
 end
@@ -43,20 +48,25 @@ function Shared.GiveTool(player: Player, toolName: string, gamepassId: number?)
 		return
 	end
 
+	print("Has gamepass: ", gamepassId, " for tool: ", toolName, " for player: ", player.Name)
+
 	-- Not a gamepass tool or player owns the gamepass
 	local backpack = player.Backpack or player:WaitForChild("Backpack")
 	if not backpack then
+		warn("Backpack not found for player: ", player.Name)
 		return
 	end
 
 	-- Make sure player doesn't ahve tool in backpack
 	if backpack:FindFirstChild(toolName) then
+		warn("Tool already exists in backpack: ", toolName, " for player: ", player.Name)
 		return
 	end
 
 	-- Make sure player is not holding the tool
 	local character = player.Character or player.CharacterAdded:Wait()
 	if character and character:FindFirstChild(toolName) then
+		warn("Tool already equipped: ", toolName, " for player: ", player.Name)
 		return
 	end
 
@@ -64,10 +74,12 @@ function Shared.GiveTool(player: Player, toolName: string, gamepassId: number?)
 	trashcan.Parent = backpack
 
 	if toolName == "Trashcan" then
+		print("Setting up trashcan for player: ", player.Name)
 		TrashcanService.SetupTrashcan(player, trashcan)
 	end
 
 	if toolName == "Sword" then
+		print("Setting up sword for player: ", player.Name)
 		SwordService.SetupSword(player, trashcan)
 	end
 end
