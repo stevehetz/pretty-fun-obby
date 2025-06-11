@@ -56,8 +56,6 @@ function Shared.GiveTool(player: Player, toolName: string, gamepassId: number?)
 		return
 	end
 
-	print("Has gamepass: ", gamepassId, " for tool: ", toolName, " for player: ", player.Name)
-
 	-- Not a gamepass tool or player owns the gamepass
 	local backpack = player.Backpack or player:WaitForChild("Backpack")
 	if not backpack then

@@ -284,6 +284,7 @@ function Local.SetupSword(tool)
 
 	tool.Unequipped:Connect(function()
 		animsTable.Slash:Stop()
+		animsTable.Idle:Stop()
 	end)
 end
 
