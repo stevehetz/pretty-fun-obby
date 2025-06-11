@@ -2,16 +2,7 @@ local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
-export type SoundName =
-	"Checkpoint"
-	| "Confirm"
-	| "Error"
-	| "Menu-Click"
-	| "Rebirth"
-	| "Music"
-	| "CoinCollect"
-	| "TrashcanHit"
-	| "Dink"
+export type SoundName = "Checkpoint" | "Confirm" | "Error" | "Menu-Click" | "Rebirth" | "Music" | "CoinCollect" | "Dink"
 
 local Local = {}
 local Shared = {}

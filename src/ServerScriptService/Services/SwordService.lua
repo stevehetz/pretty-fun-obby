@@ -1,13 +1,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local tweenService = game:GetService("TweenService")
 
 local EnemyUtil = require(ReplicatedStorage.Utils.EnemyUtil.EnemyUtil)
-local Sounds = require(ReplicatedStorage.Configs.Sounds)
 
--- Create a RemoteEvent for playing sounds only for specific players
-local PlaySoundEvent = Instance.new("RemoteEvent")
-PlaySoundEvent.Name = "PlaySwordSoundEvent"
-PlaySoundEvent.Parent = ReplicatedStorage
+local Remotes = ReplicatedStorage.Remotes
 
 local Local = {}
 local Shared = {}
@@ -57,7 +52,7 @@ function Shared.SetupSword(player, sword)
 			-- Play a hit sound only for the player who used the sword
 			pcall(function()
 				-- Fire the RemoteEvent only to the player who used the sword
-				PlaySoundEvent:FireClient(player, "Dink")
+				Remotes.PlaySound:FireClient(player, "Dink")
 			end)
 		end
 	end)

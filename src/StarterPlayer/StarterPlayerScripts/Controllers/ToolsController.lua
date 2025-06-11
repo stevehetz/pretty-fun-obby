@@ -3,9 +3,6 @@ local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local GetStoreItemInfoRF = ReplicatedStorage:WaitForChild("GetStoreItemInfoRF")
-local PlayTrashcanSoundEvent = ReplicatedStorage:WaitForChild("PlayTrashcanSoundEvent")
-local PlaySwordSoundEvent = ReplicatedStorage:WaitForChild("PlaySwordSoundEvent")
-local Sounds = require(ReplicatedStorage.Configs.Sounds)
 
 local Player = Players.LocalPlayer
 
@@ -58,16 +55,6 @@ function Shared.OnStart()
 	end)
 
 	Local.SetupCharacter(Player)
-
-	PlayTrashcanSoundEvent.OnClientEvent:Connect(function(soundName)
-		-- Play the sound locally
-		Sounds.PlaySound(soundName)
-	end)
-
-	PlaySwordSoundEvent.OnClientEvent:Connect(function(soundName)
-		-- Play the sound locally
-		Sounds.PlaySound(soundName)
-	end)
 end
 
 function Shared.IsToolEquipped(toolName: string): boolean

@@ -2,12 +2,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local tweenService = game:GetService("TweenService")
 
 local EnemyUtil = require(ReplicatedStorage.Utils.EnemyUtil.EnemyUtil)
-local Sounds = require(ReplicatedStorage.Configs.Sounds)
 
--- Create a RemoteEvent for playing sounds only for specific players
-local PlaySoundEvent = Instance.new("RemoteEvent")
-PlaySoundEvent.Name = "PlayTrashcanSoundEvent"
-PlaySoundEvent.Parent = ReplicatedStorage
+local Remotes = ReplicatedStorage.Remotes
 
 local Local = {}
 local Shared = {}
@@ -87,7 +83,7 @@ function Shared.SetupTrashcan(player, trashcan)
 						-- Get the player who threw the trashcan
 						local throwerPlayer = player
 						-- Fire the RemoteEvent only to the player who threw the trashcan
-						PlaySoundEvent:FireClient(throwerPlayer, "Dink")
+						Remotes.PlaySound:FireClient(throwerPlayer, "Dink")
 					end)
 				end
 			end)

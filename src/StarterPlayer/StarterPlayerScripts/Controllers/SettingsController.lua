@@ -35,7 +35,7 @@ function Local.UpdateSetting(setting: SettingsConfig.Setting, enabled: boolean)
 			if sound:IsA("Sound") then
 				if sound.Name == "Dink" then
 					-- Trashcan sound is always enabled
-					sound.Volume = 0.5
+					sound.Volume = if enabled then 0.5 else 0
 				else
 					-- Other sounds are controlled by the setting
 					sound.Volume = if enabled then 0.15 else 0
