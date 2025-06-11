@@ -68,6 +68,7 @@ local _store = {
 		{
 			Id = 1255668315, -- Sword
 			IsTool = true,
+			Image = "rbxassetid://72423564181069",
 		},
 	},
 
@@ -132,7 +133,7 @@ function Local.LoadStoreInfo()
 				product.Name = info.Name
 				product.Description = info.Description
 				product.Price = info.PriceInRobux
-				product.Image = string.format("rbxassetid://%s", info.IconImageAssetId)
+				product.Image = product.Image or string.format("rbxassetid://%s", info.IconImageAssetId)
 			end
 			return true
 		end, "Failed to load gamepass info:")()

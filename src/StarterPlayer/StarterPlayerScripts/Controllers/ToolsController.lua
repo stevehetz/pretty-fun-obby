@@ -126,7 +126,6 @@ function Local.SetupTools(tool)
 
 	if tool.Name == "Gravity Coil" or tool.Name == "Speed Coil" then
 		Local.ApplyIconToTool(tool)
-		Local.SetupCoil(tool)
 	end
 
 	if tool.Name == "Trashcan" then
@@ -136,17 +135,19 @@ function Local.SetupTools(tool)
 	if tool.Name == "Sword" then
 		Local.SetupSword(tool)
 	end
-end
 
-function Local.SetupCoil(tool: Tool)
 	tool.Equipped:Connect(function()
 		Shared.ToolToggled:Fire(tool.Name)
-		Local.CoilEffect(tool.Name, true)
+		if tool.Name == "Gravity Coil" or tool.Name == "Speed Coil" then
+			Local.CoilEffect(tool.Name, true)
+		end
 	end)
 
 	tool.Unequipped:Connect(function()
 		Shared.ToolToggled:Fire(tool.Name)
-		Local.CoilEffect(tool.Name, false)
+		if tool.Name == "Gravity Coil" or tool.Name == "Speed Coil" then
+			Local.CoilEffect(tool.Name, false)
+		end
 	end)
 end
 
