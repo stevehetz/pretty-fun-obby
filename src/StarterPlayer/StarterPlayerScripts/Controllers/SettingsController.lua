@@ -33,7 +33,7 @@ function Local.UpdateSetting(setting: SettingsConfig.Setting, enabled: boolean)
 	if isSoundEffects then
 		for _, sound: Sound in ReplicatedStorage.Sounds:GetChildren() do
 			if sound:IsA("Sound") then
-				if sound.Name == "TrashcanHit" then
+				if sound.Name == "Dink" then
 					-- Trashcan sound is always enabled
 					sound.Volume = 0.5
 				else
