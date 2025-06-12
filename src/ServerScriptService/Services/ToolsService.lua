@@ -63,7 +63,7 @@ function Shared.GiveTool(player: Player, toolName: string, gamepassId: number?)
 		return
 	end
 
-	-- Make sure player doesn't ahve tool in backpack
+	-- Make sure player doesn't have tool in backpack
 	if backpack:FindFirstChild(toolName) then
 		warn("Tool already exists in backpack: ", toolName, " for player: ", player.Name)
 		return
