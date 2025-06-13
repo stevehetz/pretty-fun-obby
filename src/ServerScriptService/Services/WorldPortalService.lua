@@ -197,9 +197,10 @@ function Local.CreateWorldPortals()
 			insidePart.Color = Color3.fromRGB(46, 24, 94)
 		end
 
-		-- Position the model using SetPrimaryPartCFrame
+		-- Position the model using PivotTo (proper replacement for SetPrimaryPartCFrame)
 		local offset = CFrame.new(0, 0, (index - 1) * 11)
-		portal:SetPrimaryPartCFrame(StartCFrame * offset)
+		local targetCFrame = StartCFrame * offset
+		portal:PivotTo(targetCFrame)
 
 		-- Set display name on the portal
 		local displayName = world.DisplayName or worldName
