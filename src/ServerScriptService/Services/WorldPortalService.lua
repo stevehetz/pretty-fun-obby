@@ -150,33 +150,67 @@ end
 function Local.CreateWorldPortals()
 	local Template = ReplicatedStorage.WorldPortals.WorldPortalTemplate
 	if not Template then
-		warn("WorldPortalService - WorldPortalTemplate not found in WorldPortalsFolder")
+		warn("WorldPortalService - WorldPortalTemplate not found in ReplicatedStorage.WorldPortals")
 		return
 	end
 
-	local StartPositionPart = Workspace.WorldPortals.PortalStartPosition
+	-- Check if template has a PrimaryPart
+	if not Template.PrimaryPart then
+		warn("WorldPortalService - WorldPortalTemplate does not have a PrimaryPart set")
+		return
+	end
+
+	local WorldPortalsFolder = Workspace:FindFirstChild("WorldPortals")
+
+	local StartPositionPart = WorldPortalsFolder:FindFirstChild("PortalStartPosition")
 	if not StartPositionPart then
-		warn("WorldPortalService - PortalStartPosition not found in WorldPortals")
+		warn("WorldPortalService - PortalStartPosition not found in Workspace.WorldPortals")
 		return
 	end
 
-	-- Get StartPositionPart position
-	local StartPosition = StartPositionPart.Position
+	-- Get StartPositionPart CFrame
+	local StartCFrame = StartPositionPart.CFrame
 
-	-- destroy part
+	-- destroy start position part after getting its position
 	StartPositionPart:Destroy()
 
 	local Worlds = WorldsConfig.GetAllWorlds()
-
+	local currentWorldName = WorldsConfig.GetCurrentWorldName()
 	local index = 1
 
 	for worldName, worldData in pairs(Worlds) do
 		local portal = Template:Clone()
 		portal.Name = worldName
-		portal.Parent = ReplicatedStorage.WorldPortals
-		portal.Position = StartPosition + Vector3.new(0, 0, index * 10)
+		portal.Parent = WorldPortalsFolder
+
+		local insidePart = portal:FindFirstChild("Inside")
+		if currentWorldName == worldName then
+			if insidePart then
+				insidePart.Transparency = 0.6
+				insidePart.CanCollide = false
+				insidePart.Color = Color3.fromRGB(255, 255, 255)
+			end
+		else
+			insidePart.CanCollide = true
+			insidePart.Transparency = 0
+			insidePart.Color = Color3.fromRGB(94, 36, 36)
+		end
+
+		-- Position the model using SetPrimaryPartCFrame
+		local offset = CFrame.new(0, 0, (index - 1) * 12)
+		portal:SetPrimaryPartCFrame(StartCFrame * offset)
+
+		-- Set display name on the portal
+		local displayName = worldData.DisplayName or worldName
+		local nameLabel = portal.NamePlate.SurfaceGui.Frame.TextLabel
+		if nameLabel and nameLabel:IsA("TextLabel") then
+			nameLabel.Text = displayName
+		end
+
 		index += 1
 	end
+
+	print("WorldPortalService - Created " .. (index - 1) .. " world portals")
 end
 
 function Shared.SetupPortals(profiles)
