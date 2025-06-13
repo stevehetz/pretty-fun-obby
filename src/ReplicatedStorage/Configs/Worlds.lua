@@ -1,70 +1,74 @@
 export type WorldName = "World1" | "World2" | "World3" | "World4"
 
-local PLACE_IDS = {
-	["World1"] = 139398903012255,
-	["World2"] = 71122824760185,
-	["World3"] = 128199095645816,
-	["World4"] = 76460924671569,
+local WORLDS = {
+	{
+		Name = "World1",
+		DisplayName = "World 1",
+		PlaceId = 139398903012255,
+	},
+	{
+		Name = "World2",
+		DisplayName = "World 2",
+		PlaceId = 71122824760185,
+	},
+	{
+		Name = "World3",
+		DisplayName = "World 3",
+		PlaceId = 128199095645816,
+	},
+	{
+		Name = "World4",
+		DisplayName = "World 4",
+		PlaceId = 76460924671569,
+	},
 }
 
-local DISPLAY_NAMES = {
-	["World1"] = "World 1",
-	["World2"] = "World 2",
-	["World3"] = "World 3",
-	["World4"] = "World 4",
-}
+-- Create lookup tables for faster access
+local WorldsByName = {}
+for _, world in ipairs(WORLDS) do
+	WorldsByName[world.Name] = world
+end
 
 local Local = {}
 local Shared = {}
 
 function Shared.IsWorld(worldName: string): boolean
 	local currentPlaceId = game.PlaceId
-	local placeId = PLACE_IDS[worldName]
-	return placeId and currentPlaceId == placeId
-end
-
-function Shared.GetAllWorlds(): { WorldName }
-	local worlds = {}
-
-	for worldName, _ in pairs(PLACE_IDS) do
-		worlds[worldName] = {
-			Name = worldName,
-			DisplayName = DISPLAY_NAMES[worldName] or worldName,
-			PlaceId = PLACE_IDS[worldName],
-		}
-	end
-
-	return worlds
+	local world = WorldsByName[worldName]
+	return world and currentPlaceId == world.PlaceId
 end
 
 function Shared.GetPlaceIdFromWorldName(worldName: WorldName): number?
-	local placeId = PLACE_IDS[worldName]
-	if not placeId then
+	local world = WorldsByName[worldName]
+	if not world then
 		return nil
 	end
 
-	return placeId
+	return world.PlaceId
 end
 
 function Shared.GetDisplayNameFromWorldName(worldName: WorldName): string?
-	local displayName = DISPLAY_NAMES[worldName]
-	if not displayName then
+	local world = WorldsByName[worldName]
+	if not world then
 		return nil
 	end
 
-	return displayName
+	return world.DisplayName
 end
 
 function Shared.GetCurrentWorldName(): WorldName?
 	local placeId = game.PlaceId
 
-	for worldName, id in pairs(PLACE_IDS) do
-		if id == placeId then
-			return worldName
+	for _, world in ipairs(WORLDS) do
+		if world.PlaceId == placeId then
+			return world.Name
 		end
 	end
 
 	return nil
 end
+
+-- Expose the WORLDS table for direct access
+Shared.WORLDS = WORLDS
 
 return Shared

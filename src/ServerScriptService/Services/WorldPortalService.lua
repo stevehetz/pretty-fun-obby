@@ -174,11 +174,12 @@ function Local.CreateWorldPortals()
 	-- destroy start position part after getting its position
 	StartPositionPart:Destroy()
 
-	local Worlds = WorldsConfig.GetAllWorlds()
 	local currentWorldName = WorldsConfig.GetCurrentWorldName()
 	local index = 1
 
-	for worldName, worldData in pairs(Worlds) do
+	-- Iterate through WORLDS in order
+	for _, world in ipairs(WorldsConfig.WORLDS) do
+		local worldName = world.Name
 		local portal = Template:Clone()
 		portal.Name = worldName
 		portal.Parent = WorldPortalsFolder
@@ -201,7 +202,7 @@ function Local.CreateWorldPortals()
 		portal:SetPrimaryPartCFrame(StartCFrame * offset)
 
 		-- Set display name on the portal
-		local displayName = worldData.DisplayName or worldName
+		local displayName = world.DisplayName or worldName
 		local nameLabel = portal.NamePlate.SurfaceGui.Frame.TextLabel
 		if nameLabel and nameLabel:IsA("TextLabel") then
 			nameLabel.Text = displayName

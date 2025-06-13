@@ -115,33 +115,34 @@ function Local.AddPurchaseButtons()
 end
 
 function Local.AddWorldButtons()
-	local worlds = WorldsConfig.GetAllWorlds()
-	if not worlds then
+	if not WorldsConfig.WORLDS then
 		warn("No worlds available.")
 		return
 	end
 
-	-- Use an ordered list of world names to ensure consistent order
-	local orderedWorldNames = { "World1", "World2", "World3", "World4" }
+	-- Iterate directly through WORLDS in order
+	for _, world in ipairs(WorldsConfig.WORLDS) do
+		local worldName = world.Name
+		local button = WorldBtnTemplate:Clone()
+		button.Name = worldName
+		button.Visible = true
+		button.Text = world.DisplayName
+		button.Parent = WorldListContainer
 
-	for _, worldName in ipairs(orderedWorldNames) do
-		local worldData = worlds[worldName]
-		if worldData then
-			local button = WorldBtnTemplate:Clone()
-			button.Name = worldName
-			button.Visible = true
-			button.Text = worldData.DisplayName
-			button.Parent = WorldListContainer
+		-- Create a copy of the world data with IsWorldButton flag
+		local worldData = {
+			Name = world.Name,
+			DisplayName = world.DisplayName,
+			PlaceId = world.PlaceId,
+			IsWorldButton = true,
+		}
 
-			worldData.IsWorldButton = true
-
-			if WorldsConfig.GetCurrentWorldName() == worldName then
-				button.BackgroundColor3 = Color3.fromRGB(154, 168, 194)
-				button.UIStroke.Color = Color3.fromRGB(86, 130, 159)
-			end
-
-			Local.SetupItemClickHandler(worldData, button)
+		if WorldsConfig.GetCurrentWorldName() == worldName then
+			button.BackgroundColor3 = Color3.fromRGB(154, 168, 194)
+			button.UIStroke.Color = Color3.fromRGB(86, 130, 159)
 		end
+
+		Local.SetupItemClickHandler(worldData, button)
 	end
 end
 
