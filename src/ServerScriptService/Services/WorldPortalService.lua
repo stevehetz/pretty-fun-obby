@@ -147,11 +147,45 @@ function Shared.HandleWorldTeleport(player: Player, state: PlayerData.PlayerData
 	Shared.HandleWorldTeleportComplete:Fire(player, state)
 end
 
+function Local.CreateWorldPortals()
+	local Template = ReplicatedStorage.WorldPortals.WorldPortalTemplate
+	if not Template then
+		warn("WorldPortalService - WorldPortalTemplate not found in WorldPortalsFolder")
+		return
+	end
+
+	local StartPositionPart = Workspace.WorldPortals.PortalStartPosition
+	if not StartPositionPart then
+		warn("WorldPortalService - PortalStartPosition not found in WorldPortals")
+		return
+	end
+
+	-- Get StartPositionPart position
+	local StartPosition = StartPositionPart.Position
+
+	-- destroy part
+	StartPositionPart:Destroy()
+
+	local Worlds = WorldsConfig.GetAllWorlds()
+
+	local index = 1
+
+	for worldName, worldData in pairs(Worlds) do
+		local portal = Template:Clone()
+		portal.Name = worldName
+		portal.Parent = ReplicatedStorage.WorldPortals
+		portal.Position = StartPosition + Vector3.new(0, 0, index * 10)
+		index += 1
+	end
+end
+
 function Shared.SetupPortals(profiles)
 	local WorldPortals = Workspace:FindFirstChild("WorldPortals")
 	if not WorldPortals then
 		return
 	end
+
+	Local.CreateWorldPortals()
 
 	for _, descendant in Workspace.WorldPortals:GetDescendants() do
 		if descendant.Name == "Inside" then
