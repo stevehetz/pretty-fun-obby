@@ -1,5 +1,6 @@
 local ServerScriptService = game:GetService("ServerScriptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
 
 local PlayerDataService = require(ServerScriptService.Services.PlayerDataService)
 local StagesConfig = require(ReplicatedStorage.Configs.Stages)
@@ -8,6 +9,9 @@ local Remotes = ReplicatedStorage.Remotes
 local Shared = {}
 
 function Shared.OnStart()
+	-- Set player respawn time to 0 (instant respawn)
+	Players.RespawnTime = 0
+
 	PlayerDataService.ProfileLoaded.Event:Connect(function(player: Player)
 		-- print("RespawnService - PlayerDataService.ProfileLoaded.Event")
 		Shared.RespawnPlayer(player)
