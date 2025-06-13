@@ -194,15 +194,16 @@ function Local.CreateWorldPortals()
 		else
 			insidePart.CanCollide = true
 			insidePart.Transparency = 0
-			insidePart.Color = Color3.fromRGB(94, 36, 36)
+			insidePart.Color = Color3.fromRGB(46, 24, 94)
 		end
 
 		-- Position the model using SetPrimaryPartCFrame
-		local offset = CFrame.new(0, 0, (index - 1) * 12)
+		local offset = CFrame.new(0, 0, (index - 1) * 11)
 		portal:SetPrimaryPartCFrame(StartCFrame * offset)
 
 		-- Set display name on the portal
 		local displayName = world.DisplayName or worldName
+		portal.NamePlate.Color = Color3.fromRGB(200, 200, 200)
 		local nameLabel = portal.NamePlate.SurfaceGui.Frame.TextLabel
 		if nameLabel and nameLabel:IsA("TextLabel") then
 			nameLabel.Text = displayName
