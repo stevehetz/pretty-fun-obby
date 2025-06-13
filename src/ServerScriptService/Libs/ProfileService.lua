@@ -228,8 +228,8 @@ export type Listener = (place_id: number | nil, job_id: string | nil) -> any
 
 type NotReleasedHandler =
 	"ForceLoad"
-| "Steal"
-| (placeId: number, jobId: string) -> "Repeat" | "Cancel" | "ForceLoad" | "Steal"
+	| "Steal"
+	| (placeId: number, jobId: string) -> "Repeat" | "Cancel" | "ForceLoad" | "Steal"
 
 export type ProfileService = {
 	--- Set to false when the Roblox server is shutting down. ProfileStore methods should not be called after this
@@ -238,25 +238,22 @@ export type ProfileService = {
 
 	--- Analytics endpoint for DataStore error logging.
 	--- {error_message, profile_store_name, profile_key}.
-	IssueSignal: RBXScriptSignal<string, string, string>,
+	IssueSignal: RBXScriptSignal,
 
 	--- Analytics endpoint for cases when a DataStore key returns a value that has all or some of it's profile
 	--- components set to invalid data types. E.g., accidentally setting Profile.Data to a non table value.
 	--- {profile_store_name, profile_key}
-	CorruptionSignal: RBXScriptSignal<string, string>,
+	CorruptionSignal: RBXScriptSignal,
 
 	--- Analytics endpoint for cases when DataStore is throwing too many errors and it's most likely affecting your
 	--- game really really bad - this could be due to developer errors or due to Roblox server problems. Could be used
 	--- to alert players about data store outages.
 	--- {is_critical_state}
-	CriticalStateSignal: RBXScriptSignal<boolean>,
+	CriticalStateSignal: RBXScriptSignal,
 
 	--- ProfileStore objects expose methods for loading / viewing profiles and sending global updates.
 	--- Equivalent of `:GetDataStore()` in Roblox `DataStoreService` API.
-	GetProfileStore: <Data>(
-		storeIndex: string,
-		dataTemplate: Data
-	) -> ProfileStore<Data>,
+	GetProfileStore: <Data>(storeIndex: string, dataTemplate: Data) -> ProfileStore<Data>,
 }
 
 export type ProfileStore<Data> = {
@@ -306,7 +303,7 @@ export type Profile<Data> = {
 	--- This signal fires after every auto-save, after `Profile.MetaData.MetaTagsLatest` has been updated with the
 	--- version that's guaranteed to be saved. `MetaTagsUpdated` will fire regardless of whether MetaTagsLatest changed
 	--- after update.
-	MetaTagsUpdated: RBXScriptSignal<>,
+	MetaTagsUpdated: RBXScriptSignal,
 
 	--- Non-strict reference - developer can set this value to a new table reference.
 	RobloxMetaData: nil,
@@ -320,7 +317,7 @@ export type Profile<Data> = {
 
 	--- A signal that gets triggered every time `Profile.KeyInfo` is updated with a new `DataStoreKeyInfo` instance
 	--- reference after every auto-save or profile release.
-	KeyInfoUpdated: RBXScriptSignal<DataStoreKeyInfo>,
+	KeyInfoUpdated: RBXScriptSignal,
 
 	--- This is the GlobalUpdates object tied to this specific Profile. It exposes GlobalUpdates methods for update
 	--- processing.
@@ -1131,72 +1128,72 @@ local function SaveProfileAsync(profile, release_from_session, is_overwriting)
 					local force_load_pending = false
 
 					if is_overwriting ~= true then
-					-- 1) Check if this session still owns the profile: --
-					local active_session = latest_data.MetaData.ActiveSession
-					local force_load_session = latest_data.MetaData.ForceLoadSession
-					local session_load_count = latest_data.MetaData.SessionLoadCount
+						-- 1) Check if this session still owns the profile: --
+						local active_session = latest_data.MetaData.ActiveSession
+						local force_load_session = latest_data.MetaData.ForceLoadSession
+						local session_load_count = latest_data.MetaData.SessionLoadCount
 
-					if type(active_session) == "table" then
-						session_owns_profile = IsThisSession(active_session)
-							and session_load_count == last_session_load_count
-					end
-					if type(force_load_session) == "table" then
-						force_load_pending = not IsThisSession(force_load_session)
-					end
-				else
-					session_owns_profile = true
-				end
-
-					if session_owns_profile == true then -- We may only edit the profile if this session has ownership of the profile
-					if is_overwriting ~= true then
-						-- 2) Manage global updates: --
-						local latest_global_updates_data = latest_data.GlobalUpdates -- {update_index, {{update_id, version_id, update_locked, update_data}, ...}}
-						local latest_global_updates_list = latest_global_updates_data[2]
-
-						local global_updates_object = profile.GlobalUpdates -- [GlobalUpdates]
-						local pending_update_lock = global_updates_object._pending_update_lock -- {update_id, ...}
-						local pending_update_clear = global_updates_object._pending_update_clear -- {update_id, ...}
-						-- Active update locking:
-						for i = 1, #latest_global_updates_list do
-							for _, lock_id in ipairs(pending_update_lock) do
-								if latest_global_updates_list[i][1] == lock_id then
-									latest_global_updates_list[i][3] = true
-									break
-								end
-							end
+						if type(active_session) == "table" then
+							session_owns_profile = IsThisSession(active_session)
+								and session_load_count == last_session_load_count
 						end
-						-- Locked update clearing:
-						for _, clear_id in ipairs(pending_update_clear) do
-							for i = 1, #latest_global_updates_list do
-								if
-									latest_global_updates_list[i][1] == clear_id
-									and latest_global_updates_list[i][3] == true
-								then
-									table.remove(latest_global_updates_list, i)
-									break
-								end
-							end
-						end
-					end
-
-					-- 3) Save profile data: --
-					latest_data.Data = profile.Data
-					latest_data.RobloxMetaData = profile.RobloxMetaData
-					latest_data.UserIds = profile.UserIds
-
-					if is_overwriting ~= true then
-						latest_data.MetaData.MetaTags = profile.MetaData.MetaTags -- MetaData.MetaTags is the only actively savable component of MetaData
-						latest_data.MetaData.LastUpdate = os.time()
-						if release_from_session == true or force_load_pending == true then
-							latest_data.MetaData.ActiveSession = nil
+						if type(force_load_session) == "table" then
+							force_load_pending = not IsThisSession(force_load_session)
 						end
 					else
-						latest_data.MetaData = profile.MetaData
-						latest_data.MetaData.ActiveSession = nil
-						latest_data.MetaData.ForceLoadSession = nil
-						latest_data.GlobalUpdates = profile.GlobalUpdates._updates_latest
+						session_owns_profile = true
 					end
-				end
+
+					if session_owns_profile == true then -- We may only edit the profile if this session has ownership of the profile
+						if is_overwriting ~= true then
+							-- 2) Manage global updates: --
+							local latest_global_updates_data = latest_data.GlobalUpdates -- {update_index, {{update_id, version_id, update_locked, update_data}, ...}}
+							local latest_global_updates_list = latest_global_updates_data[2]
+
+							local global_updates_object = profile.GlobalUpdates -- [GlobalUpdates]
+							local pending_update_lock = global_updates_object._pending_update_lock -- {update_id, ...}
+							local pending_update_clear = global_updates_object._pending_update_clear -- {update_id, ...}
+							-- Active update locking:
+							for i = 1, #latest_global_updates_list do
+								for _, lock_id in ipairs(pending_update_lock) do
+									if latest_global_updates_list[i][1] == lock_id then
+										latest_global_updates_list[i][3] = true
+										break
+									end
+								end
+							end
+							-- Locked update clearing:
+							for _, clear_id in ipairs(pending_update_clear) do
+								for i = 1, #latest_global_updates_list do
+									if
+										latest_global_updates_list[i][1] == clear_id
+										and latest_global_updates_list[i][3] == true
+									then
+										table.remove(latest_global_updates_list, i)
+										break
+									end
+								end
+							end
+						end
+
+						-- 3) Save profile data: --
+						latest_data.Data = profile.Data
+						latest_data.RobloxMetaData = profile.RobloxMetaData
+						latest_data.UserIds = profile.UserIds
+
+						if is_overwriting ~= true then
+							latest_data.MetaData.MetaTags = profile.MetaData.MetaTags -- MetaData.MetaTags is the only actively savable component of MetaData
+							latest_data.MetaData.LastUpdate = os.time()
+							if release_from_session == true or force_load_pending == true then
+								latest_data.MetaData.ActiveSession = nil
+							end
+						else
+							latest_data.MetaData = profile.MetaData
+							latest_data.MetaData.ActiveSession = nil
+							latest_data.MetaData.ForceLoadSession = nil
+							latest_data.GlobalUpdates = profile.GlobalUpdates._updates_latest
+						end
+					end
 				end,
 			}, profile._is_user_mock)
 		if loaded_data ~= nil and key_info ~= nil then
@@ -2067,7 +2064,7 @@ function ProfileStore:LoadProfileAsync(profile_key, not_released_handler, _use_m
 					-- Special case - finished loading profile, but session is shutting down:
 					if ProfileService.ServiceLocked == true then
 						SaveProfileAsync(profile, true) -- Release profile and yield until the DataStore call is finished
-						profile = nil :: never -- nil will be returned by this call
+						profile = nil -- nil will be returned by this call
 					end
 					-- Return Profile object:
 					ActiveProfileLoadJobs = ActiveProfileLoadJobs - 1
@@ -2470,8 +2467,8 @@ if IsStudio == true then
 			status == false
 			and (
 				string.find(message, "403", 1, true) ~= nil -- Cannot write to DataStore from studio if API access is not enabled
-					or string.find(message, "must publish", 1, true) ~= nil -- Game must be published to access live keys
-					or no_internet_access == true
+				or string.find(message, "must publish", 1, true) ~= nil -- Game must be published to access live keys
+				or no_internet_access == true
 			)
 		then -- No internet access
 			UseMockDataStore = true
