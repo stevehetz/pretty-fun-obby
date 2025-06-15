@@ -115,6 +115,9 @@ function Local.InitState(player: Player)
 	-- Reset trashcan
 	state.hasTrashcan = false
 
+	-- Reset sword
+	state.hasSword = false
+
 	-- state.oneTimePass = false -- Reset one-time pass
 
 	-- get player name

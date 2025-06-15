@@ -28,6 +28,7 @@ export type PlayerData = {
 	},
 	oneTimePass: boolean?,
 	hasTrashcan: boolean?,
+	hasSword: boolean?,
 }
 
 local Worlds = { "World1", "World2", "World3" }
@@ -64,6 +65,7 @@ local DEFAULT_PLAYER_DATA: PlayerData = {
 	oneTimePass = false,
 	donationTotal = 0,
 	hasTrashcan = false,
+	hasSword = false,
 }
 
 local Shared = {}

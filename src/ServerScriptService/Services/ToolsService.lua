@@ -24,11 +24,18 @@ function Local.GiveTools(player: Player)
 	task.wait(0.3)
 	Shared.GiveTool(player, "Speed Coil", 1157906298)
 	task.wait(0.3)
-	Shared.GiveTool(player, "Sword", 1255668315)
+
+	-- Get player state
+	local state = PlayerDataService.GetState(player)
+
+	-- Check if player has purchased a sword
+	if state and state.hasSword then
+		print("Giving sword to player: ", player.Name)
+		Shared.GiveTool(player, "Sword")
+	end
 	task.wait(0.3)
 
 	-- Check if player has purchased a trashcan
-	local state = PlayerDataService.GetState(player)
 	if state and state.hasTrashcan then
 		print("Giving trashcan to player: ", player.Name)
 		Shared.GiveTool(player, "Trashcan")
@@ -40,8 +47,8 @@ function Local.GiveTools(player: Player)
 	end
 
 	if TestConfig.IsTester(player.Name) then
-		print("Giving sword to tester: ", player.Name)
-		Shared.GiveTool(player, "Sword")
+		-- print("Giving sword to tester: ", player.Name)
+		-- Shared.GiveTool(player, "Sword")
 	end
 end
 

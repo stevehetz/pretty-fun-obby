@@ -18,6 +18,12 @@ Local.CoinStoreItems = {
 		Value = 0,
 		IsTool = true,
 	},
+	["Sword"] = {
+		Name = "Sword",
+		DisplayName = "Sword",
+		Value = 0,
+		IsTool = true,
+	},
 }
 
 function Shared.OnStart()
@@ -106,6 +112,19 @@ function Local.PurchaseTool(player: Player, itemInfo)
 	-- Give the tool to the player
 	ToolsService.GiveTool(player, itemInfo.Name)
 
+	local type = nil
+	if itemInfo.Name == "Trashcan" then
+		type = "UpdateHasTrashcan"
+	end
+	if itemInfo.Name == "Sword" then
+		type = "UpdateHasSword"
+	end
+
+	if not type then
+		warn("Unknown item type for item:", itemInfo.Name)
+		return
+	end
+
 	-- Deduct coins
 	local coinCountAction: PlayerDataService.UpdateStateAction = {
 		type = "UpdateCoinCount",
@@ -115,7 +134,7 @@ function Local.PurchaseTool(player: Player, itemInfo)
 
 	-- Set hasTrashcan player state to true
 	local hasTrashcanAction: PlayerDataService.UpdateStateAction = {
-		type = "UpdateHasTrashcan",
+		type = type,
 		value = true,
 	}
 	PlayerDataService.UpdateState(player, hasTrashcanAction)

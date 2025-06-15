@@ -70,13 +70,17 @@ function Local.SetupDisplay(player: Player, state: PlayerData.PlayerData, displa
 
 		-- Set price on name plate
 		local priceLabel = namePlate.SurfaceGui.Frame.PriceFrame.Price
-		local coinIcon = namePlate.SurfaceGui.Frame.PriceFrame.CoinIcon
+		local coinIcon = namePlate.SurfaceGui.Frame.PriceFrame:FindFirstChild("CoinIcon")
 		if coinStoreItemInfo.Value == 0 then
-			coinIcon.Visible = false
+			if coinIcon then
+				coinIcon.Visible = false
+			end
 			priceLabel.Text = "FREE"
 			priceLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
 		else
-			coinIcon.Visible = true
+			if coinIcon then
+				coinIcon.Visible = true
+			end
 			priceLabel.Text = coinStoreItemInfo.Value
 			priceLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 		end

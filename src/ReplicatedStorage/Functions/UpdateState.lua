@@ -64,6 +64,9 @@ export type UpdateStateAction = {
 } | {
 	type: "UpdateHasTrashcan",
 	value: boolean,
+} | {
+	type: "UpdateHasSword",
+	value: boolean,
 }
 
 return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
@@ -126,6 +129,8 @@ return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
 		playerData.donationTotal += action.amount
 	elseif action.type == "UpdateHasTrashcan" then
 		playerData.hasTrashcan = action.value
+	elseif action.type == "UpdateHasSword" then
+		playerData.hasSword = action.value
 	else
 		error("Invalid action type: " .. tostring(action.type))
 	end
