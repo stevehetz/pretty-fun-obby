@@ -42,7 +42,7 @@ function Shared.Load(config: EnemyManagerConfig)
 					walkSpeed = 25,
 					damageAmount = 100,
 					damageCooldown = 1,
-					attackDistance = 50,
+					attackDistance = newEnemy:GetAttribute("AttackDistance") or 50,
 					animationAssetId = "rbxassetid://95135060939003",
 					damageParts = {
 						"LeftLowerLeg",

@@ -94,7 +94,8 @@ function Local.SetupCharacter(player: Player)
 	local humanoid = character:WaitForChild("Humanoid")
 	if humanoid then
 		originalValues.WalkSpeed = humanoid.WalkSpeed
-		originalValues.JumpHeight = humanoid.JumpHeight
+		-- Adding 2 to JumpHeight fixes weird bug where jump height is effected by changing walk speed
+		originalValues.JumpHeight = humanoid.JumpHeight + 2
 		originalValues.Gravity = Workspace.Gravity
 
 		-- Update default values with original values
@@ -162,6 +163,7 @@ function Local.CoilEffect(coil: Coil, didEquip: boolean)
 		Workspace.Gravity = if didEquip then COIL_EFFECTS.Gravity.Gravity else COIL_EFFECTS.Default.Gravity
 	elseif coil == "Speed Coil" then
 		humanoid.WalkSpeed = if didEquip then COIL_EFFECTS.Speed.WalkSpeed else COIL_EFFECTS.Default.WalkSpeed
+		humanoid.JumpHeight = COIL_EFFECTS.Default.JumpHeight
 	end
 end
 
