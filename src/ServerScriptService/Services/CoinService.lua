@@ -15,7 +15,7 @@ Local.CoinStoreItems = {
 	["Trashcan"] = {
 		Name = "Trashcan",
 		DisplayName = "Throwable Trashcan",
-		Value = 0,
+		Value = 300,
 		IsTool = true,
 	},
 	-- ["Sword"] = {
