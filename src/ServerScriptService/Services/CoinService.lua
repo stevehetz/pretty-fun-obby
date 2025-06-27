@@ -18,12 +18,12 @@ Local.CoinStoreItems = {
 		Value = 0,
 		IsTool = true,
 	},
-	["Sword"] = {
-		Name = "Sword",
-		DisplayName = "Sword",
-		Value = 0,
-		IsTool = true,
-	},
+	-- ["Sword"] = {
+	-- 	Name = "Sword",
+	-- 	DisplayName = "Sword",
+	-- 	Value = 0,
+	-- 	IsTool = true,
+	-- },
 }
 
 function Shared.OnStart()

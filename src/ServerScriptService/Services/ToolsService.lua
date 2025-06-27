@@ -24,15 +24,13 @@ function Local.GiveTools(player: Player)
 	task.wait(0.3)
 	Shared.GiveTool(player, "Speed Coil", 1157906298)
 	task.wait(0.3)
+	Shared.GiveTool(player, "Sword", 1255668315)
+	task.wait(0.3)
 
 	-- Get player state
 	local state = PlayerDataService.GetState(player)
 
 	-- Check if player has purchased a sword
-	if state and state.hasSword then
-		print("Giving sword to player: ", player.Name)
-		Shared.GiveTool(player, "Sword")
-	end
 	task.wait(0.3)
 
 	-- Check if player has purchased a trashcan

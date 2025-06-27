@@ -54,7 +54,6 @@ function Shared.IsDev(playerName: string): boolean
 end
 
 function Shared.IsTester(playerName: string): boolean
-	print("Shared.IsTester - Player Name: " .. playerName)
 	for _, player in pairs(Shared.Testers) do
 		if player.Name == playerName then
 			print("Shared.IsTester - Found Tester: " .. player.Name)

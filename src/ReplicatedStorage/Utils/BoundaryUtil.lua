@@ -12,7 +12,7 @@ function Shared.GetBoundaryOfRig(rig, platform)
 		local raycastResult = workspace:Raycast(rig.HumanoidRootPart.Position, Vector3.new(0, -10, 0), raycastParams)
 		if raycastResult and raycastResult.Instance then
 			platform = raycastResult.Instance
-			print("Detected platform:", platform:GetFullName())
+			-- print("Detected platform:", platform:GetFullName())
 		end
 	end
 

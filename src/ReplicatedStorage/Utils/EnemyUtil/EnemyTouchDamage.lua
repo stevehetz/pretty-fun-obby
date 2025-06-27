@@ -46,7 +46,7 @@ function Shared.Setup(rig, damageParts, damageAmount, damageCooldown, config)
 					if humanoid and humanoid.Health > 0 then
 						-- Apply damage
 						humanoid:TakeDamage(damageAmount)
-						print("Damaged player " .. player.Name .. " for " .. damageAmount .. " health")
+						-- print("Damaged player " .. player.Name .. " for " .. damageAmount .. " health")
 
 						-- Set cooldown
 						canDamage = false

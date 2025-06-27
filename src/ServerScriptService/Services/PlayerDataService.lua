@@ -116,7 +116,7 @@ function Local.InitState(player: Player)
 	state.hasTrashcan = false
 
 	-- Reset sword
-	state.hasSword = false
+	-- state.hasSword = false
 
 	-- state.oneTimePass = false -- Reset one-time pass
 
@@ -133,7 +133,8 @@ function Local.InitState(player: Player)
 			state.coins = 1000
 		end
 		state.skips.amount = 1000
-		state.gamepasses["1234640489"] = true
+		state.gamepasses["1234640489"] = true -- World pass
+		state.gamepasses["1255668315"] = true -- Sword
 		print("PlayerDataService - InitState - TestConfig.IsTester - Set gamepasses")
 	end
 end
