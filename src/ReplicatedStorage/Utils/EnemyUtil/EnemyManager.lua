@@ -119,7 +119,7 @@ function Shared.Load(config: EnemyManagerConfig)
 							enemy:Destroy()
 
 							-- Recreate the enemy
-							task.delay(3, function()
+							task.delay(5, function()
 								createEnemy(enemyClones[enemy.Name], originalCFrame)
 							end)
 						end
@@ -133,8 +133,16 @@ function Shared.Load(config: EnemyManagerConfig)
 						-- Get platform boundaries
 						local platformBoundaries = BoundaryUtil.GetBoundaryOfRig(enemy, enemyPlatform)
 
-						-- Check if enemy is off platform and kill if necessary
-						if platformBoundaries then
+						-- If platformBoundaries is nil, it means the enemy can't find a platform
+						-- This happens when the enemy is knocked off the platform
+						if not platformBoundaries then
+							-- Kill the enemy to trigger respawn
+							if enemy:FindFirstChild("Humanoid") then
+								print("Enemy knocked off platform and can't find ground: " .. enemy.Name)
+								enemy.Humanoid.Health = 0
+							end
+						else
+							-- Check if enemy is off platform and kill if necessary
 							EnemyUtil.CheckEnemyOffPlatform(enemyConfig, platformBoundaries)
 						end
 					end

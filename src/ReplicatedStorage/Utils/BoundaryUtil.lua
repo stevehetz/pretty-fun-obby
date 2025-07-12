@@ -50,6 +50,11 @@ end
 
 -- Function to check if a position is within platform boundaries
 function Shared.IsPositionOnPlatform(position, platformBoundaries)
+	-- Check if platformBoundaries is nil
+	if not platformBoundaries then
+		return false -- If no platform boundaries are defined, consider the entity off platform
+	end
+
 	-- Always allow Y movement (up/down)
 	return position.X >= platformBoundaries.min.X
 		and position.X <= platformBoundaries.max.X
