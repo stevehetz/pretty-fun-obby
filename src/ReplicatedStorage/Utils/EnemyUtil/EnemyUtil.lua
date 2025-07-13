@@ -17,6 +17,7 @@ export type EnemyUtilConfig = {
 	damageAmount: number,
 	damageCooldown: number,
 	attackDistance: number,
+	verticalDistanceLimit: number?,
 	animationAssetId: string,
 	damageParts: { string }?,
 	movingToPlayerId: number?,
@@ -45,6 +46,7 @@ function Shared.EnableAttack(config: EnemyUtilConfig)
 	local attackDistance = config.attackDistance or 50
 	local damageAmount = config.damageAmount or 60
 	local damageCooldown = config.damageCooldown or 1
+	local verticalDistanceLimit = config.verticalDistanceLimit or 20
 	local animationAssetId = config.animationAssetId
 	local damageParts = config.damageParts or {}
 
@@ -84,10 +86,19 @@ function Shared.EnableAttack(config: EnemyUtilConfig)
 					).Magnitude
 
 					local playerPosition = player.Character.HumanoidRootPart.Position
+					local enemyPosition = rig.HumanoidRootPart.Position
 					local isPlayerOnPlatform = BoundaryUtil.IsPositionOnPlatform(playerPosition, platformBoundaries)
 
+					-- Calculate vertical distance between enemy and player
+					local verticalDistance = math.abs(playerPosition.Y - enemyPosition.Y)
+
 					-- Only chase if player is within attack distance AND on the platform
-					if startMoveDistance < attackDistance and isPlayerOnPlatform then
+					-- AND not more than the vertical distance limit
+					if
+						startMoveDistance < attackDistance
+						and isPlayerOnPlatform
+						and verticalDistance <= verticalDistanceLimit
+					then
 						config.movingToPlayerId = player.UserId
 
 						task.spawn(function()
@@ -102,6 +113,9 @@ function Shared.EnableAttack(config: EnemyUtilConfig)
 end
 
 function Local.FollowPlayer(config, player, platformBoundaries, animateEnemy)
+	-- Get the vertical distance limit from config or use default
+	local verticalDistanceLimit = config.verticalDistanceLimit or 20
+
 	while true do
 		if config.isKnockedOver then
 			task.wait(0.1)
@@ -120,10 +134,19 @@ function Local.FollowPlayer(config, player, platformBoundaries, animateEnemy)
 
 		local distanceFromRig = Local.GetPlayerDistanceFromRig(config, player)
 		local playerPosition = player.Character.HumanoidRootPart.Position
+		local enemyPosition = config.rig.HumanoidRootPart.Position
 		local isPlayerOnPlatform = BoundaryUtil.IsPositionOnPlatform(playerPosition, platformBoundaries)
 
+		-- Calculate vertical distance between enemy and player
+		local verticalDistance = math.abs(playerPosition.Y - enemyPosition.Y)
+
 		-- Stop following if player is too far away OR if player is no longer on the platform
-		if distanceFromRig > config.attackDistance or not isPlayerOnPlatform then
+		-- OR if player is more than the vertical distance limit
+		if
+			distanceFromRig > config.attackDistance
+			or not isPlayerOnPlatform
+			or verticalDistance > verticalDistanceLimit
+		then
 			Local.StopRig(config, animateEnemy)
 
 			-- Wait for the enemy to return to its original position
@@ -148,7 +171,20 @@ function Local.MoveRigToPlayer(config, player, platformBoundaries, animateEnemy)
 	if config.isKnockedOver then
 		return
 	end
+
+	-- Get the vertical distance limit from config or use default
+	local verticalDistanceLimit = config.verticalDistanceLimit or 20
+
 	local targetPosition = player.Character.HumanoidRootPart.Position
+	local enemyPosition = config.rig.HumanoidRootPart.Position
+
+	-- Check vertical distance between enemy and player
+	local verticalDistance = math.abs(targetPosition.Y - enemyPosition.Y)
+
+	-- Don't move toward player if they're more than the vertical distance limit
+	if verticalDistance > verticalDistanceLimit then
+		return
+	end
 
 	-- Check if the target position is within the platform boundaries
 	if BoundaryUtil.IsPositionOnPlatform(targetPosition, platformBoundaries) then
