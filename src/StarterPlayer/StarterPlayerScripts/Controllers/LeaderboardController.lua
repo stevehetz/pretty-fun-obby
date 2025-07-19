@@ -8,6 +8,8 @@ local leaderboardsFolder = Workspace:FindFirstChild("Leaderboards")
 
 local REFRESH_INTERVAL = 10
 
+local DISABLE_DONATION_LEADERBOARD = true
+
 local Local = {}
 local Shared = {}
 
@@ -35,14 +37,18 @@ function Local.StartPeriodicRefresh()
 		while true do
 			task.wait(REFRESH_INTERVAL)
 			Shared.RefreshCoinRankLeaderboard()
-			Shared.RefreshDonationRankLeaderboard()
+			if not DISABLE_DONATION_LEADERBOARD then
+				Shared.RefreshDonationRankLeaderboard()
+			end
 		end
 	end)
 end
 
 Shared.OnStart = function()
 	Shared.RefreshCoinRankLeaderboard()
-	Shared.RefreshDonationRankLeaderboard()
+	if not DISABLE_DONATION_LEADERBOARD then
+		Shared.RefreshDonationRankLeaderboard()
+	end
 	Local.StartPeriodicRefresh()
 
 	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
@@ -50,7 +56,7 @@ Shared.OnStart = function()
 			Shared.RefreshCoinRankLeaderboard()
 		end
 
-		if action.type == "UpdateDonationTotal" then
+		if action.type == "UpdateDonationTotal" and not DISABLE_DONATION_LEADERBOARD then
 			Shared.RefreshDonationRankLeaderboard()
 		end
 	end)
@@ -78,7 +84,7 @@ function Shared.RefreshCoinRankLeaderboard()
 end
 
 function Shared.RefreshDonationRankLeaderboard()
-	if not leaderboardsFolder then
+	if not leaderboardsFolder or DISABLE_DONATION_LEADERBOARD then
 		return
 	end
 
@@ -190,6 +196,10 @@ function Local.UpdateCoinRankLeaderboardUI(leaderboard, data)
 end
 
 function Local.UpdateAllDonationRankLeaderboardUI(data)
+	if DISABLE_DONATION_LEADERBOARD then
+		return
+	end
+
 	-- Get All Descendents named DonationRankLeaderboard
 	local donationRankLeaderboards = leaderboardsFolder:GetDescendants()
 	for _, leaderboard in ipairs(donationRankLeaderboards) do
