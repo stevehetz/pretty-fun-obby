@@ -32,18 +32,18 @@ local _store = {
 			Id = 1157906298, -- Speed Coil
 			IsTool = true,
 		},
-		{
-			Id = 1197644001, --  Dog
-			IsPet = true,
-		},
+		-- {
+		-- 	Id = 1197644001, --  Dog
+		-- 	IsPet = true,
+		-- },
 		{
 			Id = 1198006484, --  Fox
 			IsPet = true,
 		},
-		-- {
-		-- 	Id = 1197084528, -- Dominus Crystal
-		-- 	IsPet = true,
-		-- },
+		{
+			Id = 1197084528, -- Dominus
+			IsPet = true,
+		},
 		-- {
 		-- 	Id = 1199016473, -- Dragon
 		-- 	IsPet = true,
