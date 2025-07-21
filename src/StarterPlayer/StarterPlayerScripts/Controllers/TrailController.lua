@@ -50,12 +50,11 @@ function Shared.OnStart()
 	local character = Player.Character or Player.CharacterAdded:Wait()
 	if character then
 		local part = character:WaitForChild("HumanoidRootPart")
-		Local.AddTrail(part, Local.Trails["RedBlueOrange"])
+		-- Local.AddTrail(part, Local.Trails["RedBlueOrange"])
 	end
 
 	Player.CharacterAdded:Connect(function(character)
 		local part = character:WaitForChild("HumanoidRootPart")
-		Local.AddTrail(part, Local.Trails["Rainbow"])
 	end)
 
 	-- Setup item displays
