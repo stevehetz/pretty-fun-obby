@@ -24,14 +24,23 @@ Local.Trails = {
 		Lifetime = 0.4,
 	},
 	["Rainbow"] = {
-		ColorSequence = ColorSequence.new(
-			Color3.new(1, 0, 0),
-			Color3.new(1, 0.5, 0),
-			Color3.new(1, 1, 0),
-			Color3.new(0, 1, 0),
-			Color3.new(0, 0, 1),
-			Color3.new(0.5, 0, 1)
-		),
+		ColorSequence = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.new(1, 0, 0)), -- Red
+			ColorSequenceKeypoint.new(0.2, Color3.new(1, 0.5, 0)), -- Orange
+			ColorSequenceKeypoint.new(0.4, Color3.new(1, 1, 0)), -- Yellow
+			ColorSequenceKeypoint.new(0.6, Color3.new(0, 1, 0)), -- Green
+			ColorSequenceKeypoint.new(0.8, Color3.new(0, 0, 1)), -- Blue
+			ColorSequenceKeypoint.new(1, Color3.new(0.5, 0, 1)), -- Purple
+		}),
+		Width = 1,
+		Lifetime = 0.4,
+	},
+	["RedBlueOrange"] = {
+		ColorSequence = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.new(1, 0, 0)), -- Red
+			ColorSequenceKeypoint.new(0.5, Color3.new(0, 0, 1)), -- Blue
+			ColorSequenceKeypoint.new(1, Color3.new(1, 0.5, 0)), -- Orange
+		}),
 		Width = 1,
 		Lifetime = 0.4,
 	},
@@ -41,7 +50,7 @@ function Shared.OnStart()
 	local character = Player.Character or Player.CharacterAdded:Wait()
 	if character then
 		local part = character:WaitForChild("HumanoidRootPart")
-		Local.AddTrail(part, Local.Trails["Rainbow"])
+		Local.AddTrail(part, Local.Trails["RedBlueOrange"])
 	end
 
 	Player.CharacterAdded:Connect(function(character)
@@ -64,18 +73,22 @@ Local.SetupItemDisplays = function()
 	-- Iterate through all ItemDisplays, find any with TrailDisplay as a child
 	for _, itemDisplay in ipairs(ItemDisplaysFolder:GetChildren()) do
 		if itemDisplay:IsA("Model") and itemDisplay:FindFirstChild("TrailDisplay") then
-			if itemDisplay.Name == "GreenRibbon" then
-				-- Use the green trail for GreenRibbon
+			itemDisplay.TrailDisplay.CanCollide = false
+			if itemDisplay.Name == "Green Trail" then
+				-- Use the green trail for Green Trail
 				Local.SetupTrailDisplayPart(itemDisplay.TrailDisplay, Local.Trails["Green"])
-			elseif itemDisplay.Name == "RedRibbon" then
-				-- Use the red trail for RedRibbon
+			elseif itemDisplay.Name == "Red Trail" then
+				-- Use the red trail for Red Trail
 				Local.SetupTrailDisplayPart(itemDisplay.TrailDisplay, Local.Trails["Red"])
-			elseif itemDisplay.Name == "BlueRibbon" then
-				-- Use the blue trail for BlueRibbon
+			elseif itemDisplay.Name == "Blue Trail" then
+				-- Use the blue trail for Blue Trail
 				Local.SetupTrailDisplayPart(itemDisplay.TrailDisplay, Local.Trails["Blue"])
-			elseif itemDisplay.Name == "RainbowRibbon" then
-				-- Use the rainbow trail for RainbowRibbon
+			elseif itemDisplay.Name == "Rainbow Trail" then
+				-- Use the rainbow trail for Rainbow Trail
 				Local.SetupTrailDisplayPart(itemDisplay.TrailDisplay, Local.Trails["Rainbow"])
+			elseif itemDisplay.Name == "RedBlueOrange Trail" then
+				-- Use the red blue orange trail for RedBlueOrange Trail
+				Local.SetupTrailDisplayPart(itemDisplay.TrailDisplay, Local.Trails["RedBlueOrange"])
 			end
 		end
 	end
