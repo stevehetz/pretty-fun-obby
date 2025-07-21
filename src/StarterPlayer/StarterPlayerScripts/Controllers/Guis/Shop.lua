@@ -19,6 +19,9 @@ local Container = Frame.Container
 local Template = Container.Template
 local OpenButton = GuiController.Guis.Left.Frame.Shop
 
+local OPEN_BUTTON_TEXT = "Items"
+local OPEN_BUTTON_IMAGE = "rbxassetid://97242152597242"
+
 local Local = {}
 local Shared = {}
 
@@ -62,6 +65,9 @@ function Local.GetStoreInfoFromId(id: number)
 end
 
 function Shared.OnStart()
+	-- Setup the shop open button
+	Local.SetupShopOpenButton()
+
 	-- Seup the base gui modal handlers
 	GuiController.SetupGui(Gui, OpenButton)
 
@@ -94,6 +100,17 @@ function Shared.OnStart()
 			Local.RefreshButtonStatuses()
 		end
 	end)
+end
+
+function Local.SetupShopOpenButton()
+	-- Title
+	OpenButton.Title.Text = OPEN_BUTTON_TEXT
+
+	-- Image Url
+	OpenButton.Icon.Image = OPEN_BUTTON_IMAGE
+
+	-- Image Size
+	OpenButton.Icon.Size = UDim2.new(1, 0, 1, 0)
 end
 
 function Local.EnableAbilityIfPurchased(gamepassId)
