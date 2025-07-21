@@ -15,6 +15,7 @@ export type StoreItemInfo = {
 	IsTool: boolean?,
 	IsPet: boolean?,
 	IsPass: boolean?,
+	IsTrail: boolean?,
 }
 
 local _store = {
@@ -73,6 +74,11 @@ local _store = {
 			Id = 1255668315, -- Sword
 			IsTool = true,
 			Image = "rbxassetid://72423564181069",
+		},
+		{
+			Id = 1332335039, -- Blue Trail
+			Image = "rbxassetid://75685387580464",
+			IsTrail = true,
 		},
 	},
 
@@ -221,6 +227,16 @@ function Shared.IsGamepassPet(idOrName: number | string): boolean
 	for _, gamepassInfo in Shared.GetStore().Gamepasses do
 		if gamepassInfo.Id == idOrName or gamepassInfo.Name == idOrName then
 			return gamepassInfo.IsPet or false
+		end
+	end
+
+	return false
+end
+
+function Shared.IsGamepassTrail(idOrName: number | string): boolean
+	for _, gamepassInfo in Shared.GetStore().Gamepasses do
+		if gamepassInfo.Id == idOrName or gamepassInfo.Name == idOrName then
+			return gamepassInfo.IsTrail or false
 		end
 	end
 

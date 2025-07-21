@@ -172,6 +172,13 @@ function Local.AddStoreItemButtons()
 			Local.AddItemButton(item)
 		end
 	end
+
+	-- Add Trails
+	for _, item in ipairs(storeItems.Gamepasses) do
+		if item.IsTrail then
+			Local.AddItemButton(item)
+		end
+	end
 end
 
 function Local.AddItemButton(item)
