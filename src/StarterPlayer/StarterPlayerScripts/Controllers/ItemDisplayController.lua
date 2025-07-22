@@ -11,15 +11,26 @@ local Player = Players.LocalPlayer
 local Local = {}
 local Shared = {}
 
+-- Store active timers
+if not Local.ActiveTimers then
+	Local.ActiveTimers = {}
+end
+
+-- Store active movement connections
+if not Local.ActiveMovementConnections then
+	Local.ActiveMovementConnections = {}
+end
+
 function Shared.OnStart()
 	-- Setup item displays
 	Local.SetupTrailDisplays()
 
-	-- Set up a periodic check to ensure all trail displays are still working
+	-- Recreate trail displays every 30 seconds
+	-- This fixes an issue where the trail parts dissapear after a while
 	task.spawn(function()
 		while true do
-			task.wait(30) -- Check every 30 seconds
-			Local.SetupTrailDisplays() -- This will recreate any missing displays
+			task.wait(30)
+			Local.SetupTrailDisplays()
 		end
 	end)
 end
@@ -46,19 +57,10 @@ function Local.SetupTrailDisplays()
 	end
 end
 
--- Store active timers
-if not Local.ActiveTimers then
-	Local.ActiveTimers = {}
-end
-
--- Store active movement connections
-if not Local.ActiveMovementConnections then
-	Local.ActiveMovementConnections = {}
-end
-
 Local.SetupTrailDisplayPart = function(itemDisplay, trailColorSeq)
 	-- Remove part named TrailDisplay if it exists
 	if itemDisplay:FindFirstChild("TrailDisplay") then
+		print("Removing existing TrailDisplay part from", itemDisplay.Name)
 		itemDisplay.TrailDisplay:Destroy()
 	end
 
@@ -71,6 +73,8 @@ Local.SetupTrailDisplayPart = function(itemDisplay, trailColorSeq)
 	trailPart.CanCollide = false
 	trailPart.Parent = itemDisplay
 	trailPart.Position = itemDisplayDisc.Position + Vector3.new(0, 5, 0)
+
+	print("Setting up trail display for", itemDisplay.Name)
 
 	-- Generate a unique ID for this display
 	local displayId = itemDisplay:GetFullName()
@@ -110,12 +114,6 @@ Local.SetupTrailDisplayPart = function(itemDisplay, trailColorSeq)
 				Local.ActiveTimers[data.displayId] = nil
 			end
 			return
-		end
-
-		-- Remove existing part if it exists
-		local existingPart = data.itemDisplay:FindFirstChild("TrailDisplay")
-		if existingPart then
-			existingPart:Destroy()
 		end
 
 		-- Add trail to the part
