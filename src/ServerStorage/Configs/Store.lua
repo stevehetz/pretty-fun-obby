@@ -84,6 +84,10 @@ local _store = {
 			Id = 1337048175, -- Red Trail
 			IsTrail = true,
 		},
+		{
+			Id = 1334215561, -- Rainbow Trail
+			IsTrail = true,
+		},
 	},
 
 	Products = {

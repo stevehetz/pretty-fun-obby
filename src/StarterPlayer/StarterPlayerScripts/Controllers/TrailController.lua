@@ -14,6 +14,11 @@ local Shared = {}
 function Shared.OnStart()
 	Local.RefreshPlayerTrail()
 
+	Player.CharacterAdded:Connect(function(character)
+		print("TrailController - Player character added:", character.Name)
+		Local.RefreshPlayerTrail()
+	end)
+
 	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
 		if action.type == "UpdateEquippedTrails" then
 			print("TrailController - UpdateEquippedTrails action received:", action.trailName)
@@ -23,7 +28,6 @@ function Shared.OnStart()
 end
 
 function Local.RefreshPlayerTrail()
-	print("TrailController - RefreshPlayerTrail called")
 	local part = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
 	if part then
 		local state = StateController.GetState()
@@ -33,8 +37,6 @@ function Local.RefreshPlayerTrail()
 
 		state.equippedTrails = state.equippedTrails or {}
 
-		print("TrailController - Equipped Trails:", state.equippedTrails)
-
 		if state.equippedTrails == {} then
 			Shared.RemoveTrail(part)
 			return
@@ -43,7 +45,6 @@ function Local.RefreshPlayerTrail()
 		for trailName, _ in pairs(state.equippedTrails) do
 			local trailColorSeq = TrailsConfig.GetTrailColor(trailName)
 			if trailColorSeq then
-				print("TrailController - Adding trail:", trailName)
 				Shared.AddTrail(part, trailColorSeq)
 			else
 				print("TrailController - No color found for trail:", trailName)
@@ -53,6 +54,7 @@ function Local.RefreshPlayerTrail()
 end
 
 function Shared.AddTrail(part, trailColorSeq)
+	Shared.RemoveTrail(part)
 	local att0 = Instance.new("Attachment", part)
 	att0.Position = Vector3.new(0, 2, 0)
 
@@ -68,7 +70,6 @@ function Shared.AddTrail(part, trailColorSeq)
 end
 
 function Shared.RemoveTrail(part)
-	print("Removing trail from part:", part.Name)
 	local trail = part:FindFirstChildOfClass("Trail")
 	if trail then
 		trail:Destroy()
