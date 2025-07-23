@@ -4,6 +4,7 @@ local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 
 local TrailsConfig = require(ReplicatedStorage.Configs.Trails)
+local StateController = require(script.Parent.StateController)
 
 local Player = Players.LocalPlayer
 
@@ -11,15 +12,44 @@ local Local = {}
 local Shared = {}
 
 function Shared.OnStart()
-	local character = Player.Character or Player.CharacterAdded:Wait()
-	if character then
-		local part = character:WaitForChild("HumanoidRootPart")
-		-- Local.AddTrail(part, Local.Trails["RedBlueOrange"])
-	end
+	Local.RefreshPlayerTrail()
 
-	Player.CharacterAdded:Connect(function(character)
-		local part = character:WaitForChild("HumanoidRootPart")
+	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
+		if action.type == "UpdateEquippedTrails" then
+			print("TrailController - UpdateEquippedTrails action received:", action.trailName)
+			Local.RefreshPlayerTrail()
+		end
 	end)
+end
+
+function Local.RefreshPlayerTrail()
+	print("TrailController - RefreshPlayerTrail called")
+	local part = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+	if part then
+		local state = StateController.GetState()
+		if not state then
+			return
+		end
+
+		state.equippedTrails = state.equippedTrails or {}
+
+		print("TrailController - Equipped Trails:", state.equippedTrails)
+
+		if state.equippedTrails == {} then
+			Shared.RemoveTrail(part)
+			return
+		end
+
+		for trailName, _ in pairs(state.equippedTrails) do
+			local trailColorSeq = TrailsConfig.GetTrailColor(trailName)
+			if trailColorSeq then
+				print("TrailController - Adding trail:", trailName)
+				Shared.AddTrail(part, trailColorSeq)
+			else
+				print("TrailController - No color found for trail:", trailName)
+			end
+		end
+	end
 end
 
 function Shared.AddTrail(part, trailColorSeq)
@@ -35,6 +65,24 @@ function Shared.AddTrail(part, trailColorSeq)
 	trail.Lifetime = 0.4
 	trail.WidthScale = NumberSequence.new(1)
 	trail.Color = trailColorSeq
+end
+
+function Shared.RemoveTrail(part)
+	print("Removing trail from part:", part.Name)
+	local trail = part:FindFirstChildOfClass("Trail")
+	if trail then
+		trail:Destroy()
+	end
+
+	local att0 = part:FindFirstChild("Attachment0")
+	if att0 then
+		att0:Destroy()
+	end
+
+	local att1 = part:FindFirstChild("Attachment1")
+	if att1 then
+		att1:Destroy()
+	end
 end
 
 return Shared

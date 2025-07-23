@@ -80,6 +80,10 @@ local _store = {
 			Image = "rbxassetid://75685387580464",
 			IsTrail = true,
 		},
+		{
+			Id = 1337048175, -- Red Trail
+			IsTrail = true,
+		},
 	},
 
 	Products = {

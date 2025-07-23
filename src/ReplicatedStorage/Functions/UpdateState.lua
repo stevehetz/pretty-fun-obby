@@ -50,6 +50,10 @@ export type UpdateStateAction = {
 	petName: string,
 	value: boolean,
 } | {
+	type: "UpdateEquippedTrails",
+	trailName: string,
+	value: boolean,
+} | {
 	type: "UpdateDoubleJump",
 	value: boolean,
 } | {
@@ -111,6 +115,18 @@ return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
 			}
 		elseif action.value == false then
 			playerData.equippedPets = {}
+			return
+		end
+	elseif action.type == "UpdateEquippedTrails" then
+		print("UpdateEquippedTrails action received:", action.trailName)
+		if action.value == true then
+			playerData.equippedTrails = {}
+			playerData.equippedTrails = {
+				[action.trailName] = true,
+			}
+			print("Equipped trails updated:", playerData.equippedTrails)
+		elseif action.value == false then
+			playerData.equippedTrails = {}
 			return
 		end
 	elseif action.type == "UpdateDoubleJump" then

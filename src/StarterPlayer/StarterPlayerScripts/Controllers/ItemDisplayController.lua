@@ -22,45 +22,47 @@ if not Local.ActiveMovementConnections then
 end
 
 function Shared.OnStart()
-	-- Setup item displays
 	Local.SetupTrailDisplays()
+end
+
+function Local.SetupTrailDisplays()
+	task.wait(1)
+
+	local _setupTrailDisplays = function()
+		local ItemDisplaysFolder = Workspace:WaitForChild("ItemDisplays")
+		if not ItemDisplaysFolder then
+			warn("ItemDisplays folder not found in Workspace")
+			return
+		end
+
+		for _, itemDisplay in ipairs(ItemDisplaysFolder:GetChildren()) do
+			if itemDisplay:IsA("Model") then
+				-- Remove trail from string
+				local trailName = itemDisplay.Name:gsub(" Trail", "")
+				local trailColorSeq = TrailsConfig.GetTrailColor(trailName)
+
+				if trailColorSeq then
+					Local.SetupTrailDisplayPart(itemDisplay, trailColorSeq)
+				end
+			end
+		end
+	end
+
+	_setupTrailDisplays()
 
 	-- Recreate trail displays every 30 seconds
 	-- This fixes an issue where the trail parts dissapear after a while
 	task.spawn(function()
 		while true do
 			task.wait(30)
-			Local.SetupTrailDisplays()
+			_setupTrailDisplays()
 		end
 	end)
-end
-
-function Local.SetupTrailDisplays()
-	task.wait(1)
-
-	local ItemDisplaysFolder = Workspace:WaitForChild("ItemDisplays")
-	if not ItemDisplaysFolder then
-		warn("ItemDisplays folder not found in Workspace")
-		return
-	end
-
-	for _, itemDisplay in ipairs(ItemDisplaysFolder:GetChildren()) do
-		if itemDisplay:IsA("Model") then
-			-- Remove trail from string
-			local trailName = itemDisplay.Name:gsub(" Trail", "")
-			local trailColorSeq = TrailsConfig.GetTrailColor(trailName)
-
-			if trailColorSeq then
-				Local.SetupTrailDisplayPart(itemDisplay, trailColorSeq)
-			end
-		end
-	end
 end
 
 Local.SetupTrailDisplayPart = function(itemDisplay, trailColorSeq)
 	-- Remove part named TrailDisplay if it exists
 	if itemDisplay:FindFirstChild("TrailDisplay") then
-		print("Removing existing TrailDisplay part from", itemDisplay.Name)
 		itemDisplay.TrailDisplay:Destroy()
 	end
 
@@ -73,8 +75,6 @@ Local.SetupTrailDisplayPart = function(itemDisplay, trailColorSeq)
 	trailPart.CanCollide = false
 	trailPart.Parent = itemDisplay
 	trailPart.Position = itemDisplayDisc.Position + Vector3.new(0, 5, 0)
-
-	print("Setting up trail display for", itemDisplay.Name)
 
 	-- Generate a unique ID for this display
 	local displayId = itemDisplay:GetFullName()

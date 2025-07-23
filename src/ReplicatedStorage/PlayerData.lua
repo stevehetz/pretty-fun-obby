@@ -26,6 +26,9 @@ export type PlayerData = {
 	equippedPets: {
 		[string]: boolean,
 	},
+	equippedTrails: {
+		[string]: boolean,
+	},
 	oneTimePass: boolean?,
 	hasTrashcan: boolean?,
 	hasSword: boolean?,
@@ -62,6 +65,7 @@ local DEFAULT_PLAYER_DATA: PlayerData = {
 	currentWorld = Worlds[1],
 	worldFinishes = WorldFinishes,
 	equippedPets = {},
+	equippedTrails = {},
 	oneTimePass = false,
 	donationTotal = 0,
 	hasTrashcan = false,

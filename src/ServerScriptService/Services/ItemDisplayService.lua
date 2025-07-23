@@ -7,6 +7,7 @@ local PlayerDataService = require(script.Parent.PlayerDataService)
 local CoinService = require(script.Parent.CoinService)
 local ToolsService = require(script.Parent.ToolsService)
 local PetService = require(script.Parent.PetService)
+local TrailService = require(script.Parent.TrailService)
 local StoreConfig = require(ServerStorage.Configs.Store)
 
 local Local = {}
@@ -135,6 +136,9 @@ function Local.OnDisplayTouched(player: Player, state: PlayerData.PlayerData, di
 		elseif storeItemInfo.IsPet then
 			-- If it's a pet, try to equip it
 			Local.TryEquipPet(player, storeItemInfo.Name)
+		elseif storeItemInfo.IsTrail then
+			-- If it's a trail, try to equip it
+			Local.TryEquipTrail(player, storeItemInfo.Name)
 		end
 
 		return
@@ -272,6 +276,26 @@ function Local.TryEquipPet(player: Player, petName: string)
 	-- Equip the pet
 	PetService.UpdateEquippedPets(player, pet)
 	print("Equipped pet:", petName)
+	return true
+end
+
+-- Try to equip a trail
+function Local.TryEquipTrail(player: Player, trailName: string)
+	-- Check if the player already has the trail
+	local state = PlayerDataService.GetState(player)
+	if not state then
+		return false
+	end
+
+	-- Equip the trail
+	local formattedTrailName = trailName:gsub(" Trail", "")
+
+	print("Equipped trail:", formattedTrailName)
+	if state.equippedTrails[formattedTrailName] then
+		print("Trail already equipped:", formattedTrailName)
+		return true
+	end
+	TrailService.UpdateEquippedTrails(player, formattedTrailName)
 	return true
 end
 
