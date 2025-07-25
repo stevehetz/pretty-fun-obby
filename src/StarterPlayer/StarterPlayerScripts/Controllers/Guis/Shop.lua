@@ -7,6 +7,7 @@ local Player = Players.LocalPlayer
 local GetStoreRF = ReplicatedStorage:WaitForChild("GetStoreRF")
 
 local ViewportHelper = require(ReplicatedStorage.Libs.ViewportHelper)
+local TrailsConfig = require(ReplicatedStorage.Configs.Trails)
 local GuiController = require(script.Parent.Parent.GuiController)
 local StateController = require(script.Parent.Parent.StateController)
 local PetsController = require(script.Parent.Parent.PetsController)
@@ -26,6 +27,8 @@ local OPEN_BUTTON_IMAGE = "rbxassetid://97242152597242"
 local Local = {}
 local Shared = {}
 
+-- Store active trail preview render step connections
+Local.TrailPreviewConnections = {}
 Local.StoreItemInfoReady = false
 
 local _storeItems = {}
@@ -196,6 +199,9 @@ function Local.AddItemButton(item)
 	if item.IsPet then
 		-- Create a viewport frame for the pet
 		Local.SetupViewPort(item, frame)
+	elseif item.IsTrail then
+		-- Create a viewport frame for the trail preview
+		Local.SetupTrailPreview(item, frame)
 	elseif item.Image then
 		-- create new image label instance
 		local imageLabel = Instance.new("ImageLabel")
@@ -231,6 +237,75 @@ function Local.SetupViewPort(item, frame)
 	viewportFrame.BackgroundTransparency = 1
 	viewportFrame.Parent = frame.Template.Icon
 	ViewportHelper.GenerateViewport(viewportFrame, clone)
+end
+
+-- Setup a simple visual representation of a trail
+function Local.SetupTrailPreview(item, frame)
+	local trailName = item.Name
+	local trailColorSeq = TrailsConfig.GetTrailColor(trailName)
+
+	if not trailColorSeq then
+		warn("No color sequence found for trail:", trailName)
+		return
+	end
+
+	-- Create a frame to hold the trail visualization
+	local trailFrame = Instance.new("Frame")
+	trailFrame.Name = "TrailFrame"
+	trailFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+	trailFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+	trailFrame.Size = UDim2.new(0.8, 0, 0.8, 0)
+	trailFrame.BackgroundTransparency = 1
+	trailFrame.Parent = frame.Template.Icon
+
+	-- Create a single trail rectangle
+	local trailRectangle = Instance.new("Frame")
+	trailRectangle.Name = "TrailRectangle"
+	trailRectangle.AnchorPoint = Vector2.new(0.5, 0.5)
+	trailRectangle.Position = UDim2.new(0.5, 0, 0.5, 0)
+	trailRectangle.Size = UDim2.new(0.8, 0, 0.6, 0)
+	trailRectangle.BorderSizePixel = 0
+
+	-- Round the corners
+	local uiCorner = Instance.new("UICorner")
+	uiCorner.CornerRadius = UDim.new(0.2, 0)
+	uiCorner.Parent = trailRectangle
+
+	-- If this is a rainbow trail, use a UIGradient
+	if trailName == "Rainbow Trail" then
+		trailRectangle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+
+		local gradient = Instance.new("UIGradient")
+		gradient.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)), -- Red
+			ColorSequenceKeypoint.new(0.2, Color3.fromRGB(255, 165, 0)), -- Orange
+			ColorSequenceKeypoint.new(0.4, Color3.fromRGB(255, 255, 0)), -- Yellow
+			ColorSequenceKeypoint.new(0.6, Color3.fromRGB(0, 255, 0)), -- Green
+			ColorSequenceKeypoint.new(0.8, Color3.fromRGB(0, 0, 255)), -- Blue
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(128, 0, 128)), -- Purple
+		})
+		gradient.Rotation = 0
+		gradient.Parent = trailRectangle
+	else
+		-- For single-color trails, use the main color
+		local mainColor = trailColorSeq.Keypoints[1].Value
+		local endColor = trailColorSeq.Keypoints[#trailColorSeq.Keypoints].Value
+
+		trailRectangle.BackgroundColor3 = mainColor
+
+		-- If the trail has a gradient (start and end colors are different)
+		if mainColor ~= endColor then
+			local gradient = Instance.new("UIGradient")
+			gradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, mainColor),
+				ColorSequenceKeypoint.new(1, endColor),
+			})
+			gradient.Rotation = 0
+			gradient.Parent = trailRectangle
+		end
+	end
+
+	trailRectangle.Parent = trailFrame
 end
 
 function Local.SetupItemStatus(item, frame)
