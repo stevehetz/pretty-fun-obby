@@ -239,7 +239,6 @@ function Local.SetupViewPort(item, frame)
 	ViewportHelper.GenerateViewport(viewportFrame, clone)
 end
 
--- Setup a simple visual representation of a trail
 function Local.SetupTrailPreview(item, frame)
 	local trailName = item.Name
 	local trailColorSeq = TrailsConfig.GetTrailColor(trailName)
@@ -249,63 +248,23 @@ function Local.SetupTrailPreview(item, frame)
 		return
 	end
 
-	-- Create a frame to hold the trail visualization
-	local trailFrame = Instance.new("Frame")
-	trailFrame.Name = "TrailFrame"
-	trailFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-	trailFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-	trailFrame.Size = UDim2.new(0.8, 0, 0.8, 0)
-	trailFrame.BackgroundTransparency = 1
-	trailFrame.Parent = frame.Template.Icon
-
 	-- Create a single trail rectangle
 	local trailRectangle = Instance.new("Frame")
 	trailRectangle.Name = "TrailRectangle"
 	trailRectangle.AnchorPoint = Vector2.new(0.5, 0.5)
-	trailRectangle.Position = UDim2.new(0.5, 0, 0.5, 0)
-	trailRectangle.Size = UDim2.new(0.8, 0, 0.6, 0)
+	trailRectangle.Position = UDim2.new(0.5, 0, 0.4, 10)
+	trailRectangle.Size = UDim2.new(0.6, 0, 0.5, 0)
 	trailRectangle.BorderSizePixel = 0
+	trailRectangle.BackgroundTransparency = 0.3
+	trailRectangle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 
-	-- Round the corners
-	local uiCorner = Instance.new("UICorner")
-	uiCorner.CornerRadius = UDim.new(0.2, 0)
-	uiCorner.Parent = trailRectangle
+	-- Reuse the color sequence from the config
+	local gradient = Instance.new("UIGradient")
+	gradient.Color = trailColorSeq
+	gradient.Rotation = 0
+	gradient.Parent = trailRectangle
 
-	-- If this is a rainbow trail, use a UIGradient
-	if trailName == "Rainbow Trail" then
-		trailRectangle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-
-		local gradient = Instance.new("UIGradient")
-		gradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)), -- Red
-			ColorSequenceKeypoint.new(0.2, Color3.fromRGB(255, 165, 0)), -- Orange
-			ColorSequenceKeypoint.new(0.4, Color3.fromRGB(255, 255, 0)), -- Yellow
-			ColorSequenceKeypoint.new(0.6, Color3.fromRGB(0, 255, 0)), -- Green
-			ColorSequenceKeypoint.new(0.8, Color3.fromRGB(0, 0, 255)), -- Blue
-			ColorSequenceKeypoint.new(1, Color3.fromRGB(128, 0, 128)), -- Purple
-		})
-		gradient.Rotation = 0
-		gradient.Parent = trailRectangle
-	else
-		-- For single-color trails, use the main color
-		local mainColor = trailColorSeq.Keypoints[1].Value
-		local endColor = trailColorSeq.Keypoints[#trailColorSeq.Keypoints].Value
-
-		trailRectangle.BackgroundColor3 = mainColor
-
-		-- If the trail has a gradient (start and end colors are different)
-		if mainColor ~= endColor then
-			local gradient = Instance.new("UIGradient")
-			gradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, mainColor),
-				ColorSequenceKeypoint.new(1, endColor),
-			})
-			gradient.Rotation = 0
-			gradient.Parent = trailRectangle
-		end
-	end
-
-	trailRectangle.Parent = trailFrame
+	trailRectangle.Parent = frame.Template.Icon
 end
 
 function Local.SetupItemStatus(item, frame)
