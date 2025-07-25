@@ -70,11 +70,42 @@ function Local.UpdateAllPlayerTrails(trailsData)
 
 	print("TrailController - Received trails data:", trailsData)
 
-	-- Apply trails to all players
-	for userId, trailName in pairs(trailsData) do
+	-- First, apply trails from the data to players
+	for userIdStr, trailName in pairs(trailsData) do
+		-- Convert string userId to number if needed
+		local userId = tonumber(userIdStr)
+
+		-- Try to find the player with this userId
 		local player = Players:GetPlayerByUserId(userId)
+
+		-- In test mode, userId might be negative, so try the absolute value too
+		if not player and userId < 0 then
+			player = Players:FindFirstChild("Player" .. math.abs(userId))
+		end
+
 		if player and player.Character then
 			Local.ApplyTrailToPlayer(player, trailName)
+		end
+	end
+
+	-- Then, remove trails from players who don't have trail data
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player.Character then
+			local userId = player.UserId
+			local hasTrail = false
+
+			-- Check if this player has a trail in the data (using both userId and -userId)
+			if trailsData[tostring(userId)] or trailsData[tostring(-userId)] then
+				hasTrail = true
+			end
+
+			if not hasTrail then
+				-- Player doesn't have a trail in the data, remove any existing trail
+				local part = player.Character:FindFirstChild("HumanoidRootPart")
+				if part then
+					Shared.RemoveTrail(part)
+				end
+			end
 		end
 	end
 end
