@@ -4,15 +4,18 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local PlayerDataService = require(script.Parent.PlayerDataService)
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 
--- Create a new remote event for trail updates if it doesn't exist
-if not Remotes:FindFirstChild("PlayerTrailUpdate") then
+-- Create remote events if they don't exist
+if not Remotes:FindFirstChild("PlayerTrailsUpdate") then
 	local trailUpdateEvent = Instance.new("RemoteEvent")
-	trailUpdateEvent.Name = "PlayerTrailUpdate"
+	trailUpdateEvent.Name = "PlayerTrailsUpdate"
 	trailUpdateEvent.Parent = Remotes
 end
 
 local Local = {}
 local Shared = {}
+
+-- Store all player trails in a single table (userId -> trailName)
+local PlayerTrails = {}
 
 function Shared.OnStart()
 	Remotes.PlayerData.UpdateEquippedTrail.OnServerEvent:Connect(function(player, trail)
@@ -20,19 +23,35 @@ function Shared.OnStart()
 	end)
 
 	PlayerDataService.ProfileLoaded.Event:Connect(function(player: Player)
-		Shared.BroadcastPlayerTrail(player)
+		Shared.UpdatePlayerTrail(player)
 	end)
 
 	-- For players already in the game
 	for _, player in ipairs(Players:GetPlayers()) do
 		if player.Character then
-			Shared.BroadcastPlayerTrail(player)
+			Shared.UpdatePlayerTrail(player)
 		end
 
 		player.CharacterAdded:Connect(function(character)
-			Shared.BroadcastPlayerTrail(player)
+			Shared.UpdatePlayerTrail(player)
 		end)
 	end
+
+	-- When a new player joins, send them the complete trail data
+	Players.PlayerAdded:Connect(function(newPlayer)
+		-- When a player's data is loaded, we'll update their trail
+		-- Then we'll send the complete PlayerTrails table to all clients
+
+		-- Also handle player removal
+		newPlayer.AncestryChanged:Connect(function(_, parent)
+			if parent == nil then
+				-- Player left the game, remove from PlayerTrails
+				PlayerTrails[newPlayer.UserId] = nil
+				-- Broadcast the updated table to all clients
+				Shared.BroadcastAllTrails()
+			end
+		end)
+	end)
 end
 
 function Shared.UpdateEquippedTrails(player: Player, trail: Trail)
@@ -50,12 +69,12 @@ function Shared.UpdateEquippedTrails(player: Player, trail: Trail)
 
 	PlayerDataService.UpdateState(player, action)
 
-	-- Broadcast the trail update to all clients
-	Shared.BroadcastPlayerTrail(player)
+	-- Update the player's trail in our table and broadcast
+	Shared.UpdatePlayerTrail(player)
 end
 
--- Function to broadcast a player's trail to all clients
-function Shared.BroadcastPlayerTrail(player: Player)
+-- Function to update a player's trail in the PlayerTrails table
+function Shared.UpdatePlayerTrail(player: Player)
 	local state = PlayerDataService.GetState(player)
 	if not state or not state.equippedTrails then
 		return
@@ -70,8 +89,16 @@ function Shared.BroadcastPlayerTrail(player: Player)
 		end
 	end
 
-	-- Broadcast to all clients
-	Remotes.PlayerTrailUpdate:FireAllClients(player.UserId, equippedTrail)
+	-- Update the PlayerTrails table
+	PlayerTrails[player.UserId] = equippedTrail
+
+	-- Broadcast the updated table to all clients
+	Shared.BroadcastAllTrails()
+end
+
+-- Function to broadcast the entire PlayerTrails table to all clients
+function Shared.BroadcastAllTrails()
+	Remotes.PlayerTrailsUpdate:FireAllClients(PlayerTrails)
 end
 
 return Shared

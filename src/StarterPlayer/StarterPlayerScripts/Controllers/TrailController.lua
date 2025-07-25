@@ -4,7 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TrailsConfig = require(ReplicatedStorage.Configs.Trails)
 
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
-local PlayerTrailUpdate = Remotes:WaitForChild("PlayerTrailUpdate")
+local PlayerTrailsUpdate = Remotes:WaitForChild("PlayerTrailsUpdate")
 
 -- Store other players' trail data
 local PlayerTrails = {}
@@ -13,9 +13,29 @@ local Local = {}
 local Shared = {}
 
 function Shared.OnStart()
-	-- Listen for trail updates from other players
-	PlayerTrailUpdate.OnClientEvent:Connect(function(userId, trailName)
-		Local.UpdatePlayerTrails(userId, trailName)
+	-- Listen for trail updates from the server
+	PlayerTrailsUpdate.OnClientEvent:Connect(function(trailsData)
+		Local.UpdateAllPlayerTrails(trailsData)
+	end)
+
+	-- Set up character events for all players
+	Players.PlayerAdded:Connect(function(player)
+		player.CharacterAdded:Connect(function(character)
+			-- Wait a moment for the character to fully load
+			task.wait(1)
+
+			-- If we have trail data for this player, apply it
+			if PlayerTrails[player.UserId] then
+				Local.ApplyTrailToPlayer(player, PlayerTrails[player.UserId])
+			end
+		end)
+
+		player.CharacterRemoving:Connect(function(character)
+			local part = character:FindFirstChild("HumanoidRootPart")
+			if part then
+				Shared.RemoveTrail(part)
+			end
+		end)
 	end)
 
 	-- Handle existing players
@@ -43,15 +63,17 @@ function Shared.UpdateEquippedTrail(trailName)
 	Remotes.PlayerData.UpdateEquippedTrail:FireServer(trailName)
 end
 
--- Update trail data for other players
-function Local.UpdatePlayerTrails(userId, trailName)
-	-- Store the trail data
-	PlayerTrails[userId] = trailName
+-- Update all player trails based on the data from the server
+function Local.UpdateAllPlayerTrails(trailsData)
+	-- Store the new trail data
+	PlayerTrails = trailsData
 
-	-- Find the player
-	local player = Players:GetPlayerByUserId(userId)
-	if player and player.Character then
-		Local.ApplyTrailToPlayer(player, trailName)
+	-- Apply trails to all players
+	for userId, trailName in pairs(trailsData) do
+		local player = Players:GetPlayerByUserId(userId)
+		if player and player.Character then
+			Local.ApplyTrailToPlayer(player, trailName)
+		end
 	end
 end
 
