@@ -1,12 +1,8 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
 
 local TrailsConfig = require(ReplicatedStorage.Configs.Trails)
-local StateController = require(script.Parent.StateController)
 
-local Player = Players.LocalPlayer
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local PlayerTrailUpdate = Remotes:WaitForChild("PlayerTrailUpdate")
 
@@ -19,7 +15,6 @@ local Shared = {}
 function Shared.OnStart()
 	-- Listen for trail updates from other players
 	PlayerTrailUpdate.OnClientEvent:Connect(function(userId, trailName)
-		print("Received trail update for userId:", userId, "with trail:", trailName)
 		Local.UpdatePlayerTrails(userId, trailName)
 	end)
 

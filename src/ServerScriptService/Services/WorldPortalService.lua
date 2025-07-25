@@ -212,8 +212,6 @@ function Local.CreateWorldPortals()
 
 		index += 1
 	end
-
-	print("WorldPortalService - Created " .. (index - 1) .. " world portals")
 end
 
 function Shared.SetupPortals(profiles)

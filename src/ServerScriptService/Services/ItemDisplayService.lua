@@ -122,7 +122,6 @@ function Local.OnDisplayTouched(player: Player, state: PlayerData.PlayerData, di
 	-- Is a gamepass
 	local storeItemInfo = StoreConfig.GetStoreItemInfo(display.Name)
 	if storeItemInfo and storeItemInfo.IsGamepass then
-		print("Display touched for gamepass:", storeItemInfo.Name)
 		-- If not owns gamepass, prompt purchase
 		if not state.gamepasses[tostring(storeItemInfo.Id)] then
 			Local.TryPurchaseGamepass(player, storeItemInfo.Id)
@@ -250,7 +249,6 @@ function Local.TryEquipOwnedTool(player: Player, toolName: string)
 
 	-- Equip the tool
 	ToolsService.EquipTool(player, toolName)
-	print("Equipped tool:", toolName)
 	return true
 end
 
@@ -275,7 +273,6 @@ function Local.TryEquipPet(player: Player, petName: string)
 
 	-- Equip the pet
 	PetService.UpdateEquippedPets(player, pet)
-	print("Equipped pet:", petName)
 	return true
 end
 
@@ -288,7 +285,6 @@ function Local.TryEquipTrail(player: Player, trailName: string)
 	end
 
 	if state.equippedTrails[trailName] then
-		print("Trail already equipped:", trailName)
 		return true
 	end
 	TrailService.UpdateEquippedTrails(player, trailName)
