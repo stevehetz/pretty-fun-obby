@@ -38,7 +38,7 @@ function Local.SetupTrailDisplays()
 		for _, itemDisplay in ipairs(ItemDisplaysFolder:GetChildren()) do
 			if itemDisplay:IsA("Model") then
 				-- Remove trail from string
-				local trailName = itemDisplay.Name:gsub(" Trail", "")
+				local trailName = itemDisplay.Name
 				local trailColorSeq = TrailsConfig.GetTrailColor(trailName)
 
 				if trailColorSeq then

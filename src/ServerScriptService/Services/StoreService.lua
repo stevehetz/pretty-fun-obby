@@ -6,6 +6,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local PlayerDataService = require(script.Parent.PlayerDataService)
 local ToolsService = require(script.Parent.ToolsService)
 local PetService = require(script.Parent.PetService)
+local TrailsService = require(script.Parent.TrailService)
 local GlobalDataService = require(script.Parent.GlobalDataService)
 local StoreConfig = require(ServerStorage.Configs.Store)
 local BadgesConfig = require(ReplicatedStorage.Configs.Badges)
@@ -135,6 +136,11 @@ function Local.PurchaseGamepass(player: Player, id: number, didPurchase: boolean
 	if StoreConfig.IsGamepassPet(id) then
 		local gamepassInfo = StoreConfig.GetStoreItemInfo(id)
 		PetService.UpdateEquippedPets(player, gamepassInfo)
+	end
+
+	if StoreConfig.IsGamepassTrail(id) then
+		local gamepassInfo = StoreConfig.GetStoreItemInfo(id)
+		TrailsService.UpdateEquippedTrails(player, gamepassInfo.Name)
 	end
 end
 
