@@ -118,13 +118,11 @@ return function(playerData: PlayerData.PlayerData, action: UpdateStateAction)
 			return
 		end
 	elseif action.type == "UpdateEquippedTrails" then
-		print("UpdateEquippedTrails action received:", action.trailName)
 		if action.value == true then
 			playerData.equippedTrails = {}
 			playerData.equippedTrails = {
 				[action.trailName] = true,
 			}
-			print("Equipped trails updated:", playerData.equippedTrails)
 		elseif action.value == false then
 			playerData.equippedTrails = {}
 			return

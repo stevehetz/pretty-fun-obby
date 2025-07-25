@@ -15,13 +15,11 @@ function Shared.OnStart()
 	Local.RefreshPlayerTrail()
 
 	Player.CharacterAdded:Connect(function(character)
-		print("TrailController - Player character added:", character.Name)
 		Local.RefreshPlayerTrail()
 	end)
 
 	StateController.UpdateState.Event:Connect(function(action: StateController.UpdateStateAction)
 		if action.type == "UpdateEquippedTrails" then
-			print("TrailController - UpdateEquippedTrails action received:", action.trailName)
 			Local.RefreshPlayerTrail()
 		end
 	end)

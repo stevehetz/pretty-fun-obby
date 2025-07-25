@@ -22,16 +22,12 @@ function Shared.UpdateEquippedTrails(player: Player, trail: Trail)
 		return
 	end
 
-	print(trail)
-
 	local currentValue = state.equippedTrails[trail]
 	local action: PlayerDataService.UpdateStateAction = {
 		type = "UpdateEquippedTrails",
 		trailName = trail,
 		value = not currentValue,
 	}
-
-	print(action)
 
 	PlayerDataService.UpdateState(player, action)
 end

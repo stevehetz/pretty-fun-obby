@@ -287,10 +287,8 @@ function Local.TryEquipTrail(player: Player, trailName: string)
 		return false
 	end
 
-	-- Equip the trail
 	local formattedTrailName = trailName:gsub(" Trail", "")
 
-	print("Equipped trail:", formattedTrailName)
 	if state.equippedTrails[formattedTrailName] then
 		print("Trail already equipped:", formattedTrailName)
 		return true
