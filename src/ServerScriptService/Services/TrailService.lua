@@ -37,17 +37,14 @@ function Shared.OnStart()
 		end)
 	end
 
-	-- When a new player joins, send them the complete trail data
 	Players.PlayerAdded:Connect(function(newPlayer)
-		-- When a player's data is loaded, we'll update their trail
-		-- Then we'll send the complete PlayerTrails table to all clients
-
-		-- Also handle player removal
+		-- Handle player removal
 		newPlayer.AncestryChanged:Connect(function(_, parent)
 			if parent == nil then
 				-- Player left the game, remove from PlayerTrails
 				PlayerTrails[newPlayer.UserId] = nil
 				-- Broadcast the updated table to all clients
+				print(PlayerTrails)
 				Shared.BroadcastAllTrails()
 			end
 		end)
@@ -91,6 +88,8 @@ function Shared.UpdatePlayerTrail(player: Player)
 
 	-- Update the PlayerTrails table
 	PlayerTrails[player.UserId] = equippedTrail
+
+	print("TrailsService - Updated PlayerTrails for", player.Name, ":", equippedTrail)
 
 	-- Broadcast the updated table to all clients
 	Shared.BroadcastAllTrails()

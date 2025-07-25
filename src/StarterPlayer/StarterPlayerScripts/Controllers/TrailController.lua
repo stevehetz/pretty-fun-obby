@@ -68,6 +68,8 @@ function Local.UpdateAllPlayerTrails(trailsData)
 	-- Store the new trail data
 	PlayerTrails = trailsData
 
+	print("TrailController - Received trails data:", trailsData)
+
 	-- Apply trails to all players
 	for userId, trailName in pairs(trailsData) do
 		local player = Players:GetPlayerByUserId(userId)
