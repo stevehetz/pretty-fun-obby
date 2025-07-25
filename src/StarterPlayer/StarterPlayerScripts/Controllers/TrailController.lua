@@ -21,11 +21,19 @@ function Shared.OnStart()
 	-- Set up character events for all players
 	Players.PlayerAdded:Connect(function(player)
 		player.CharacterAdded:Connect(function(character)
+			-- Wait for the HumanoidRootPart to be available
+			local hrp = character:WaitForChild("HumanoidRootPart", 5)
+			if not hrp then
+				warn("TrailController - HumanoidRootPart not found for", player.Name)
+				return
+			end
+
 			-- Wait a moment for the character to fully load
 			task.wait(1)
 
 			-- If we have trail data for this player, apply it
 			if PlayerTrails[player.UserId] then
+				print("TrailController - Applying trail for", player.Name, "after character added")
 				Local.ApplyTrailToPlayer(player, PlayerTrails[player.UserId])
 			end
 		end)
@@ -41,11 +49,19 @@ function Shared.OnStart()
 	-- Handle existing players
 	for _, player in ipairs(Players:GetPlayers()) do
 		player.CharacterAdded:Connect(function(character)
+			-- Wait for the HumanoidRootPart to be available
+			local hrp = character:WaitForChild("HumanoidRootPart", 5)
+			if not hrp then
+				warn("TrailController - HumanoidRootPart not found for", player.Name)
+				return
+			end
+
 			-- Wait a moment for the character to fully load
 			task.wait(1)
 
 			-- If we have trail data for this player, apply it
 			if PlayerTrails[player.UserId] then
+				print("TrailController - Applying trail for", player.Name, "after character added")
 				Local.ApplyTrailToPlayer(player, PlayerTrails[player.UserId])
 			end
 		end)
@@ -112,12 +128,19 @@ end
 
 -- Apply trail to another player
 function Local.ApplyTrailToPlayer(player, trailName)
-	if not player or not player.Character then
+	if not player then
+		warn("TrailController - ApplyTrailToPlayer: Player is nil")
+		return
+	end
+
+	if not player.Character then
+		warn("TrailController - ApplyTrailToPlayer: Character not found for", player.Name)
 		return
 	end
 
 	local part = player.Character:FindFirstChild("HumanoidRootPart")
 	if not part then
+		warn("TrailController - ApplyTrailToPlayer: HumanoidRootPart not found for", player.Name)
 		return
 	end
 
@@ -126,15 +149,17 @@ function Local.ApplyTrailToPlayer(player, trailName)
 
 	-- If no trail is equipped, just remove it
 	if not trailName then
+		print("TrailController - No trail equipped for", player.Name)
 		return
 	end
 
 	-- Add the new trail
 	local trailColorSeq = TrailsConfig.GetTrailColor(trailName)
 	if trailColorSeq then
+		print("TrailController - Adding trail", trailName, "to", player.Name)
 		Shared.AddTrail(part, trailColorSeq)
 	else
-		print("TrailController - No color found for trail:", trailName)
+		warn("TrailController - No color found for trail:", trailName)
 	end
 end
 

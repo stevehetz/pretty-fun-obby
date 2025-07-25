@@ -38,6 +38,15 @@ function Shared.OnStart()
 	end
 
 	Players.PlayerAdded:Connect(function(newPlayer)
+		-- Set up CharacterAdded event for new players
+		if newPlayer.Character then
+			Shared.UpdatePlayerTrail(newPlayer)
+		end
+
+		newPlayer.CharacterAdded:Connect(function(character)
+			Shared.UpdatePlayerTrail(newPlayer)
+		end)
+
 		-- Handle player removal
 		newPlayer.AncestryChanged:Connect(function(_, parent)
 			if parent == nil then
