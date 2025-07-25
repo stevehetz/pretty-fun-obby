@@ -53,7 +53,6 @@ function Shared.OnStart()
 				-- Player left the game, remove from PlayerTrails
 				PlayerTrails[newPlayer.UserId] = nil
 				-- Broadcast the updated table to all clients
-				print(PlayerTrails)
 				Shared.BroadcastAllTrails()
 			end
 		end)
@@ -97,8 +96,6 @@ function Shared.UpdatePlayerTrail(player: Player)
 
 	-- Update the PlayerTrails table
 	PlayerTrails[player.UserId] = equippedTrail
-
-	print("TrailsService - Updated PlayerTrails for", player.Name, ":", equippedTrail)
 
 	-- Broadcast the updated table to all clients
 	Shared.BroadcastAllTrails()

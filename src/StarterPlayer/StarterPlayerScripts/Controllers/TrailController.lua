@@ -33,7 +33,6 @@ function Shared.OnStart()
 
 			-- If we have trail data for this player, apply it
 			if PlayerTrails[player.UserId] then
-				print("TrailController - Applying trail for", player.Name, "after character added")
 				Local.ApplyTrailToPlayer(player, PlayerTrails[player.UserId])
 			end
 		end)
@@ -61,7 +60,6 @@ function Shared.OnStart()
 
 			-- If we have trail data for this player, apply it
 			if PlayerTrails[player.UserId] then
-				print("TrailController - Applying trail for", player.Name, "after character added")
 				Local.ApplyTrailToPlayer(player, PlayerTrails[player.UserId])
 			end
 		end)
@@ -83,8 +81,6 @@ end
 function Local.UpdateAllPlayerTrails(trailsData)
 	-- Store the new trail data
 	PlayerTrails = trailsData
-
-	print("TrailController - Received trails data:", trailsData)
 
 	-- First, apply trails from the data to players
 	for userIdStr, trailName in pairs(trailsData) do
@@ -149,14 +145,12 @@ function Local.ApplyTrailToPlayer(player, trailName)
 
 	-- If no trail is equipped, just remove it
 	if not trailName then
-		print("TrailController - No trail equipped for", player.Name)
 		return
 	end
 
 	-- Add the new trail
 	local trailColorSeq = TrailsConfig.GetTrailColor(trailName)
 	if trailColorSeq then
-		print("TrailController - Adding trail", trailName, "to", player.Name)
 		Shared.AddTrail(part, trailColorSeq)
 	else
 		warn("TrailController - No color found for trail:", trailName)
