@@ -10,7 +10,6 @@ local Shared = {}
 
 PlayerDataService.ProfileLoaded.Event:Connect(function(player: Player)
 	player.CharacterAdded:Connect(function()
-		print("Character added for player: ", player.Name)
 		Local.GiveTools(player)
 	end)
 
@@ -83,15 +82,12 @@ function Shared.GiveTool(player: Player, toolName: string, gamepassId: number?)
 
 	local tool = ReplicatedStorage.Tools[toolName]:Clone()
 	tool.Parent = backpack
-	print("Tool cloned and added to backpack: ", toolName, " for player: ", player.Name)
 
 	if toolName == "Trashcan" then
-		print("Setting up trashcan for player: ", player.Name)
 		TrashcanService.SetupTrashcan(player, tool)
 	end
 
 	if toolName == "Sword" then
-		print("Setting up sword for player: ", player.Name)
 		SwordService.SetupSword(player, tool)
 	end
 end
