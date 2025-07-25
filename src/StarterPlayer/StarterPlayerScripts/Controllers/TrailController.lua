@@ -44,6 +44,10 @@ function Shared.OnStart()
 	end
 end
 
+function Shared.UpdateEquippedTrail(trailName)
+	Remotes.PlayerData.UpdateEquippedTrail:FireServer(trailName)
+end
+
 -- Update trail data for other players
 function Local.UpdatePlayerTrails(userId, trailName)
 	-- Store the trail data

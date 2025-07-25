@@ -10,6 +10,7 @@ local ViewportHelper = require(ReplicatedStorage.Libs.ViewportHelper)
 local GuiController = require(script.Parent.Parent.GuiController)
 local StateController = require(script.Parent.Parent.StateController)
 local PetsController = require(script.Parent.Parent.PetsController)
+local TrailController = require(script.Parent.Parent.TrailController)
 local DoubleJumpController = require(script.Parent.Parent.DoubleJumpController)
 local ToolsController = require(script.Parent.Parent.ToolsController)
 
@@ -97,6 +98,10 @@ function Shared.OnStart()
 		end
 
 		if action.type == "UpdateDoubleJump" then
+			Local.RefreshButtonStatuses()
+		end
+
+		if action.type == "UpdateEquippedTrails" then
 			Local.RefreshButtonStatuses()
 		end
 	end)
@@ -249,6 +254,10 @@ function Local.SetupItemStatus(item, frame)
 		equippedItems = state.equippedPets or {}
 	end
 
+	if item.IsTrail then
+		equippedItems[item.Name] = state.equippedTrails[item.Name]
+	end
+
 	local isEquipped = equippedItems[item.Name] or false
 	if isEquipped then
 		statusImage.Visible = false
@@ -338,6 +347,9 @@ function Local.HandleItemSelect(item)
 		end
 		if item.IsPet then
 			PetsController.ToggleEquippedPet(item)
+		end
+		if item.IsTrail then
+			TrailController.UpdateEquippedTrail(item.Name)
 		end
 		return
 	end
