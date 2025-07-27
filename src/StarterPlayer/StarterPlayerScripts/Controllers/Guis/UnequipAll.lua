@@ -59,19 +59,45 @@ function Local.UnequipAll()
 	-- Play sound effect
 	-- SoundController.PlaySound("Menu-Click")
 
-	-- Get all equipped tools
+	-- Get all equipped tools directly from character
 	local character = Player.Character
 	if character then
+		print("Unequipping tools from character")
+
+		-- Find all tools directly in the character
 		local equippedTools = {}
-		for toolName, _ in pairs(ToolsController.ToolsSetup or {}) do
-			if ToolsController.IsToolEquipped(toolName) then
-				table.insert(equippedTools, toolName)
+		for _, item in pairs(character:GetChildren()) do
+			if item:IsA("Tool") then
+				print("Found equipped tool:", item.Name)
+				table.insert(equippedTools, item)
 			end
 		end
 
-		-- Unequip each tool using the same method as Shop.lua
-		for _, toolName in ipairs(equippedTools) do
-			ToolsController.ToggleEquip(toolName)
+		-- Unequip each tool
+		if #equippedTools > 0 then
+			print("Unequipping", #equippedTools, "tools")
+
+			-- Method 1: Use Humanoid:UnequipTools() directly
+			local humanoid = character:FindFirstChildOfClass("Humanoid")
+			if humanoid then
+				print("Using Humanoid:UnequipTools()")
+				humanoid:UnequipTools()
+			else
+				print("Humanoid not found, using alternative method")
+
+				-- Method 2: Move each tool back to backpack
+				local backpack = Player:FindFirstChild("Backpack")
+				if backpack then
+					for _, tool in ipairs(equippedTools) do
+						print("Moving tool to backpack:", tool.Name)
+						tool.Parent = backpack
+					end
+				else
+					print("Backpack not found")
+				end
+			end
+		else
+			print("No tools to unequip")
 		end
 	end
 
