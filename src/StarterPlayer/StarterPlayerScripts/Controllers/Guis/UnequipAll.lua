@@ -96,13 +96,9 @@ function Local.UnequipAll()
 			end
 		end
 
-		-- Unequip each tool
-		if #equippedTools > 0 then
-			-- Method 1: Use Humanoid:UnequipTools() directly
-			local humanoid = character:FindFirstChildOfClass("Humanoid")
-			if humanoid then
-				humanoid:UnequipTools()
-			end
+		-- Unequip each tool using ToolsController
+		for _, tool in ipairs(equippedTools) do
+			ToolsController.ToggleEquip(tool.Name)
 		end
 	end
 
