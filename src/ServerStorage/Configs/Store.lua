@@ -77,11 +77,30 @@ local _store = {
 		},
 		{
 			Id = 1332335039, -- Blue Trail
-			Image = "rbxassetid://75685387580464",
 			IsTrail = true,
 		},
 		{
 			Id = 1337048175, -- Red Trail
+			IsTrail = true,
+		},
+		{
+			Id = 1345568950, -- Green Trail
+			IsTrail = true,
+		},
+		{
+			Id = 1346640969, -- Purple Trail
+			IsTrail = true,
+		},
+		{
+			Id = 1347484796, -- RedBlueOrange Trail
+			IsTrail = true,
+		},
+		{
+			Id = 1346378884, -- GreenBlue Trail
+			IsTrail = true,
+		},
+		{
+			Id = 1345413019, -- BluePink Trail
 			IsTrail = true,
 		},
 		{
