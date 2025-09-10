@@ -12,6 +12,7 @@ export type BadgeName =
 	"Completed World 1"
 	| "Completed World 2"
 	| "Completed World 3"
+	| "Completed World 4"
 	| "1,000 Coins"
 	| "10,000 Coins"
 	| "Supporter"
@@ -20,6 +21,7 @@ local BADGE_IDS = {
 	1210932246765514, -- Completed World 1
 	4139536495010938, -- Completed World 2
 	3770682842619607, -- Completed World 3
+	4294286157794200, -- Completed World 4
 	2737558336236209, -- 1,000 Coins
 	2893940416487994, -- 10,000 Coins
 	3173699013596688, -- Supporter
