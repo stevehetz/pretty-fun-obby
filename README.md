@@ -3,11 +3,9 @@
 **[▶ Play it on Roblox](https://www.roblox.com/games/139398903012255/Pretty-Fun-Obby)**
 
 <p>
-  <img src="docs/images/subway-castle.png" alt="A player stands on a stage below floating subway cars, with a castle and a colorful path of platforms behind them" width="100%">
-</p>
-<p>
-  <img src="docs/images/playground.png" alt="A playground-themed stage with slides, swings and floating platforms over blue water" width="49%">
-  <img src="docs/images/trashcan.png" alt="A player holds the throwable trashcan tool above their head next to an enemy" width="49%">
+  <img src="docs/images/subway-castle.png" alt="A player stands on a stage below floating subway cars, with a castle and a colorful path of platforms behind them" height="160">
+  <img src="docs/images/playground.png" alt="A playground-themed stage with slides, swings and floating platforms over blue water" height="160">
+  <img src="docs/images/trashcan.png" alt="A player holds the throwable trashcan tool above their head next to an enemy" height="160">
 </p>
 
 A Roblox obby (obstacle course) side project with four worlds. Players climb stages, collect coins, rebirth, and unlock pets, trails, tools and gamepasses.
