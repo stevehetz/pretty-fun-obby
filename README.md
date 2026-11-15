@@ -1,5 +1,15 @@
 # Pretty Fun Obby
 
+**[▶ Play it on Roblox](https://www.roblox.com/games/139398903012255/Pretty-Fun-Obby)**
+
+<p>
+  <img src="docs/images/subway-castle.png" alt="A player stands on a stage below floating subway cars, with a castle and a colorful path of platforms behind them" width="100%">
+</p>
+<p>
+  <img src="docs/images/playground.png" alt="A playground-themed stage with slides, swings and floating platforms over blue water" width="49%">
+  <img src="docs/images/trashcan.png" alt="A player holds the throwable trashcan tool above their head next to an enemy" width="49%">
+</p>
+
 A multi-world Roblox obby (obstacle course) game, built as a side project. Players climb through numbered stages, collect coins, earn skips, rebirth, and travel between four worlds. The game also has pets, trails, throwable tools, a VIP perk, enemies, a shop with gamepasses and developer products, and global leaderboards.
 
 The game is written in Luau (Roblox's typed Lua) and developed outside Roblox Studio, in VS Code with Rojo, Git and StyLua. This repository holds the game's **scripts only**. Maps, stages, GUIs and models live in the Roblox place files and get synced together with this code through [Rojo](https://rojo.space).
