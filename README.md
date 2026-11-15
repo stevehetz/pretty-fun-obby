@@ -10,18 +10,17 @@
   <img src="docs/images/trashcan.png" alt="A player holds the throwable trashcan tool above their head next to an enemy" width="49%">
 </p>
 
-A multi-world Roblox obby (obstacle course) game, built as a side project. Players climb through numbered stages, collect coins, earn skips, rebirth, and travel between four worlds. The game also has pets, trails, throwable tools, a VIP perk, enemies, a shop with gamepasses and developer products, and global leaderboards.
+A Roblox obby (obstacle course) side project with four worlds. Players climb stages, collect coins, rebirth, and unlock pets, trails, tools and gamepasses.
 
-The game is written in Luau (Roblox's typed Lua) and developed outside Roblox Studio, in VS Code with Rojo, Git and StyLua. This repository holds the game's **scripts only**. Maps, stages, GUIs and models live in the Roblox place files and get synced together with this code through [Rojo](https://rojo.space).
+The game is written in Luau and developed in VS Code with [Rojo](https://rojo.space), Git and StyLua. This repo holds the scripts only. Maps, GUIs and models live in the Roblox place files.
 
 ## Highlights
 
-- **One codebase, four places.** All four worlds are separate Roblox places that run the same code. Each place works out which world it is from its place ID, and players are teleported between worlds with their progress kept.
-- **Modules load themselves.** A small loader finds every module in the server's `Services/` folder and the client's `Controllers/` folder and starts it. There are 23 services and 19 controllers, and adding a system takes no wiring.
-- **Typed, reducer-style player state.** Save data has a Luau type. Changes are typed action objects passed to a single reducer, so every change to a player's state goes through one place.
-- **Persistent data.** Player saves use ProfileService (session locking, auto-save). A global data service keeps the cross-server leaderboards.
-- **Monetization.** Gamepasses, developer products, a subscription, donations and an in-game coin shop all come from one store config.
-- **Clear client/server split.** The server owns and saves player state, and clients talk to it through RemoteEvents.
+- **One codebase, four places.** Each world is its own Roblox place running the same code. Players teleport between worlds and keep their progress.
+- **Modules load themselves.** A loader starts every server service (23) and client controller (19), so a new system needs no wiring.
+- **Typed, reducer-style state.** Player data has a Luau type, and every change goes through one reducer as a typed action.
+- **Persistence.** ProfileService handles player saves. Global data stores power cross-server leaderboards.
+- **Monetization.** Gamepasses, developer products, a subscription, donations and a coin shop all come from one store config.
 
 ## Tooling
 
